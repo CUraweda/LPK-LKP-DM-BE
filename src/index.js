@@ -79,12 +79,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// startWhatsApp(io)
-//   .then(() => {
-//     console.log('WhatsApp client started');
-//   })
-//   .catch((err) => console.error(err));
-
 server.listen(port, () => {
   console.log(`Server berjalan pada port ${port}`);
 });
