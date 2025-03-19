@@ -26,6 +26,12 @@ r.post(
   controller.register
 );
 
+r.post(
+  '/asign-student/:id',
+  validatorMiddleware({ body: validator.asignStudent }),
+  controller.asignStudent
+);
+
 r.get('/generate-token', auth(), controller.generateToken);
 
 const authenticationRouter = r;

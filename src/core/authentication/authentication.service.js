@@ -1,9 +1,10 @@
+import { hash } from 'bcrypt';
 import crypto from 'crypto';
 import jwt from "jsonwebtoken";
 import BaseService from '../../base/service.base.js';
 import prisma from '../../config/prisma.db.js';
 import { Forbidden, NotFound } from '../../exceptions/catch.execption.js';
-import { compare, hash } from '../../helpers/bcrypt.helper.js';
+import { compare } from '../../helpers/bcrypt.helper.js';
 import { generateAccessToken, generateRefreshToken } from '../../helpers/jwt.helper.js';
 
 class AuthenticationService extends BaseService {
@@ -12,7 +13,7 @@ class AuthenticationService extends BaseService {
   }
 
   login = async (payload) => {
-    const user = await this.db.user.findUnique({
+    const user = await this.db.users.findUnique({
       where: { email: payload.email },
     });
     if (!user) throw new NotFound('Akun tidak ditemukan');
@@ -28,7 +29,7 @@ class AuthenticationService extends BaseService {
   refreshToken = async (refresh) => {
     const payload = jwt.decode(refresh);
 
-    const user = await this.db.user.findUnique({
+    const user = await this.db.users.findUnique({
       where: { email: payload.email },
     });
     if (!user) throw new NotFound('Akun tidak ditemukan');
@@ -38,33 +39,93 @@ class AuthenticationService extends BaseService {
     return { user: this.exclude(user, ['password', 'apiToken', 'isVerified']), token: { access_token, refresh_token } };
   };
 
-  register = async (payload) => {
-    const { email, password, divisionId, roles, hirarkyId, ...others } =
-      payload;
+  findUserById = async (id) => {
+    const data = await this.db.users.findUnique({
+      where: { id }
+    });
+    return this.exclude(data, ['password']);
+  };
 
-    const existing = await this.db.user.findUnique({ where: { email } });
+  register = async (payload) => {
+
+    const findRoleStudent = await this.db.roles.findFirst({
+      where: {
+        name: { contains: '%siswa%' }
+      }
+    });
+
+    if (!findRoleStudent) throw new NotFound('Tidak ada role student')
+
+    const initUser = await this.db.users.create({
+      data: {
+        role_id: findRoleStudent.id
+      }
+    });
+
+    const { email, password } = payload;
+
+    const existing = await this.db.users.findUnique({ where: { email } });
     if (existing) throw new Forbidden('Akun dengan email telah digunakan');
 
-    const division = await this.db.division.findUnique({
-      where: { id: divisionId },
-    });
-    if (!division) throw new NotFound('Division tidak ditemukan');
-
-    const data = await this.db.user.create({
+    const createdUser = await this.db.users.update({
+      where: {
+        id: parseInt(initUser.id)
+      },
       data: {
         email,
         password: await hash(password, 10),
-        division: { connect: { id: divisionId } },
-        roles: roles ? { connect: roles.map(id => ({ id })) } : undefined,
-        hirarky: hirarkyId ? { connect: { id: hirarkyId } } : undefined,
-        ...others,
       },
     });
 
-    return {
-      data,
-      message: 'Akun berhasil terdaftar! Silahkan verifikasi akun anda',
-    };
+    await this.db.userMothers.create({
+      data: {
+        user_id: createdUser.id
+      }
+    });
+    await this.db.userFathers.create({
+      data: {
+        user_id: createdUser.id
+      }
+    });
+    await this.db.userGuardians.create({
+      data: {
+        user_id: createdUser.id
+      }
+    });
+    await this.db.userCourses.create({
+      data: {
+        user_id: createdUser.id
+      }
+    });
+    await this.db.userPayments.create({
+      data: {
+        user_id: createdUser.id
+      }
+    });
+
+    return createdUser;
+  };
+
+  asignStudent = async (user_id, payload) => {
+    const data = await this.db.users.update({
+      where: {
+        id: user_id,
+      },
+      data: payload
+    });
+
+    return data;
+  };
+
+  asignMother = async (user_id, payload) => {
+    const data = await this.db.userMothers.update({
+      where: {
+        user_id: parseInt(user_id),
+      },
+      data: payload
+    });
+
+    return data;
   };
 
   generateToken = async (id) => {
