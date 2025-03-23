@@ -8,28 +8,29 @@ generator client {
 }
 
 model Users {
-  id               Int       @id @default(autoincrement())
-  email            String?   @unique
-  password         String?
-  fullname         String?
-  nik              Int?
-  nisn             Int?
-  gender           Int?      @db.TinyInt //0: man | 1: women
-  birthplace       String?
-  birthdate        DateTime?
-  religion         String?
-  phone            String?
-  profile_pic_path String?
-  province         String?
-  city             String?
-  subdistrict      String?
-  ward             String?
-  postal_code      String?
-  specific_address String?
-  is_verified      Boolean   @default(false)
-  role_id          Int
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt
+  id                 Int       @id @default(autoincrement())
+  email              String?   @unique
+  password           String?
+  fullname           String?
+  nik                Int?
+  nisn               Int?
+  gender             Int?      @db.TinyInt //0: man | 1: women
+  birth_place        String?
+  birth_date         DateTime?
+  religion           String?
+  phone              String?
+  social_assistences String?
+  profile_pic_path   String?
+  province           String?
+  regency            String?
+  subdistrict        String?
+  village            String?
+  postal_code        String?
+  address            String?
+  is_verified        Boolean   @default(false)
+  role_id            Int
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
 
   role          Roles          @relation(fields: [role_id], references: [id])
   user_mother   UserMothers?
@@ -42,15 +43,15 @@ model Users {
 }
 
 model UserMothers {
-  id         Int       @id @default(autoincrement())
-  user_id    Int       @unique
-  name       String?
-  job        String?
-  income     BigInt?
-  birthplace String?
-  birthdate  DateTime?
-  religion   String?
-  phone      String?
+  id          Int       @id @default(autoincrement())
+  user_id     Int       @unique
+  name        String?
+  job         String?
+  income      BigInt?
+  birth_place String?
+  birth_date  DateTime?
+  religion    String?
+  phone       String?
 
   user Users @relation(fields: [user_id], references: [id])
 
@@ -58,15 +59,15 @@ model UserMothers {
 }
 
 model UserFathers {
-  id         Int       @id @default(autoincrement())
-  user_id    Int       @unique
-  name       String?
-  job        String?
-  income     BigInt?
-  birthplace String?
-  birthdate  DateTime?
-  religion   String?
-  phone      String?
+  id          Int       @id @default(autoincrement())
+  user_id     Int       @unique
+  name        String?
+  job         String?
+  income      BigInt?
+  birth_place String?
+  birth_date  DateTime?
+  religion    String?
+  phone       String?
 
   user Users @relation(fields: [user_id], references: [id])
 
@@ -79,11 +80,11 @@ model UserGuardians {
   name           String?
   job            String?
   income         BigInt?
-  birthplace     String?
-  birthdate      DateTime?
+  birth_place    String?
+  birth_date     DateTime?
   religion       String?
   phone          String?
-  is_parent_date Boolean?
+  is_parent_date Boolean   @default(false)
 
   user Users @relation(fields: [user_id], references: [id])
 
@@ -112,9 +113,10 @@ model UserPayments {
 }
 
 model Roles {
-  id   Int    @id @default(autoincrement())
-  name String
-  code String
+  id         Int     @id @default(autoincrement())
+  name       String
+  code       String
+  is_student Boolean
 
   users Users[]
 
@@ -136,7 +138,7 @@ model RolePermissions {
 model Courses {
   id       Int    @id @default(autoincrement())
   name     String
-  level    String
+  level    Int
   price    BigInt
   pic_path String
 
