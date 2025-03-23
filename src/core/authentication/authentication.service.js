@@ -21,6 +21,8 @@ class AuthenticationService extends BaseService {
     const pwValid = await compare(payload.password, user.password);
     if (!pwValid) throw new BadRequest('Password tidak cocok');
 
+    if (!user.is_verified) throw new Forbidden('Akun anda belum diverifikasi');
+
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user)
     return { user: this.exclude(user, ['password', 'apiToken', 'isVerified']), token: { access_token, refresh_token } };
