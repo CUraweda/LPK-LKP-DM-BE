@@ -7,10 +7,142 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id         Int      @id @default(autoincrement())
-  email      String   @unique
+model Users {
+  id                 Int       @id @default(autoincrement())
+  email              String?   @unique
+  password           String?
+  fullname           String?
+  nik                Int?
+  nisn               Int?
+  gender             Int?      @db.TinyInt //0: man | 1: women
+  birth_place        String?
+  birth_date         DateTime?
+  religion           String?
+  phone              String?
+  social_assistences String?
+  profile_pic_path   String?
+  province           String?
+  regency            String?
+  subdistrict        String?
+  village            String?
+  postal_code        String?
+  address            String?
+  is_verified        Boolean   @default(false)
+  role_id            Int
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  role          Roles          @relation(fields: [role_id], references: [id])
+  user_mother   UserMothers?
+  user_father   UserFathers?
+  user_guardian UserGuardians?
+  user_course   UserCourses?
+  user_payment  UserPayments?
+
+  @@map("users")
+}
+
+model UserMothers {
+  id          Int       @id @default(autoincrement())
+  user_id     Int       @unique
+  name        String?
+  job         String?
+  income      BigInt?
+  birth_place String?
+  birth_date  DateTime?
+  religion    String?
+  phone       String?
+
+  user Users @relation(fields: [user_id], references: [id])
+
+  @@map("user_mothers")
+}
+
+model UserFathers {
+  id          Int       @id @default(autoincrement())
+  user_id     Int       @unique
+  name        String?
+  job         String?
+  income      BigInt?
+  birth_place String?
+  birth_date  DateTime?
+  religion    String?
+  phone       String?
+
+  user Users @relation(fields: [user_id], references: [id])
+
+  @@map("user_fathers")
+}
+
+model UserGuardians {
+  id             Int       @id @default(autoincrement())
+  user_id        Int       @unique
+  name           String?
+  job            String?
+  income         BigInt?
+  birth_place    String?
+  birth_date     DateTime?
+  religion       String?
+  phone          String?
+  is_parent_date Boolean   @default(false)
+
+  user Users @relation(fields: [user_id], references: [id])
+
+  @@map("user_guardians")
+}
+
+model UserCourses {
+  id        Int  @id @default(autoincrement())
+  user_id   Int  @unique
+  course_id Int?
+
+  user   Users    @relation(fields: [user_id], references: [id])
+  course Courses? @relation(fields: [course_id], references: [id])
+
+  @@map("user_courses")
+}
+
+model UserPayments {
+  id         Int     @id @default(autoincrement())
+  user_id    Int     @unique
+  payment_to String?
+
+  user Users @relation(fields: [user_id], references: [id])
+
+  @@map("user_payments")
+}
+
+model Roles {
+  id         Int     @id @default(autoincrement())
   name       String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  code       String
+  is_student Boolean
+
+  users Users[]
+
+  @@map("roles")
+}
+
+model Permissions {
+  id Int @id @default(autoincrement())
+
+  @@map("permissions")
+}
+
+model RolePermissions {
+  id Int @id @default(autoincrement())
+
+  @@map("role_permissions")
+}
+
+model Courses {
+  id       Int    @id @default(autoincrement())
+  name     String
+  level    Int
+  price    BigInt
+  pic_path String
+
+  user_courses UserCourses[]
+
+  @@map("courses")
 }
