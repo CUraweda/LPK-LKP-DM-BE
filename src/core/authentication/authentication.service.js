@@ -200,12 +200,14 @@ class AuthenticationService extends BaseService {
     const { name, level } = payload;
 
     return await this.db.$transaction(async (prisma) => {
-      const course = await prisma.courses.findFirst({
+      const course = await prisma.courses.findFirstOrThrow({
         where: {
           name,
           level
         }
       })
+
+      if (!course) throw new NotFound('Pelatihan tidak ditemukan');
 
       const data = await prisma.userCourses.update({
         where: {

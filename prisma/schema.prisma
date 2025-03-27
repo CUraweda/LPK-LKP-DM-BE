@@ -7,13 +7,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
+//? BEGIN > AUTHENTICATION
+
 model Users {
   id                 Int       @id @default(autoincrement())
   email              String?   @unique
   password           String?
   fullname           String?
-  nik                Int?
-  nisn               Int?
+  nik                String?
+  nisn               String?
   gender             Int?      @db.TinyInt //0: man | 1: women
   birth_place        String?
   birth_date         DateTime?
@@ -146,3 +148,184 @@ model Courses {
 
   @@map("courses")
 }
+
+//? END > AUTHENTICATION
+
+//? BEGIN > CONFIG LANDING PAGE
+model ConfigHeroBanners {
+  id          Int     @id @default(autoincrement())
+  image_path  String?
+  title       String
+  description String
+
+  @@map("config_hero_banner")
+}
+
+model ConfigAboutUs {
+  id    Int    @id @default(autoincrement())
+  title String
+
+  @@map("config_about_us")
+}
+
+model ConfigVisions {
+  id    Int    @id @default(autoincrement())
+  title String
+
+  @@map("config_vision")
+}
+
+model ConfigMissions {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+
+  @@map("config_mission")
+}
+
+model ConfigConfidenceAchievement {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+  student     String
+  industry    String
+  graduate    String
+
+  @@map("config_confidence_achievement")
+}
+
+model ConfigTraining {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+
+  training_items TrainingItems[]
+
+  @@map("config_training")
+}
+
+model TrainingItems {
+  id                 Int    @id @default(autoincrement())
+  name               String
+  config_training_id Int
+
+  config_training ConfigTraining @relation(fields: [config_training_id], references: [id])
+
+  @@map("training_items")
+}
+
+model ConfigTeams {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+
+  person_team PersonTeams[]
+
+  @@map("config_teams")
+}
+
+model PersonTeams {
+  id             Int     @id @default(autoincrement())
+  image_path     String?
+  fullname       String
+  position       String
+  config_team_id Int
+
+  config_team ConfigTeams @relation(fields: [config_team_id], references: [id])
+
+  @@map("person_teams")
+}
+
+model ConfigStudentCreations {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+
+  creations Creations[]
+
+  @@map("config_student_creations")
+}
+
+model Creations {
+  id                         Int    @id @default(autoincrement())
+  image_path                 String
+  config_student_creation_id Int
+
+  config_student_creation ConfigStudentCreations @relation(fields: [config_student_creation_id], references: [id])
+
+  @@map("creations")
+}
+
+model ConfigTestimonials {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+
+  testimonials Testimonials[]
+
+  @@map("config_testimonials")
+}
+
+model Testimonials {
+  id                    Int    @id @default(autoincrement())
+  image_path            String
+  fullname              String
+  position              String
+  detail                String @db.Text
+  config_testimonial_id Int
+
+  config_testimonial ConfigTestimonials @relation(fields: [config_testimonial_id], references: [id])
+
+  @@map("testimonials")
+}
+
+model ConfigIndustries {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+
+  industries Industries[]
+
+  @@map("config_industries")
+}
+
+model Industries {
+  id                 Int    @id @default(autoincrement())
+  image_path         String
+  config_industry_id Int
+
+  config_industry ConfigIndustries @relation(fields: [config_industry_id], references: [id])
+
+  @@map("industries")
+}
+
+model ConfigFaqs {
+  id         Int     @id @default(autoincrement())
+  image_path String?
+  title      String
+
+  faqs Faqs[]
+
+  @@map("config_faqs")
+}
+
+model Faqs {
+  id            Int    @id @default(autoincrement())
+  title         String
+  description   String
+  config_faq_id Int
+
+  config_faq ConfigFaqs @relation(fields: [config_faq_id], references: [id])
+
+  @@map("faqs")
+}
+
+model ConfigFooters {
+  id      Int    @id @default(autoincrement())
+  content String
+  type    String //for email, title, phone, etc.
+
+  @@map("config_footers")
+}
+
+//? END > CONFIG LANDING PAGE
