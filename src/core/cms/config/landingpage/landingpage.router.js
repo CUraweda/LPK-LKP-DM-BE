@@ -8,12 +8,30 @@ const r = Router(),
   validator = landingPageValidator,
   controller = new landingPageController();
 
+//? BEGIN > HERO BANNER
+r.get(
+  "/hero-banner/:id",
+  auth(['ADMIN']),
+  controller.showHeroBanner
+);
 r.post(
   "/hero-banner",
   auth(['ADMIN']),
-  validatorMiddleware({ body: validator.create }),
-  controller.create
+  validatorMiddleware({ body: validator.heroBanner }),
+  controller.createHeroBanner
 );
+r.put(
+  "/hero-banner",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.heroBanner }),
+  controller.updateHeroBanner
+);
+r.delete(
+  "/hero-banner",
+  auth(['ADMIN']),
+  controller.deleteHeroBanner
+);
+//? END > HERO BANNER
 
 r.put(
   "/about-us",

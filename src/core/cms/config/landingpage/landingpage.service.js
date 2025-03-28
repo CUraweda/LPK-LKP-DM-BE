@@ -1,31 +1,35 @@
-import BaseService from "../../base/service.base.js";
-import prisma from '../../config/prisma.db.js';
+import BaseService from "../../../../base/service.base.js";
+import prisma from '../../../../config/prisma.db.js';
 
 class landingPageService extends BaseService {
   constructor() {
     super(prisma);
   }
 
-  findAll = async (query) => {
-    const q = this.transformBrowseQuery(query);
-    const data = await this.db.landingPage.findMany({ ...q });
-
-    if (query.paginate) {
-      const countData = await this.db.landingPage.count({ where: q.where });
-      return this.paginate(data, countData, q);
-    }
+  //? BEGIN > HERO BANNER
+  showHeroBanner = async (id) => {
+    const data = await this.db.configHeroBanners.findUnique({ where: { id: parseInt(id) } });
     return data;
   };
 
-  findById = async (id) => {
-    const data = await this.db.landingPage.findUnique({ where: { id } });
+  createHeroBanner = async (payload) => {
+    const data = await this.db.configHeroBanners.create({ data: payload });
     return data;
   };
 
-  heroBanner = async (payload) => {
-    const data = await this.db.landingPage.create({ data: payload });
+  updateHeroBanner = async (id, payload) => {
+    const data = await this.db.configHeroBanners.update({
+      where: { id: parseInt(id) },
+      data: payload
+    });
     return data;
   };
+
+  deleteHeroBanner = async (id) => {
+    const data = await this.db.configHeroBanners.delete({ where: { id: parseInt(id) } });
+    return data;
+  };
+  //? END > HERO BANNER
 
   aboutUs = async (payload) => {
     const data = await this.db.landingPage.create({ data: payload });
@@ -79,16 +83,6 @@ class landingPageService extends BaseService {
 
   footer = async (payload) => {
     const data = await this.db.landingPage.create({ data: payload });
-    return data;
-  };
-
-  update = async (id, payload) => {
-    const data = await this.db.landingPage.update({ where: { id }, data: payload });
-    return data;
-  };
-
-  delete = async (id) => {
-    const data = await this.db.landingPage.delete({ where: { id } });
     return data;
   };
 }

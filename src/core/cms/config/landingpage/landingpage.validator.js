@@ -1,11 +1,10 @@
 import Joi from "joi";
 
 export const landingPageValidator = {
-  create: Joi.object({
-    // no-data
-  }),
-  update: Joi.object({
-    // no-data
+  heroBanner: Joi.object({
+    image_path: Joi.string(),
+    title: Joi.string().required(),
+    description: Joi.string().required()
   }),
 };
 

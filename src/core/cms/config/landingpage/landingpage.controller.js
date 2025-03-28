@@ -10,22 +10,29 @@ class landingPageController extends BaseController {
     this.#service = new landingPageService();
   }
 
-  findAll = this.wrapper(async (req, res) => {
-    const data = await this.#service.findAll(req.query);
-    return this.ok(res, data, "Banyak landingPage berhasil didapatkan");
+  //? BEGIN > HERO BANNER
+  showHeroBanner = this.wrapper(async (req, res) => {
+    const data = await this.#service.showHeroBanner(req.params.id);
+    if (!data) throw new NotFound("Hero Banner tidak ditemukan");
+
+    return this.ok(res, data, "Hero Banner berhasil didapatkan");
   });
 
-  findById = this.wrapper(async (req, res) => {
-    const data = await this.#service.findById(req.params.id);
-    if (!data) throw new NotFound("landingPage tidak ditemukan");
-
-    return this.ok(res, data, "landingPage berhasil didapatkan");
+  createHeroBanner = this.wrapper(async (req, res) => {
+    const data = await this.#service.createHeroBanner(req.body);
+    return this.created(res, data, "Hero Banner berhasil dibuat");
   });
 
-  heroBanner = this.wrapper(async (req, res) => {
-    const data = await this.#service.create(req.body);
-    return this.created(res, data, "landingPage berhasil dibuat");
+  updateHeroBanner = this.wrapper(async (req, res) => {
+    const data = await this.#service.updateHeroBanner(req.params.id, req.body);
+    return this.ok(res, data, "Hero Banner berhasil diubah");
   });
+
+  deleteHeroBanner = this.wrapper(async (req, res) => {
+    await this.#service.deleteHeroBanner(req.params.id);
+    return this.noContent(res, "Hero Banner berhasil dihapus");
+  });
+  //? END > HERO BANNER
 
   aboutUs = this.wrapper(async (req, res) => {
     const data = await this.#service.create(req.body);
