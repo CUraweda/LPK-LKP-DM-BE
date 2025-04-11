@@ -30,8 +30,8 @@ const AuthenticationValidator = {
 
   asignStudent: Joi.object({
     fullname: Joi.string().required(),
-    nik: Joi.number().required(),
-    nisn: Joi.number().required(),
+    nik: Joi.string().required(),
+    nisn: Joi.string().required(),
     gender: Joi.number().required().min(0).max(1),
     birth_place: Joi.string().required(),
     birth_date: Joi.date().required(),
