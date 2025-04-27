@@ -104,6 +104,65 @@ model UserCourses {
   @@map("user_courses")
 }
 
+enum Attendance {
+  A
+  I
+  S
+  H
+}
+
+model Student {
+  id Int @id @default(autoincrement())
+  user_id Int
+  name String
+  profile_image String
+  courses_total_price Int
+  total_raw_courses Int
+  total_raw_hour_courses Int
+  total_raw_ujian_finish Int
+  total_materi Int
+  total_karier Int
+  total_formated_attendance Attendance
+  first_attendance_date DateTime
+  current_course_id Int
+  alumni_comment String
+  is_alumni Boolean
+  created_at Datetime
+}
+
+model Transaction {
+  id               String    @id @default(uuid())
+  memberId         String
+  status           String
+  purpose          String
+  transactionId    String    @unique
+  isPaid           Boolean
+  paymentMethod    String?
+  paymentTotal     Float
+  paymentDate      DateTime?
+  merchantTradeNo  String?
+  platformTradeNo  String?
+  qrisLink         String?   @db.Text
+  customerNo       String?
+  virtualAccountNo String?
+  expiredDate      DateTime?
+  filePath         String?
+  createdAt        DateTime? @default(now())
+
+  member        MemberData   @relation(fields: [memberId], references: [id])
+  registPayment MemberData?  @relation(name: "registrationPayment")
+  SavingsData   SavingsData?
+}
+
+model StudentTransaction {
+  id Int @id @default(autoincrement())
+  student_id 
+  is_success
+  payment_total
+  transaction_id 
+  payment_date DateTime
+}
+
 model UserPayments {
   id         Int     @id @default(autoincrement())
   user_id    Int     @unique
