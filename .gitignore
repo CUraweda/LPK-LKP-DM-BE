@@ -6,3 +6,4 @@ auth_info
 prisma/generator
 prisma/migration
 uploads
+package-lock.json
