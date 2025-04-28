@@ -103,7 +103,7 @@ model Employee {
 
 model Transaction {
   id Int @id @default(autoincrement())
-  memberId         String
+  memberId         Int
   status           String
   purpose          String
   transactionId    String    @unique
@@ -121,6 +121,7 @@ model Transaction {
   createdAt        DateTime? @default(now())
 
   memberTransactions MemberTransaction[]
+  member Member @relation(fields: [memberId], references: [id])
 
   @@map("transaction")
 }
@@ -211,6 +212,7 @@ model Member {
   user         User                @relation(fields: [userId], references: [id])
   identity     MemberIdentity?
   careers      MemberWork[]
+  transaction  Transaction[]
   parents      MemberParent[]
   attendances  MemberAttendance[]
   salarys      MemberSalary[]

@@ -38,7 +38,24 @@ CREATE TABLE `employee` (
 -- CreateTable
 CREATE TABLE `transaction` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `memberId` INTEGER NOT NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `purpose` VARCHAR(191) NOT NULL,
+    `transactionId` VARCHAR(191) NOT NULL,
+    `isPaid` BOOLEAN NOT NULL,
+    `paymentMethod` VARCHAR(191) NULL,
+    `paymentTotal` DOUBLE NOT NULL,
+    `paymentDate` DATETIME(3) NULL,
+    `merchantTradeNo` VARCHAR(191) NULL,
+    `platformTradeNo` VARCHAR(191) NULL,
+    `qrisLink` TEXT NULL,
+    `customerNo` VARCHAR(191) NULL,
+    `virtualAccountNo` VARCHAR(191) NULL,
+    `expiredDate` DATETIME(3) NULL,
+    `filePath` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    UNIQUE INDEX `transaction_transactionId_key`(`transactionId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -118,6 +135,7 @@ CREATE TABLE `member` (
     `createdAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `member_userId_key`(`userId`),
+    UNIQUE INDEX `member_currentCourseId_key`(`currentCourseId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

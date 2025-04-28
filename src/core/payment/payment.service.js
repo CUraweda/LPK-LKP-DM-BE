@@ -135,24 +135,54 @@ class paymentService extends BaseService {
     
     createPayment = async (payload) => {
         try {
-            console.log("|| Payload", payload);
-            const { transactionId, paymentType } = payload;
-            payload['transactionId'] = this.generateTID(payload);
-            await this.db.transaction.create({ data: payload });
-            
-            const transaction = await this.db.transaction.findFirst({
-                where: { id: transactionId, isPaid: false },
-                include: { member: { include: { user: true } } },
+            if (!payload.memberId) {
+                throw new Error("memberId is required in the payload");
+            }
+
+            // Check if the member exists
+            const memberExists = await this.db.member.findUnique({
+                where: { id: payload.memberId },
             });
-            
-            if (!transaction) throw new BadRequest('Transaction didn\'t exist');
-            console.log("|| Transaction", transaction);
-            
-            const paymentData = await this.paymentHelper.create({ ...payload, transaction });
+
+            if (!memberExists) {
+                throw new Error(`Member with id ${payload.memberId} does not exist`);
+            }
+
+            const { paymentType } = payload;
+            payload['transactionId'] = this.generateTID(payload);
+            console.log("|| Payload", payload);
+
+            // Create a transaction
+            const transactionTable = await this.db.transaction.create({
+                data: {
+                    memberId: payload.memberId, // Use memberId directly
+                    status: payload.status,
+                    purpose: payload.purpose,
+                    paymentTotal: payload.paymentTotal,
+                    isPaid: payload.isPaid,
+                },
+            });
+
+            // Create a member transaction
+            await this.db.memberTransaction.create({
+                data: {
+                    memberId: payload.memberId,
+                    isSuccess: false,
+                    paymentTotal: payload.paymentTotal,
+                    transactionId: transactionTable.id,
+                    paymentDate: new Date(),
+                },
+            });
+
+            console.log("|| Transaction", transactionTable);
+
+            // Call the payment helper to create the payment
+            const paymentData = await this.paymentHelper.create({ ...payload, transaction: transactionTable });
             console.log("|| Payment Data", paymentData);
-            
+
+            // Update the transaction with payment details
             return await this.db.transaction.update({
-                where: { id: transaction.id },
+                where: { id: transactionTable.id },
                 data: {
                     paymentMethod: paymentType,
                     merchantTradeNo: paymentData?.merchantTradeNo,
@@ -165,10 +195,9 @@ class paymentService extends BaseService {
             });
         } catch (error) {
             console.error("Error in createPayment:", error);
-            throw error;  // Rethrow or handle accordingly
+            throw error;
         }
-    };   
-    
+    };
 
     update = async (id, payload) => {
         const data = await this.db.Transaction.update({

@@ -41,8 +41,6 @@ class paymentController extends BaseController {
     });
 
     createPayment = this.wrapper(async (req, res) => {
-        console.log("Controller")
-        console.log("Body", req.body)
         const data = await this.#service.createPayment(req.body);
         return this.created(res, data, 'paymentHistory berhasil dibuat');
     });
