@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 export const paymentHistoryValidator = {
     create: Joi.object({
-        memberId: Joi.string().required(),
+        memberId: Joi.number().required(),
         status: Joi.valid("Gagal",  "Tunda", "Berhasil").required().default("Tunda"), 
         purpose: Joi.valid("Simpanan", "Pendaftaran").required(),
         paymentTotal: Joi.number().required(),
@@ -11,6 +11,7 @@ export const paymentHistoryValidator = {
         isPaid: Joi.boolean().required().default(false)
     }),
     createPayment: Joi.object({
+        purpose: Joi.string().required(),
         transactionId: Joi.string().required(),
         paymentType: Joi.string().required(),
         payer: Joi.string().optional()

@@ -7,131 +7,100 @@ generator client {
   provider = "prisma-client-js"
 }
 
-//? BEGIN > AUTHENTICATION
-
-model Users {
-  id                 Int       @id @default(autoincrement())
-  email              String?   @unique
-  password           String?
-  fullname           String?
-  nik                String?
-  nisn               String?
-  gender             Int?      @db.TinyInt //0: man | 1: women
-  birth_place        String?
-  birth_date         DateTime?
-  religion           String?
-  phone              String?
-  social_assistences String?
-  profile_pic_path   String?
-  province           String?
-  regency            String?
-  subdistrict        String?
-  village            String?
-  postal_code        String?
-  address            String?
-  is_verified        Boolean   @default(false)
-  role_id            Int
-  created_at         DateTime  @default(now())
-  updated_at         DateTime  @updatedAt
-
-  role          Roles          @relation(fields: [role_id], references: [id])
-  user_mother   UserMothers?
-  user_father   UserFathers?
-  user_guardian UserGuardians?
-  user_course   UserCourses?
-  user_payment  UserPayments?
-
-  @@map("users")
+//?BEGIN ENUM
+enum RoleCode {
+  SUPERADMIN
+  ADMIN
 }
 
-model UserMothers {
-  id          Int       @id @default(autoincrement())
-  user_id     Int       @unique
-  name        String?
-  job         String?
-  income      BigInt?
-  birth_place String?
-  birth_date  DateTime?
-  religion    String?
-  phone       String?
-
-  user Users @relation(fields: [user_id], references: [id])
-
-  @@map("user_mothers")
+enum TrainingType {
+  R //Regular
+  P //Pemerintah
 }
 
-model UserFathers {
-  id          Int       @id @default(autoincrement())
-  user_id     Int       @unique
-  name        String?
-  job         String?
-  income      BigInt?
-  birth_place String?
-  birth_date  DateTime?
-  religion    String?
-  phone       String?
-
-  user Users @relation(fields: [user_id], references: [id])
-
-  @@map("user_fathers")
+enum ChatType {
+  T //Text
+  I //Image
+  F //File
 }
 
-model UserGuardians {
-  id             Int       @id @default(autoincrement())
-  user_id        Int       @unique
-  name           String?
-  job            String?
-  income         BigInt?
-  birth_place    String?
-  birth_date     DateTime?
-  religion       String?
-  phone          String?
-  is_parent_date Boolean   @default(false)
-
-  user Users @relation(fields: [user_id], references: [id])
-
-  @@map("user_guardians")
+enum WorkStatus {
+  Pekerja_Penuh_Waktu
 }
 
-model UserCourses {
-  id        Int  @id @default(autoincrement())
-  user_id   Int  @unique
-  course_id Int?
-
-  user   Users    @relation(fields: [user_id], references: [id])
-  course Courses? @relation(fields: [course_id], references: [id])
-
-  @@map("user_courses")
+enum ExamStatus {
+  Pending
+  Selesai
 }
 
-enum Attendance {
-  A
-  I
-  S
-  H
+enum AttendanceType {
+  H //Hadir
+  I //Izin
+  S //Sakit
+  A //Alpha
 }
 
-model Student {
-  id Int @id @default(autoincrement())
-  user_id Int
+enum CourseStatus {
+  Sudah
+  Sedang
+  Selesai
+}
+
+enum Gender {
+  L //Laki-laki
+  P //Perempuan
+}
+
+enum ParentIdentifier {
+  I //Ibu
+  A //Ayah
+  W //Wali
+}
+
+//? END ENUM
+
+// MODELS
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  password     String
+  forgotToken  String
+  forgotExpiry DateTime
+
+  employee      Employee?
+  chatsSent     Chat[]    @relation("ChatSender")
+  chatsReceived Chat[]    @relation("ChatReceiver")
+  member        Member?
+
+  @@map("user")
+}
+
+model Role {
+  id   Int      @id @default(autoincrement())
   name String
-  profile_image String
-  courses_total_price Int
-  total_raw_courses Int
-  total_raw_hour_courses Int
-  total_raw_ujian_finish Int
-  total_materi Int
-  total_karier Int
-  total_formated_attendance Attendance
-  first_attendance_date DateTime
-  current_course_id Int
-  alumni_comment String
-  is_alumni Boolean
-  created_at Datetime
+  code RoleCode
+  
+  employees Employee[]
+}
+
+model Employee {
+  id           Int    @id @default(autoincrement())
+  name         String
+  roleId      Int
+  position     String
+  profileImage String
+  email        String
+  phoneNumber  String @unique
+  userId       Int @unique
+
+  role Role @relation(fields: [roleId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("employee")
 }
 
 model Transaction {
-  id               String    @id @default(uuid())
+  id Int @id @default(autoincrement())
   memberId         String
   status           String
   purpose          String
@@ -149,242 +118,254 @@ model Transaction {
   filePath         String?
   createdAt        DateTime? @default(now())
 
-  member        MemberData   @relation(fields: [memberId], references: [id])
-  registPayment MemberData?  @relation(name: "registrationPayment")
-  SavingsData   SavingsData?
+  memberTransactions MemberTransaction[]
+
+  @@map("transaction")
 }
 
-model StudentTransaction {
-  id Int @id @default(autoincrement())
-  student_id 
-  is_success
-  payment_total
-  transaction_id 
-  payment_date DateTime
+model Training {
+  id                  Int          @id @default(autoincrement())
+  title               String
+  description         String
+  trainingImage       String
+  type                TrainingType
+  category            String
+  totalParticipants   Int
+  totalCourses        Int
+  totalHours          Int
+  targetTrainingHours Int
+
+  materials     Material[]
+  memberCourses MemberCourse[]
+  exams         Exam[]
+
+  @@map("training")
 }
 
-model UserPayments {
-  id         Int     @id @default(autoincrement())
-  user_id    Int     @unique
-  payment_to String?
+model Exam {
+  id             Int    @id @default(autoincrement())
+  trainingId     Int
+  title          String
+  description    String
+  totalQuestions Int
+  totalHours     Int
+  questions      Json
 
-  user Users @relation(fields: [user_id], references: [id])
+  training    Training     @relation(fields: [trainingId], references: [id])
+  memberTests MemberTest[]
 
-  @@map("user_payments")
+  @@map("ujian")
 }
 
-model Roles {
-  id         Int     @id @default(autoincrement())
-  name       String
-  code       String
-  is_student Boolean
-
-  users Users[]
-
-  @@map("roles")
-}
-
-model Permissions {
-  id Int @id @default(autoincrement())
-
-  @@map("permissions")
-}
-
-model RolePermissions {
-  id Int @id @default(autoincrement())
-
-  @@map("role_permissions")
-}
-
-model Courses {
-  id       Int    @id @default(autoincrement())
-  name     String
-  level    Int
-  price    BigInt
-  pic_path String
-
-  user_courses UserCourses[]
-
-  @@map("courses")
-}
-
-//? END > AUTHENTICATION
-
-//? BEGIN > CONFIG LANDING PAGE
-model ConfigHeroBanners {
-  id          Int     @id @default(autoincrement())
-  image_path  String?
-  title       String
-  description String  @db.Text
-
-  @@map("config_hero_banner")
-}
-
-model ConfigAboutUs {
-  id    Int    @id @default(autoincrement())
-  title String
-
-  @@map("config_about_us")
-}
-
-model ConfigVisions {
-  id    Int    @id @default(autoincrement())
-  title String
-
-  @@map("config_vision")
-}
-
-model ConfigMissions {
-  id          Int    @id @default(autoincrement())
-  title       String
-  description String @db.Text
-
-  @@map("config_mission")
-}
-
-model ConfigConfidenceAchievement {
-  id          Int    @id @default(autoincrement())
-  title       String
-  description String @db.Text
-  student     String
-  industry    String
-  graduate    String
-
-  @@map("config_confidence_achievement")
-}
-
-model ConfigTraining {
-  id          Int    @id @default(autoincrement())
-  title       String
-  description String @db.Text
-
-  training_items TrainingItems[]
-
-  @@map("config_training")
-}
-
-model TrainingItems {
-  id                 Int    @id @default(autoincrement())
-  name               String
-  config_training_id Int
-
-  config_training ConfigTraining @relation(fields: [config_training_id], references: [id])
-
-  @@map("training_items")
-}
-
-model ConfigTeams {
-  id          Int    @id @default(autoincrement())
-  title       String
-  description String @db.Text
-
-  person_team PersonTeams[]
-
-  @@map("config_teams")
-}
-
-model PersonTeams {
-  id             Int     @id @default(autoincrement())
-  image_path     String?
-  fullname       String
-  position       String
-  config_team_id Int
-
-  config_team ConfigTeams @relation(fields: [config_team_id], references: [id])
-
-  @@map("person_teams")
-}
-
-model ConfigStudentCreations {
-  id          Int    @id @default(autoincrement())
-  title       String
-  description String @db.Text
-
-  creations Creations[]
-
-  @@map("config_student_creations")
-}
-
-model Creations {
-  id                         Int    @id @default(autoincrement())
-  image_path                 String
-  config_student_creation_id Int
-
-  config_student_creation ConfigStudentCreations @relation(fields: [config_student_creation_id], references: [id])
-
-  @@map("creations")
-}
-
-model ConfigTestimonials {
-  id          Int    @id @default(autoincrement())
-  title       String
-  description String @db.Text
-
-  testimonials Testimonials[]
-
-  @@map("config_testimonials")
-}
-
-model Testimonials {
-  id                    Int    @id @default(autoincrement())
-  image_path            String
-  fullname              String
-  position              String
-  detail                String @db.Text
-  config_testimonial_id Int
-
-  config_testimonial ConfigTestimonials @relation(fields: [config_testimonial_id], references: [id])
-
-  @@map("testimonials")
-}
-
-model ConfigIndustries {
-  id          Int    @id @default(autoincrement())
-  title       String
-  description String @db.Text
-
-  industries Industries[]
-
-  @@map("config_industries")
-}
-
-model Industries {
-  id                 Int    @id @default(autoincrement())
-  image_path         String
-  config_industry_id Int
-
-  config_industry ConfigIndustries @relation(fields: [config_industry_id], references: [id])
-
-  @@map("industries")
-}
-
-model ConfigFaqs {
-  id         Int     @id @default(autoincrement())
-  image_path String?
+model Material {
+  id         Int    @id @default(autoincrement())
+  trainingId Int
+  coverImage String
   title      String
+  size       String
+  link       String
 
-  faqs Faqs[]
+  training Training @relation(fields: [trainingId], references: [id])
 
-  @@map("config_faqs")
+  @@map("materi")
 }
 
-model Faqs {
-  id            Int    @id @default(autoincrement())
-  title         String
-  description   String
-  config_faq_id Int
+model Chat {
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  message    String
+  imageLink  String
+  fileSize   String
+  fileLink   String
+  sentAt     DateTime
+  type       ChatType
 
-  config_faq ConfigFaqs @relation(fields: [config_faq_id], references: [id])
+  sender   User @relation("ChatSender", fields: [senderId], references: [id])
+  receiver User @relation("ChatReceiver", fields: [receiverId], references: [id])
 
-  @@map("faqs")
+  @@map("chats")
 }
 
-model ConfigFooters {
-  id      Int    @id @default(autoincrement())
-  content String
-  type    String //for email, title, phone, etc.
+// MEMBER SCHEMA
+model Member {
+  id                  Int            @id @default(autoincrement())
+  userId              Int            @unique
+  name                String
+  profileImage        String
+  totalCourses        Int
+  totalCoursePrice    Float
+  totalCourseHours    Int
+  totalExamsCompleted Int
+  totalMaterials      Int
+  totalCareers        Int
+  formattedAttendance String
+  firstAttendanceDate DateTime
+  currentCourseId     Int?           @unique
+  alumniComment       String
+  isAlumni            Boolean
+  createdAt           DateTime
 
-  @@map("config_footers")
+  user          User                 @relation(fields: [userId], references: [id])
+  identity      MemberIdentity?
+  careers       MemberWork[]
+  parents       MemberParent[]
+  courses       MemberCourse[]       @relation(name: "MemberToCourses")
+  attendances   MemberAttendance[]
+  salarySlips   MemberSalary[]
+  tests         MemberTest[]
+  transactions  MemberTransaction[]
+  currentCourse MemberCourse?        @relation(name: "MemberToCurrentCourse", fields: [currentCourseId], references: [id])
+
+  @@map("siswa")
 }
 
-//? END > CONFIG LANDING PAGE
+model MemberCourse {
+  id            Int          @id @default(autoincrement())
+  memberId      Int
+  trainingId    Int
+  status        CourseStatus
+
+  member        Member       @relation(name: "MemberToCourses", fields: [memberId], references: [id], map: "siswa_course_memberId_fkey")
+  training      Training     @relation(fields: [trainingId], references: [id])
+  certificate   MemberCertificate?
+  currentMember Member?      @relation(name: "MemberToCurrentCourse")
+
+  @@map("siswa_course")
+}
+
+model MemberTransaction {
+  id            Int      @id @default(autoincrement())
+  memberId      Int
+  isSuccess     Boolean
+  paymentTotal  Float
+  transactionId Int
+  paymentDate   DateTime
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  member      Member      @relation(fields: [memberId], references: [id])
+
+  @@map("siswa_transaction")
+}
+
+model MemberCertificate {
+  id               Int    @id @default(autoincrement())
+  memberCourseId   Int    @unique
+  certificateImage String
+  link             String
+  title            String
+  size             String
+
+  course MemberCourse @relation(fields: [memberCourseId], references: [id])
+
+  @@map("siswa_certificate")
+}
+
+model MemberWork {
+  id                  Int        @id @default(autoincrement())
+  memberId            Int
+  position            String
+  status              WorkStatus
+  companyName         String
+  companyLogo         String
+  isCurrentlyEmployed Boolean
+  startDate           DateTime?
+  endDate             DateTime?
+  location            String
+
+  member      Member           @relation(fields: [memberId], references: [id])
+  salarySlips MemberSalary[]
+
+  @@map("siswa_work")
+}
+
+model MemberSalary {
+  id          Int   @id @default(autoincrement())
+  workId      Int
+  memberId    Int
+  monthIndex  Int
+  year        Int
+  basicSalary Float
+  allowance   Float
+  bonus       Float
+  overtime    Float
+
+  work   MemberWork @relation(fields: [workId], references: [id])
+  member Member?    @relation(fields: [memberId], references: [id])
+
+  @@map("siswa_slip_gaji")
+}
+
+model MemberTest {
+  id                 Int        @id @default(autoincrement())
+  startTime          DateTime
+  questionsCompleted Int
+  hoursCompleted     Int
+  memberId           Int
+  examId             Int
+  attendedAt         DateTime
+  finishedAt         DateTime
+  status             ExamStatus
+
+  member Member @relation(fields: [memberId], references: [id])
+  exam   Exam   @relation(fields: [examId], references: [id])
+
+  @@map("siswa_ujian")
+}
+
+model MemberAttendance {
+  id              Int            @id @default(autoincrement())
+  memberId        Int
+  date            DateTime
+  time            DateTime
+  rawDate         DateTime
+  attendanceImage String
+  location        String
+  description     String
+  type            AttendanceType
+
+  member Member @relation(fields: [memberId], references: [id])
+
+  @@map("siswa_attendance")
+}
+
+
+model MemberIdentity {
+  id               Int      @id @default(autoincrement())
+  nationalId       String
+  studentNumber    String
+  placeOfBirth     String
+  dateOfBirth      DateTime
+  religion         String
+  gender           Gender
+  province         String
+  city             String
+  district         String
+  village          String
+  postalCode       Int
+  detailedAddress  String
+  phoneNumber      String   @unique
+  isParentGuardian Boolean
+  socialHelp       String
+  memberId         Int @unique
+
+  member Member @relation(fields: [memberId], references: [id])
+
+  @@map("siswa_identity")
+}
+
+model MemberParent {
+  id           Int            @id @default(autoincrement())
+  name         String
+  relation     ParentIdentifier
+  occupation   String
+  salary       Float
+  placeOfBirth String
+  dateOfBirth  DateTime
+  phoneNumber  Int            @unique
+  memberId     Int
+
+  member Member @relation(fields: [memberId], references: [id])
+
+  @@map("siswa_parent")
+}

@@ -9,23 +9,23 @@ const r = Router(),
 validator = paymentValidator,
 controller = new paymentController();
 
-r.get(
-    '/show-all',
-    validatorMiddleware({ query: baseValidator.browseQuery }),
-    controller.findAll
-);
+// r.get(
+//     '/show-all',
+//     validatorMiddleware({ query: baseValidator.browseQuery }),
+//     controller.findAll
+// );
 
-r.get(
-    '/show-recap-status',
-    auth(['ADMIN']),
-    controller.findRecapStatus
-);
+// r.get(
+//     '/show-recap-status',
+//     auth(['ADMIN']),
+//     controller.findRecapStatus
+// );
 
-r.get('/show-one/:id', controller.findById);
+// r.get('/show-one/:id', controller.findById);
 
 r.post(
     '/create',
-    auth(['ADMIN']),
+    // auth(['ADMIN']),
     validatorMiddleware({ body: validator.create }),
     controller.create
 );
@@ -33,7 +33,7 @@ r.post(
 
 r.put(
     '/update/:id',
-    auth(['ADMIN']),
+    // auth(['ADMIN']),
     validatorMiddleware({ body: validator.update }),
     controller.update
 );
@@ -48,12 +48,12 @@ r.get(
 )
 r.get(
     "/inquiry/:id",
-    auth(['USER', 'ADMIN']),
+    // auth(['USER', 'ADMIN']),
     controller.notify
 )
 r.post(
     "/create",
-    auth(['USER']),
+    // auth(['USER']),
     validatorMiddleware({ body: validator.createPayment }),
     controller.createPayment
 )

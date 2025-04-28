@@ -1,16 +1,14 @@
 import BaseService from '../../base/service.base.js';
-import { prism } from '../../config/prisma.db.js';
+import prism from '../../config/prisma.db.js';
 import { BadRequest, ServerError } from '../../exceptions/catch.execption.js';
 import { PaymentHelper } from '../../helpers/payment/payment.helper.js';
 import { sendOn } from '../../socket/index.js';
-import notificationService from '../notification/notification.service.js';
 
 class paymentService extends BaseService {
     notificationService;
     constructor() {
         super(prism);
         this.paymentHelper = new PaymentHelper();
-        this.notificationService = new notificationService();
     }
 
     generateTID = (payload) => {
@@ -26,16 +24,15 @@ class paymentService extends BaseService {
 
     findAll = async (query) => {
         const q = this.transformBrowseQuery(query);
-        const data = await this.db.Transaction.findMany({
+        const data = await this.db.memberTransaction.findMany({
         ...q,
         include: {
-            SavingsData: true,
             member: { select: { id: true, userId: true, fullName: true } },
         },
         });
 
         if (query.paginate) {
-        const countData = await this.db.Transaction.count({ where: q.where });
+        const countData = await this.db.memberTransaction.count({ where: q.where });
         return this.paginate(data, countData, q);
         }
         return data;
@@ -133,33 +130,45 @@ class paymentService extends BaseService {
     };
 
     create = async (payload) => {
-        payload['transactionId'] = this.generateTID(payload);
-        const data = await this.db.Transaction.create({ data: payload });
         return data;
     };
-
+    
     createPayment = async (payload) => {
-        const { transactionId, paymentType } = payload;
-        const data = await this.db.Transaction.findFirst({
-        where: { id: transactionId, isPaid: false },
-        include: { member: { include: { user: true } } },
-        });
-        if (!data) throw new BadRequest('Transaction didnt exist');
-
-        const paymentData = await this.paymentHelper.create({ ...payload, data });
-        return await this.db.Transaction.update({
-        where: { id: data.id },
-        data: {
-            paymentMethod: paymentType,
-            merchantTradeNo: paymentData?.merchantTradeNo,
-            platformTradeNo: paymentData?.platformTradeNo,
-            qrisLink: paymentData?.qrisUrl,
-            customerNo: paymentData?.virtualAccountData?.customerNo,
-            virtualAccountNo: paymentData?.vaCode,
-            expiredDate: paymentData.expiredDate,
-        },
-        });
-    };
+        try {
+            console.log("|| Payload", payload);
+            const { transactionId, paymentType } = payload;
+            payload['transactionId'] = this.generateTID(payload);
+            await this.db.transaction.create({ data: payload });
+            
+            const transaction = await this.db.transaction.findFirst({
+                where: { id: transactionId, isPaid: false },
+                include: { member: { include: { user: true } } },
+            });
+            
+            if (!transaction) throw new BadRequest('Transaction didn\'t exist');
+            console.log("|| Transaction", transaction);
+            
+            const paymentData = await this.paymentHelper.create({ ...payload, transaction });
+            console.log("|| Payment Data", paymentData);
+            
+            return await this.db.transaction.update({
+                where: { id: transaction.id },
+                data: {
+                    paymentMethod: paymentType,
+                    merchantTradeNo: paymentData?.merchantTradeNo,
+                    platformTradeNo: paymentData?.platformTradeNo,
+                    qrisLink: paymentData?.qrisUrl,
+                    customerNo: paymentData?.virtualAccountData?.customerNo,
+                    virtualAccountNo: paymentData?.vaCode,
+                    expiredDate: paymentData.expiredDate,
+                },
+            });
+        } catch (error) {
+            console.error("Error in createPayment:", error);
+            throw error;  // Rethrow or handle accordingly
+        }
+    };   
+    
 
     update = async (id, payload) => {
         const data = await this.db.Transaction.update({

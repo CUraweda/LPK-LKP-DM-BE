@@ -9,16 +9,17 @@ class paymentController extends BaseController {
         super();
         this.#service = new paymentService();
     }
-
+    
+    findAll = this.wrapper(async (req, res) => {
+        const data = await this.#service.findAll(req.query);
+        return this.ok(res, data, 'Banyak paymentHistory berhasil didapatkan');
+    });
+    
     findRecapStatus = this.wrapper(async (req, res) => {
         const data = await this.#service.findRecapStatus();
         return this.ok(res, data, 'Banyak paymentHistory berhasil didapatkan');
     });
 
-    findAll = this.wrapper(async (req, res) => {
-        const data = await this.#service.findAll(req.query);
-        return this.ok(res, data, 'Banyak paymentHistory berhasil didapatkan');
-    });
 
     findById = this.wrapper(async (req, res) => {
         const data = await this.#service.findById(req.params.id);
@@ -40,6 +41,8 @@ class paymentController extends BaseController {
     });
 
     createPayment = this.wrapper(async (req, res) => {
+        console.log("Controller")
+        console.log("Body", req.body)
         const data = await this.#service.createPayment(req.body);
         return this.created(res, data, 'paymentHistory berhasil dibuat');
     });
