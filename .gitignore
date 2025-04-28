@@ -3,3 +3,5 @@ node_modules
 .env
 auth_info
 ./prisma/interfaces/*
+prisma/generator
+uploads

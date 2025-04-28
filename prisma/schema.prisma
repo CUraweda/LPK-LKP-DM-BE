@@ -5,6 +5,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  output   = "./generator"
 }
 
 //?BEGIN ENUM
@@ -76,20 +77,21 @@ model User {
 }
 
 model Role {
-  id   Int      @id @default(autoincrement())
-  name String
-  code RoleCode
+  id       Int        @id @default(autoincrement())
+  name     String
+  code     RoleCode
+  Employee Employee[]
 }
 
 model Employee {
   id           Int    @id @default(autoincrement())
   name         String
-  roleId      Int
+  roleId       Int
   position     String
   profileImage String
   email        String
   phoneNumber  String @unique
-  userId       Int
+  userId       Int    @unique
 
   role Role @relation(fields: [roleId], references: [id])
   user User @relation(fields: [userId], references: [id])
@@ -172,7 +174,7 @@ model Chat {
 // MEMBER SCHEMA
 model Member {
   id                  Int      @id @default(autoincrement())
-  userId              Int
+  userId              Int      @unique
   name                String
   profileImage        String
   totalCourses        Int
@@ -188,16 +190,15 @@ model Member {
   isAlumni            Boolean
   createdAt           DateTime
 
-  user          User                @relation(fields: [userId], references: [id])
-  identity      MemberIdentity?
-  careers       MemberWork[]
-  parents       MemberParent[]
-  courses       MemberCourse[]
-  attendances   MemberAttendance[]
-  salarySlips   MemberSalary[]
-  tests         MemberTest[]
-  transactions  MemberTransaction[]
-  currentCourse MemberCourse?       @relation(name: "currentCourse", fields: [currentCourseId], references: [id])
+  user         User                @relation(fields: [userId], references: [id])
+  identity     MemberIdentity?
+  careers      MemberWork[]
+  parents      MemberParent[]
+  attendances  MemberAttendance[]
+  salarys      MemberSalary[]
+  tests        MemberTest[]
+  transactions MemberTransaction[]
+  courses      MemberCourse[]      @relation(name: "MemberToCourses")
 
   @@map("siswa")
 }
@@ -218,13 +219,13 @@ model MemberTransaction {
 
 model MemberCertificate {
   id               Int    @id @default(autoincrement())
-  memberCourseId   Int
+  memberCourseId   Int?
   certificateImage String
   link             String
   title            String
   size             String
 
-  course MemberCourse @relation(fields: [memberCourseId], references: [id])
+  course MemberCourse? @relation(fields: [memberCourseId], references: [id])
 
   @@map("siswa_certificate")
 }
@@ -241,7 +242,7 @@ model MemberWork {
   endDate             DateTime?
   location            String
 
-  member      Member           @relation(fields: [memberId], references: [id])
+  member      Member         @relation(fields: [memberId], references: [id])
   salarySlips MemberSalary[]
 
   @@map("siswa_work")
@@ -303,11 +304,9 @@ model MemberCourse {
   trainingId Int
   status     CourseStatus
 
-  member      Member             @relation(name: "memberCourse", fields: [memberId], references: [id])
-  training    Training           @relation(fields: [trainingId], references: [id])
-  certificate MemberCertificate?
-  currentCourse     Member @relation(name: "currentCourse")
-  allMembers  Member[]
+  training    Training            @relation(fields: [trainingId], references: [id])
+  member      Member              @relation(name: "MemberToCourses", fields: [memberId], references: [id])
+  certificate MemberCertificate[] // one-to-many (because in your schema you used array)
 
   @@map("siswa_course")
 }
@@ -329,7 +328,7 @@ model MemberIdentity {
   phoneNumber      String   @unique
   isParentGuardian Boolean
   socialHelp       String
-  memberId         Int
+  memberId         Int      @unique
 
   member Member @relation(fields: [memberId], references: [id])
 
@@ -337,14 +336,14 @@ model MemberIdentity {
 }
 
 model MemberParent {
-  id           Int            @id @default(autoincrement())
+  id           Int              @id @default(autoincrement())
   name         String
   relation     ParentIdentifier
   occupation   String
   salary       Float
   placeOfBirth String
   dateOfBirth  DateTime
-  phoneNumber  Int            @unique
+  phoneNumber  Int              @unique
   memberId     Int
 
   member Member @relation(fields: [memberId], references: [id])
