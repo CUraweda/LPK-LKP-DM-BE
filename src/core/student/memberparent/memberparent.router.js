@@ -1,9 +1,9 @@
 import { Router } from "express";
-import validatorMiddleware from "../../middlewares/validator.middleware.js";
 import memberparentController from "./memberparent.controller.js";
 import memberparentValidator from "./memberparent.validator.js";
-import { baseValidator } from "../../base/validator.base.js";
-import auth from "../../middlewares/auth.middleware.js";
+import { baseValidator } from "../../../base/validator.base.js";
+import validatorMiddleware from "../../../middlewares/validator.middleware.js";
+import auth from "../../../middlewares/auth.middleware.js";
 
 const r = Router(),
   validator = memberparentValidator,

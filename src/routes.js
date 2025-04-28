@@ -33,7 +33,7 @@ export const routeLists = [
     {
         path: '/payment',
         route: paymentRouter
-    }
+    },
     {
         path: '/chat',
         route: chatRouter

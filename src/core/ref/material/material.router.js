@@ -1,10 +1,10 @@
 import { Router } from "express";
-import validatorMiddleware from "../../middlewares/validator.middleware.js";
 import materialController from "./material.controller.js";
 import materialValidator from "./material.validator.js";
-import { baseValidator } from "../../base/validator.base.js";
-import auth from "../../middlewares/auth.middleware.js";
 
+import { baseValidator } from "../../../base/validator.base.js";
+import validatorMiddleware from "../../../middlewares/validator.middleware.js";
+import auth from "../../../middlewares/auth.middleware.js";
 const r = Router(),
   validator = materialValidator,
   controller = new materialController();

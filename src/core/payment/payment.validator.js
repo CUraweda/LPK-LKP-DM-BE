@@ -10,12 +10,12 @@ export const paymentHistoryValidator = {
         paymentDate: Joi.date(),
         isPaid: Joi.boolean().required().default(false)
     }),
-    createPayment: Joi.object({
-        purpose: Joi.string().required(),
-        transactionId: Joi.string().required(),
-        paymentType: Joi.string().required(),
-        payer: Joi.string().optional()
-    }),
+    // createPayment: Joi.object({
+    //     purpose: Joi.string().required(),
+    //     transactionId: Joi.string().required(),
+    //     paymentType: Joi.string().required(),
+    //     payer: Joi.string().optional()
+    // }),
     update: Joi.object({
         memberId: Joi.string().required(),
         status: Joi.valid("Gagal",  "Tunda", "Berhasil").required().default("Tunda"), 

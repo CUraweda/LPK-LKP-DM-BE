@@ -1,5 +1,5 @@
-import BaseController from "../../base/controller.base.js";
-import { NotFound } from "../../exceptions/catch.execption.js";
+import BaseController from "../../../base/controller.base.js";
+import { NotFound } from "../../../exceptions/catch.execption.js";
 import memberService from "./member.service.js";
 
 class memberController extends BaseController {

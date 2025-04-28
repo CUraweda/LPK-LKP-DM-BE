@@ -1,5 +1,5 @@
-import BaseService from "../../base/service.base.js";
-import prisma from '../../config/prisma.db.js';
+import BaseService from "../../../base/service.base.js";
+import prisma from '../../../config/prisma.db.js';
 
 class materialService extends BaseService {
   constructor() {

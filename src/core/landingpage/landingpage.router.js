@@ -1,6 +1,6 @@
 import { Router } from "express";
-import auth from "../../../../middlewares/auth.middleware.js";
-import validatorMiddleware from "../../../../middlewares/validator.middleware.js";
+import auth from "../../middlewares/auth.middleware.js";
+import validatorMiddleware from "../../middlewares/validator.middleware.js";
 import landingPageController from "./landingpage.controller.js";
 import landingPageValidator from "./landingpage.validator.js";
 
