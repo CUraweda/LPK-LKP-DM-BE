@@ -81,6 +81,8 @@ model Role {
   name     String
   code     RoleCode
   Employee Employee[]
+
+  @@map("role")
 }
 
 model Employee {
@@ -138,7 +140,7 @@ model Exam {
   training    Training     @relation(fields: [trainingId], references: [id])
   memberTests MemberTest[]
 
-  @@map("ujian")
+  @@map("exam")
 }
 
 model Material {
@@ -151,7 +153,7 @@ model Material {
 
   training Training @relation(fields: [trainingId], references: [id])
 
-  @@map("materi")
+  @@map("material")
 }
 
 model Chat {
@@ -200,7 +202,7 @@ model Member {
   transactions MemberTransaction[]
   courses      MemberCourse[]      @relation(name: "MemberToCourses")
 
-  @@map("siswa")
+  @@map("member")
 }
 
 model MemberTransaction {
@@ -214,7 +216,7 @@ model MemberTransaction {
   transaction Transaction @relation(fields: [transactionId], references: [id])
   member      Member      @relation(fields: [memberId], references: [id])
 
-  @@map("siswa_transaction")
+  @@map("member_transaction")
 }
 
 model MemberCertificate {
@@ -227,7 +229,7 @@ model MemberCertificate {
 
   course MemberCourse? @relation(fields: [memberCourseId], references: [id])
 
-  @@map("siswa_certificate")
+  @@map("member_certificate")
 }
 
 model MemberWork {
@@ -245,7 +247,7 @@ model MemberWork {
   member      Member         @relation(fields: [memberId], references: [id])
   salarySlips MemberSalary[]
 
-  @@map("siswa_work")
+  @@map("member_work")
 }
 
 model MemberSalary {
@@ -262,7 +264,7 @@ model MemberSalary {
   work   MemberWork @relation(fields: [workId], references: [id])
   member Member?    @relation(fields: [memberId], references: [id])
 
-  @@map("siswa_slip_gaji")
+  @@map("member_salary")
 }
 
 model MemberTest {
@@ -279,7 +281,7 @@ model MemberTest {
   member Member @relation(fields: [memberId], references: [id])
   exam   Exam   @relation(fields: [examId], references: [id])
 
-  @@map("siswa_ujian")
+  @@map("member_test")
 }
 
 model MemberAttendance {
@@ -295,7 +297,7 @@ model MemberAttendance {
 
   member Member @relation(fields: [memberId], references: [id])
 
-  @@map("siswa_attendance")
+  @@map("member_attendance")
 }
 
 model MemberCourse {
@@ -308,7 +310,7 @@ model MemberCourse {
   member      Member              @relation(name: "MemberToCourses", fields: [memberId], references: [id])
   certificate MemberCertificate[] // one-to-many (because in your schema you used array)
 
-  @@map("siswa_course")
+  @@map("member_course")
 }
 
 model MemberIdentity {
@@ -332,7 +334,7 @@ model MemberIdentity {
 
   member Member @relation(fields: [memberId], references: [id])
 
-  @@map("siswa_identity")
+  @@map("member_identity")
 }
 
 model MemberParent {
@@ -348,5 +350,5 @@ model MemberParent {
 
   member Member @relation(fields: [memberId], references: [id])
 
-  @@map("siswa_parent")
+  @@map("member_parent")
 }

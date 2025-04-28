@@ -11,7 +11,7 @@ CREATE TABLE `user` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Role` (
+CREATE TABLE `role` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
     `code` ENUM('SUPERADMIN', 'ADMIN') NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE `training` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `ujian` (
+CREATE TABLE `exam` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `trainingId` INTEGER NOT NULL,
     `title` VARCHAR(191) NOT NULL,
@@ -72,7 +72,7 @@ CREATE TABLE `ujian` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `materi` (
+CREATE TABLE `material` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `trainingId` INTEGER NOT NULL,
     `coverImage` VARCHAR(191) NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE `chats` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `siswa` (
+CREATE TABLE `member` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
     `name` VARCHAR(191) NOT NULL,
@@ -117,12 +117,12 @@ CREATE TABLE `siswa` (
     `isAlumni` BOOLEAN NOT NULL,
     `createdAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `siswa_userId_key`(`userId`),
+    UNIQUE INDEX `member_userId_key`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `siswa_transaction` (
+CREATE TABLE `member_transaction` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `memberId` INTEGER NOT NULL,
     `isSuccess` BOOLEAN NOT NULL,
@@ -134,7 +134,7 @@ CREATE TABLE `siswa_transaction` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `siswa_certificate` (
+CREATE TABLE `member_certificate` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `memberCourseId` INTEGER NULL,
     `certificateImage` VARCHAR(191) NOT NULL,
@@ -146,7 +146,7 @@ CREATE TABLE `siswa_certificate` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `siswa_work` (
+CREATE TABLE `member_work` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `memberId` INTEGER NOT NULL,
     `position` VARCHAR(191) NOT NULL,
@@ -162,7 +162,7 @@ CREATE TABLE `siswa_work` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `siswa_slip_gaji` (
+CREATE TABLE `member_salary` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `workId` INTEGER NOT NULL,
     `memberId` INTEGER NOT NULL,
@@ -177,7 +177,7 @@ CREATE TABLE `siswa_slip_gaji` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `siswa_ujian` (
+CREATE TABLE `member_test` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `startTime` DATETIME(3) NOT NULL,
     `questionsCompleted` INTEGER NOT NULL,
@@ -192,7 +192,7 @@ CREATE TABLE `siswa_ujian` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `siswa_attendance` (
+CREATE TABLE `member_attendance` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `memberId` INTEGER NOT NULL,
     `date` DATETIME(3) NOT NULL,
@@ -207,7 +207,7 @@ CREATE TABLE `siswa_attendance` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `siswa_course` (
+CREATE TABLE `member_course` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `memberId` INTEGER NOT NULL,
     `trainingId` INTEGER NOT NULL,
@@ -217,7 +217,7 @@ CREATE TABLE `siswa_course` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `siswa_identity` (
+CREATE TABLE `member_identity` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `nationalId` VARCHAR(191) NOT NULL,
     `studentNumber` VARCHAR(191) NOT NULL,
@@ -236,13 +236,13 @@ CREATE TABLE `siswa_identity` (
     `socialHelp` VARCHAR(191) NOT NULL,
     `memberId` INTEGER NOT NULL,
 
-    UNIQUE INDEX `siswa_identity_phoneNumber_key`(`phoneNumber`),
-    UNIQUE INDEX `siswa_identity_memberId_key`(`memberId`),
+    UNIQUE INDEX `member_identity_phoneNumber_key`(`phoneNumber`),
+    UNIQUE INDEX `member_identity_memberId_key`(`memberId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `siswa_parent` (
+CREATE TABLE `member_parent` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
     `relation` ENUM('I', 'A', 'W') NOT NULL,
@@ -253,21 +253,21 @@ CREATE TABLE `siswa_parent` (
     `phoneNumber` INTEGER NOT NULL,
     `memberId` INTEGER NOT NULL,
 
-    UNIQUE INDEX `siswa_parent_phoneNumber_key`(`phoneNumber`),
+    UNIQUE INDEX `member_parent_phoneNumber_key`(`phoneNumber`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `employee` ADD CONSTRAINT `employee_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `Role`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `employee` ADD CONSTRAINT `employee_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `role`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `employee` ADD CONSTRAINT `employee_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `ujian` ADD CONSTRAINT `ujian_trainingId_fkey` FOREIGN KEY (`trainingId`) REFERENCES `training`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `exam` ADD CONSTRAINT `exam_trainingId_fkey` FOREIGN KEY (`trainingId`) REFERENCES `training`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `materi` ADD CONSTRAINT `materi_trainingId_fkey` FOREIGN KEY (`trainingId`) REFERENCES `training`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `material` ADD CONSTRAINT `material_trainingId_fkey` FOREIGN KEY (`trainingId`) REFERENCES `training`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `chats` ADD CONSTRAINT `chats_senderId_fkey` FOREIGN KEY (`senderId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -276,43 +276,43 @@ ALTER TABLE `chats` ADD CONSTRAINT `chats_senderId_fkey` FOREIGN KEY (`senderId`
 ALTER TABLE `chats` ADD CONSTRAINT `chats_receiverId_fkey` FOREIGN KEY (`receiverId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa` ADD CONSTRAINT `siswa_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member` ADD CONSTRAINT `member_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_transaction` ADD CONSTRAINT `siswa_transaction_transactionId_fkey` FOREIGN KEY (`transactionId`) REFERENCES `transaction`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_transaction` ADD CONSTRAINT `member_transaction_transactionId_fkey` FOREIGN KEY (`transactionId`) REFERENCES `transaction`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_transaction` ADD CONSTRAINT `siswa_transaction_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `siswa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_transaction` ADD CONSTRAINT `member_transaction_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `member`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_certificate` ADD CONSTRAINT `siswa_certificate_memberCourseId_fkey` FOREIGN KEY (`memberCourseId`) REFERENCES `siswa_course`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `member_certificate` ADD CONSTRAINT `member_certificate_memberCourseId_fkey` FOREIGN KEY (`memberCourseId`) REFERENCES `member_course`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_work` ADD CONSTRAINT `siswa_work_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `siswa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_work` ADD CONSTRAINT `member_work_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `member`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_slip_gaji` ADD CONSTRAINT `siswa_slip_gaji_workId_fkey` FOREIGN KEY (`workId`) REFERENCES `siswa_work`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_salary` ADD CONSTRAINT `member_salary_workId_fkey` FOREIGN KEY (`workId`) REFERENCES `member_work`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_slip_gaji` ADD CONSTRAINT `siswa_slip_gaji_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `siswa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_salary` ADD CONSTRAINT `member_salary_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `member`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_ujian` ADD CONSTRAINT `siswa_ujian_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `siswa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_test` ADD CONSTRAINT `member_test_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `member`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_ujian` ADD CONSTRAINT `siswa_ujian_examId_fkey` FOREIGN KEY (`examId`) REFERENCES `ujian`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_test` ADD CONSTRAINT `member_test_examId_fkey` FOREIGN KEY (`examId`) REFERENCES `exam`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_attendance` ADD CONSTRAINT `siswa_attendance_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `siswa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_attendance` ADD CONSTRAINT `member_attendance_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `member`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_course` ADD CONSTRAINT `siswa_course_trainingId_fkey` FOREIGN KEY (`trainingId`) REFERENCES `training`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_course` ADD CONSTRAINT `member_course_trainingId_fkey` FOREIGN KEY (`trainingId`) REFERENCES `training`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_course` ADD CONSTRAINT `siswa_course_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `siswa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_course` ADD CONSTRAINT `member_course_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `member`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_identity` ADD CONSTRAINT `siswa_identity_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `siswa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_identity` ADD CONSTRAINT `member_identity_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `member`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `siswa_parent` ADD CONSTRAINT `siswa_parent_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `siswa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `member_parent` ADD CONSTRAINT `member_parent_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `member`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
