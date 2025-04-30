@@ -3,7 +3,7 @@ node_modules
 .env
 auth_info
 ./prisma/interfaces/*
-prisma/generator
-prisma/migration
+prisma/generator/
+prisma/migrations/
 uploads
 package-lock.json

@@ -148,8 +148,9 @@ class paymentService extends BaseService {
                 } 
             });
             const member = await this.db.member.findUnique({ where: {id: payload.memberId} })
-            const user = await this.db.user.findUnique({ where: {id: member.userId }})
-            // console.log("|| Member", member)
+            // console.log("|| Member: ",member)
+            const user = await this.db.user.findUnique({ where: {id: member.id }})
+            // console.log("|| User: ",user)
             
             payload['username'] = member.name
             payload['email'] = user.email

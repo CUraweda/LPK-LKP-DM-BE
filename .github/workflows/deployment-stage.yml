@@ -1,0 +1,32 @@
+name: Deploy Backend via SSH (STAGING)
+
+on:
+  push:
+    branches:
+      - development
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: SECRET
+
+    steps:
+    - name: Install SSH Client
+      run: sudo apt-get install -y sshpass
+
+    - name: Deploy to SSH server
+      run: |
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
+          set -e
+          mkdir -p ${{ secrets.STG_APP_DIR }}
+          cd ${{ secrets.STG_APP_DIR }}
+
+          if [ ! -d ".git" ]; then
+            git clone ${{ secrets.REPO_URL }} . 
+          else
+            git pull origin development
+          fi
+
+          npm install
+          pm2 restart backend || pm2 start npm --name backend -- run start
+        EOF
