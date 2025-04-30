@@ -22,16 +22,16 @@ r.post(
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
-  
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
-r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
+);
+
+r.put(
+  "/update/:id",
+  auth(['SISWA']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
+
+r.delete("/delete/:id", auth(['SISWA']), controller.delete);
 
 const roleRouter = r;
 export default roleRouter;

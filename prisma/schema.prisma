@@ -9,8 +9,9 @@ generator client {
 
 //?BEGIN ENUM
 enum RoleCode {
-  SUPERADMIN
   ADMIN
+  SISWA
+  ANY
 }
 
 enum TrainingType {
@@ -61,25 +62,29 @@ enum ParentIdentifier {
 
 // MODELS
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
   password     String
-  forgotToken  String
-  forgotExpiry DateTime
+  memberId     Int       @unique
+  roleId       Int
+  forgetToken  String?
+  forgetExpiry DateTime?
 
   employee      Employee?
+  member        Member?   @relation(fields: [memberId], references: [id])
+  role          Role      @relation(fields: [roleId], references: [id])
   chatsSent     Chat[]    @relation("ChatSender")
   chatsReceived Chat[]    @relation("ChatReceiver")
-  member        Member?
 
   @@map("user")
 }
 
 model Role {
-  id       Int        @id @default(autoincrement())
-  name     String
-  code     RoleCode
-  Employee Employee[]
+  id         Int      @id @default(autoincrement())
+  name       String
+  code       RoleCode
+  identifier String   @unique
+  User       User[]
 
   @@map("role")
 }
@@ -87,14 +92,12 @@ model Role {
 model Employee {
   id           Int    @id @default(autoincrement())
   name         String
-  roleId       Int
   position     String
   profileImage String
   email        String
   phoneNumber  String @unique
   userId       Int    @unique
 
-  role Role @relation(fields: [roleId], references: [id])
   user User @relation(fields: [userId], references: [id])
 
   @@map("employee")
@@ -191,24 +194,23 @@ model Chat {
 
 // MEMBER SCHEMA
 model Member {
-  id                  Int      @id @default(autoincrement())
-  userId              Int      @unique
-  name                String
-  profileImage        String
-  totalCourses        Int
-  totalCoursePrice    Float
-  totalCourseHours    Int
-  totalExamsCompleted Int
-  totalMaterials      Int
-  totalCareers        Int
-  formattedAttendance String
-  firstAttendanceDate DateTime
-  currentCourseId     Int?           @unique
-  alumniComment       String
-  isAlumni            Boolean
-  createdAt           DateTime
+  id                  Int       @id @default(autoincrement())
+  name                String?
+  profileImage        String?
+  totalCourses        Int?
+  totalCoursePrice    Float?
+  totalCourseHours    Int?
+  totalExamsCompleted Int?
+  totalMaterials      Int?
+  totalCareers        Int?
+  formattedAttendance String?
+  firstAttendanceDate DateTime?
+  currentCourseId     Int?      @unique
+  alumniComment       String?
+  isAlumni            Boolean?
+  dataVerified        Boolean   @default(false)
+  createdAt           DateTime?
 
-  user         User                @relation(fields: [userId], references: [id])
   identity     MemberIdentity?
   careers      MemberWork[]
   transaction  Transaction[]
@@ -218,6 +220,7 @@ model Member {
   tests        MemberTest[]
   transactions MemberTransaction[]
   courses      MemberCourse[]      @relation(name: "MemberToCourses")
+  User         User?
 
   @@map("member")
 }

@@ -41,6 +41,22 @@ app.use(
 );
 app.use(bodyParser.text({ type: 'text/html' }));
 
+//? START Development Request Tracker
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV !== 'development') return next();
+
+  const start = Date.now();
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const log = `[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${res.statusCode} - ${duration}ms`;
+    console.log(log);
+  });
+
+  next();
+});
+//? END Development Request Tracker
+
 app.use('/api/v1', router);
 
 app.route('/').get((req, res) => {

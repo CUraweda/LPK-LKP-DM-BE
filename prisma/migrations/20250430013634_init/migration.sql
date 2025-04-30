@@ -3,10 +3,13 @@ CREATE TABLE `user` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
+    `memberId` INTEGER NOT NULL,
+    `roleId` INTEGER NOT NULL,
     `forgotToken` VARCHAR(191) NOT NULL,
     `forgotExpiry` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `user_email_key`(`email`),
+    UNIQUE INDEX `user_memberId_key`(`memberId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -23,7 +26,6 @@ CREATE TABLE `role` (
 CREATE TABLE `employee` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
-    `roleId` INTEGER NOT NULL,
     `position` VARCHAR(191) NOT NULL,
     `profileImage` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
@@ -118,7 +120,6 @@ CREATE TABLE `chats` (
 -- CreateTable
 CREATE TABLE `member` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `userId` INTEGER NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `profileImage` VARCHAR(191) NOT NULL,
     `totalCourses` INTEGER NOT NULL,
@@ -134,7 +135,10 @@ CREATE TABLE `member` (
     `isAlumni` BOOLEAN NOT NULL,
     `createdAt` DATETIME(3) NOT NULL,
 
+<<<<<<< HEAD:prisma/migrations/20250428075152_init/migration.sql
     UNIQUE INDEX `member_userId_key`(`userId`),
+=======
+>>>>>>> 7dd826a7d14d55877e192b842249f48e48ef93dd:prisma/migrations/20250430013634_init/migration.sql
     UNIQUE INDEX `member_currentCourseId_key`(`currentCourseId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -276,7 +280,10 @@ CREATE TABLE `member_parent` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `employee` ADD CONSTRAINT `employee_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `role`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `user` ADD CONSTRAINT `user_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `member`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `user` ADD CONSTRAINT `user_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `role`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `employee` ADD CONSTRAINT `employee_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -292,9 +299,6 @@ ALTER TABLE `chats` ADD CONSTRAINT `chats_senderId_fkey` FOREIGN KEY (`senderId`
 
 -- AddForeignKey
 ALTER TABLE `chats` ADD CONSTRAINT `chats_receiverId_fkey` FOREIGN KEY (`receiverId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `member` ADD CONSTRAINT `member_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `member_transaction` ADD CONSTRAINT `member_transaction_transactionId_fkey` FOREIGN KEY (`transactionId`) REFERENCES `transaction`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

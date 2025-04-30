@@ -9,8 +9,8 @@
     "prisma:migrate:status": "npx prisma migrate status",
     "prisma:push": "npx prisma db push",
     "prisma:studio": "npx prisma studio",
-    "prisma:seed:dev": "npx node ./prisma/seed/development.runseed.js",
-    "prisma:seed:prod": "npx node ./prisma/seed/production.runseed.js",
+    "prisma:seed:dev": "node ./prisma/seeder/dev-seed.js",
+    "prisma:seed:prod": "node ./prisma/seeder/prod-seed.js",
     "prisma:reset": "npx prisma migrate reset --force",
     "gen:core": "node generator/core.js --name memberparent --model-name memberparent",
     "prisma:interface": "npx @kalissaac/prisma-typegen ./prisma/interfaces/types.d.ts ./prisma/schema.prisma"
