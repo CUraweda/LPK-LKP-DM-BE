@@ -13,7 +13,17 @@ jobs:
     steps:
     - name: Install SSH Client
       run: sudo apt-get install -y sshpass
+    
+    - name: Check Installation
+      run: |
+        node -v
+        npm -v
 
+    - name: Another Installation
+      run: |
+        source /root/.nvm/nvm.sh
+        node -v
+        npm -v
     - name: Deploy to SSH server
       run: |
         sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -26,7 +36,7 @@ jobs:
           else
             git pull origin development
           fi
-
+    
           npm install
           npm run dev
           # pm2 restart
