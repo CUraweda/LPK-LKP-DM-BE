@@ -13,5 +13,9 @@ const userConstant = {
   ROLE_STUDENT: 7,
   ONTIME: '07:00:00',
 };
-export { userConstant };
+const roleConstant = {
+  STUDENT_CODE: "STU001DNT",
+  ADMIN_CODE: "ADM230E91IN"
+}
+export { userConstant, roleConstant };
 export default constant;

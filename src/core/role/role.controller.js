@@ -16,7 +16,7 @@ class roleController extends BaseController {
   });
 
   findById = this.wrapper(async (req, res) => {
-    const data = await this.#service.findById(req.params.id);
+    const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("role tidak ditemukan");
 
     return this.ok(res, data, "role berhasil didapatkan");
@@ -28,12 +28,12 @@ class roleController extends BaseController {
   });
 
   update = this.wrapper(async (req, res) => {
-    const data = await this.#service.update(req.params.id, req.body);
+    const data = await this.#service.update(+req.params.id, req.body);
     return this.ok(res, data, "role berhasil diperbarui");
   });
 
   delete = this.wrapper(async (req, res) => {
-    const data = await this.#service.delete(req.params.id);
+    const data = await this.#service.delete(+req.params.id);
     return this.noContent(res, "role berhasil dihapus");
   });
 }

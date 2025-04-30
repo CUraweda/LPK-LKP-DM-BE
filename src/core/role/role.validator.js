@@ -2,10 +2,14 @@ import Joi from "joi";
 
 export const roleValidator = {
   create: Joi.object({
-    // no-data
+    name: Joi.string(),
+    code: Joi.valid("SUPERADMIN", "ADMIN", "ANY"),
+    identifier: Joi.string()
   }),
   update: Joi.object({
-    // no-data
+    name: Joi.string(),
+    code: Joi.valid("SUPERADMIN", "ADMIN", "ANY"),
+    identifier: Joi.string()
   }),
 };
 
