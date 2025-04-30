@@ -14,8 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-          
-      - name: Deploy using ssh
+
+      - name: Deploy using SSH
         uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -25,9 +25,14 @@ jobs:
           debug: true
           script: |
             cd staging/LPK-LKP-DM-BE
+            git reset --hard
             git pull origin development
+
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+            npm install
             npm run prisma:migrate
             npm run prisma:seed:dev
-            npm i
-            pm2 restart 13
-        
+            pm2 restart 13 || pm2 start npm --name backend -- run start
