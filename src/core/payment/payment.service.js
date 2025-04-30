@@ -135,52 +135,31 @@ class paymentService extends BaseService {
     
     createPayment = async (payload) => {
         try {
-            if (!payload.memberId) {
-                throw new Error("memberId is required in the payload");
-            }
-
-            // Check if the member exists
-            const memberExists = await this.db.member.findUnique({
-                where: { id: payload.memberId },
-            });
-
-            if (!memberExists) {
-                throw new Error(`Member with id ${payload.memberId} does not exist`);
-            }
-
             const { paymentType } = payload;
             payload['transactionId'] = this.generateTID(payload);
-            console.log("|| Payload", payload);
-
-            // Create a transaction
-            const transactionTable = await this.db.transaction.create({
-                data: {
-                    memberId: payload.memberId, // Use memberId directly
-                    status: payload.status,
-                    purpose: payload.purpose,
-                    paymentTotal: payload.paymentTotal,
-                    isPaid: payload.isPaid,
-                },
-            });
-
-            // Create a member transaction
-            await this.db.memberTransaction.create({
+            const transactionTable = await this.db.transaction.create({ data: payload });
+            await this.db.memberTransaction.create({ 
                 data: {
                     memberId: payload.memberId,
                     isSuccess: false,
                     paymentTotal: payload.paymentTotal,
                     transactionId: transactionTable.id,
-                    paymentDate: new Date(),
-                },
+                    paymentDate: new Date()
+                } 
             });
-
-            console.log("|| Transaction", transactionTable);
-
-            // Call the payment helper to create the payment
+            const member = await this.db.member.findUnique({ where: {id: payload.memberId} })
+            const user = await this.db.user.findUnique({ where: {id: member.userId }})
+            // console.log("|| Member", member)
+            
+            payload['username'] = member.name
+            payload['email'] = user.email
+            payload['paymentType'] = payload['paymentMethod']
+            // console.log("|| Payload",payload)
+            
+            // console.log("|| Transaction", transactionTable);
             const paymentData = await this.paymentHelper.create({ ...payload, transaction: transactionTable });
             console.log("|| Payment Data", paymentData);
-
-            // Update the transaction with payment details
+            
             return await this.db.transaction.update({
                 where: { id: transactionTable.id },
                 data: {
