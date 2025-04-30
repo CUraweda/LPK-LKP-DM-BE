@@ -1,4 +1,4 @@
-name: Deploy Backend via SSH (STAGING)
+name: Deploy Backend via SSH
 
 on:
   push:
@@ -8,31 +8,29 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: SECRET
+    environment: SECRET  # Use the environment 'SECRET' for secrets
 
     steps:
     - name: Install SSH Client
       run: sudo apt-get install -y sshpass
 
-    - name: Install Node.js and npm
-      run: |
-        curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-        sudo apt-get install -y nodejs
-
     - name: Deploy to SSH server
       run: |
         sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
           set -e
-          mkdir -p ${{ secrets.STG_APP_DIR }}
-          cd ${{ secrets.STG_APP_DIR }}
+          mkdir -p ${{ secrets.APP_DIR }}
+          cd ${{ secrets.APP_DIR }}
 
           if [ ! -d ".git" ]; then
             git clone ${{ secrets.REPO_URL }} . 
           else
-            git pull origin development
+            git pull origin main
           fi
 
-          npm install
-          npm run dev
-          # pm2 restart
+          # Source NVM to use npm and node
+          source /root/.nvm/nvm.sh
+
+          # Now you can run npm and node
+          /root/.nvm/versions/node/v23.3.0/bin/npm install
+          /root/.nvm/versions/node/v23.3.0/bin/pm2 restart 13
         EOF
