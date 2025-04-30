@@ -1,36 +1,33 @@
-name: Deploy Backend via SSH
+name: Staging CD
 
 on:
   push:
-    branches:
-      - development
+    branches: [ dev ]
+  pull_request:
+    branches: [ "dev" ]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment: SECRET  # Use the environment 'SECRET' for secrets
+    environment: HRD-ENV
 
     steps:
-    - name: Install SSH Client
-      run: sudo apt-get install -y sshpass
-
-    - name: Deploy to SSH server
-      run: |
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
-          set -e
-          mkdir -p ${{ secrets.APP_DIR }}
-          cd ${{ secrets.APP_DIR }}
-
-          if [ ! -d ".git" ]; then
-            git clone ${{ secrets.REPO_URL }} . 
-          else
-            git pull origin main
-          fi
-
-          # Source NVM to use npm and node
-          source /root/.nvm/nvm.sh
-
-          # Now you can run npm and node
-          /root/.nvm/versions/node/v23.3.0/bin/npm install
-          /root/.nvm/versions/node/v23.3.0/bin/pm2 restart 13
-        EOF
+      - name: Checkout code
+        uses: actions/checkout@v2
+          
+      - name: Deploy using ssh
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          password: ${{ secrets.PROD_PASSWORD }}
+          port: 22
+          debug: true
+          script: |
+            cd staging/LPK-LKP-DM-BE
+            git pull origin development
+            npm run prisma:migrate
+            npm run prisma:seed:dev
+            npm i
+            pm2 restart 13
+        
