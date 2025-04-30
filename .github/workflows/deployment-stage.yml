@@ -28,5 +28,6 @@ jobs:
           fi
 
           npm install
-          pm2 restart backend || pm2 start npm --name backend -- run start
+          npm run dev
+          # pm2 restart
         EOF
