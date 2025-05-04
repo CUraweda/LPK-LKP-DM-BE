@@ -18,7 +18,8 @@ class trainingService extends BaseService {
   };
 
   findById = async (id) => {
-    const data = await this.db.training.findUnique({ where: { id } });
+    const intId = Number(id)
+    const data = await this.db.training.findUnique({ where: { id: intId } });
     return data;
   };
 

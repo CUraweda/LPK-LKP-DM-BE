@@ -17,8 +17,10 @@ import membersalaryRouter from './core/membersalary/membersalary.router.js';
 import membertestRouter from './core/membertest/membertest.router.js';
 import membertransactionRouter from './core/membertransaction/membertransaction.router.js';
 import memberworkRouter from './core/memberwork/memberwork.router.js';
-
 import paymentRouter from './core/payment/payment.router.js';
+import trainingscheduleRouter from './core/trainingschedule/trainingschedule.router.js';
+import trainingenrollmentRouter from './core/trainingenrollment/trainingenrollment.router.js';
+
 const router = express.Router();
 
 export const routeLists = [
@@ -53,6 +55,14 @@ export const routeLists = [
     {
         path: '/ref/training',
         route: trainingRouter
+    },
+    {
+        path: '/training/schedule',
+        route: trainingscheduleRouter
+    },
+    {
+        path: '/training',
+        route: trainingenrollmentRouter
     },
     {
         path: '/ref/transaction',
