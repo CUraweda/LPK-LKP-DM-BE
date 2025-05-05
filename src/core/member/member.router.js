@@ -22,15 +22,21 @@ r.post(
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
-  
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
+);
+
+r.patch(
+  "/change/verified",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.patchVerified }),
+  controller.create
+)
+r.put(
+  "/update/:id",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const memberRouter = r;

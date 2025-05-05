@@ -67,7 +67,7 @@ model User {
   password     String
   memberId     Int       @unique
   roleId       Int
-  forgetToken  String?
+  forgetToken  String? @db.Text
   forgetExpiry DateTime?
 
   employee      Employee?
@@ -196,18 +196,17 @@ model Member {
   id                  Int       @id @default(autoincrement())
   name                String?
   profileImage        String?
-  totalCourses        Int?
-  totalCoursePrice    Float?
-  totalCourseHours    Int?
-  totalExamsCompleted Int?
-  totalMaterials      Int?
-  totalCareers        Int?
-  formattedAttendance String?
+  totalCourses        Int?      @default(0)
+  totalCoursePrice    Float?    @default(0)
+  totalCourseHours    Int?      @default(0)
+  totalExamsCompleted Int?      @default(0)
+  totalMaterials      Int?      @default(0)
+  totalCareers        Int?      @default(0)
+  formattedAttendance String?   @default("0|0|0|0") //?Formated: Alpha|Izin|Sakit|Hadir
   firstAttendanceDate DateTime?
-  currentCourseId     Int?      @unique
-  alumniComment       String?
-  isAlumni            Boolean?
+  currentCourseId     Int?
   dataVerified        Boolean   @default(false)
+  verifiedAt          DateTime?
   createdAt           DateTime?
 
   identity     MemberIdentity?

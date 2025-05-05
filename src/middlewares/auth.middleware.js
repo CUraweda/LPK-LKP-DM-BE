@@ -42,7 +42,7 @@ export default function auth(roles) {
       // Cari user berdasarkan decoded token
       const user = await prisma.user.findFirst({
         where: { id: decoded.userId },
-        include: { role: true } // Ambil relasi roles
+        include: { role: true, member: true } // Ambil relasi roles
       });
 
       if (!user) {

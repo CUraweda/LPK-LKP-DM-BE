@@ -25,6 +25,21 @@ const AuthenticationValidator = {
     const { confirm_password, ...rest } = values;
     return rest;
   }),
+
+  forgotPassword: Joi.object({
+    email: Joi.string()
+  }),
+  resetPass: Joi.object({
+    encoded_email: Joi.string().required(),
+    new_password: Joi.string().max(constant.MAX_LEN_PW).required(),
+    confirm_password: Joi.string()
+      .max(constant.MAX_LEN_PW)
+      .valid(Joi.ref('new_password'))
+      .messages({
+        'any.only': 'Konfirmasi password tidak cocok dengan password baru',
+      })
+      .required(),
+  }),
 };
 
 export default AuthenticationValidator;

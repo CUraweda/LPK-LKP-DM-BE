@@ -25,10 +25,16 @@ class AuthenticationController extends BaseController {
     return this.ok(res, data, 'Berhasil mendaftarkan Email dan Password! silakan lanjutkan step');
   });
 
-  generateToken = this.wrapper(async (req, res) => {
-    const data = await this.#service.generateToken(req.user.userId);
-    return this.ok(res, data, 'Berhasil generate token');
+  forgotPassword = this.wrapper(async (req, res) => {
+    const data = await this.#service.forgotPassword(req.body);
+    return this.ok(res, data, 'Berhasil melakukan request lupa password akun! Tunggu email untuk step selanjutnya');
   });
+
+  resetPassword = this.wrapper(async (req, res) => {
+    const data = await this.#service.resetPassword(req.body);
+    return this.ok(res, data, 'Berhasil melakukan request lupa password akun! Tunggu email untuk step selanjutnya');
+  });
+
 }
 
 export default AuthenticationController;

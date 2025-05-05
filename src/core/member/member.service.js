@@ -21,15 +21,20 @@ class memberService extends BaseService {
     const data = await this.db.member.findUnique({ where: { id } });
     return data;
   };
-
+  
   create = async (payload) => {
     const data = await this.db.member.create({ data: payload });
+    return data;
+  };
+  
+  patchVerified = async (id, payload) => {
+    const data = await this.db.member.update({ where: { id }, data: { dataVerified: payload.verified} });
     return data;
   };
 
   update = async (id, payload) => {
     const data = await this.db.member.update({ where: { id }, data: payload });
-    return data;
+    return data; 
   };
 
   delete = async (id) => {

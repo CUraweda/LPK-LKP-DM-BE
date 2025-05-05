@@ -2,10 +2,21 @@ import Joi from "joi";
 
 export const memberattendanceValidator = {
   create: Joi.object({
-    // no-data
+    memberId: Joi.number().integer(),
+    rawDate: Joi.date(),
+    location: Joi.string(),
+    description: Joi.string(),
+    type: Joi.valid("H", "I", "S", "A")
+  }),
+  attend: Joi.object({
+    location: Joi.string(),
+    description: Joi.string(),
   }),
   update: Joi.object({
-    // no-data
+    rawDate: Joi.date(),
+    location: Joi.string(),
+    description: Joi.string(),
+    type: Joi.valid("H", "I", "S", "A")
   }),
 };
 

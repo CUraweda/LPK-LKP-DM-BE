@@ -16,7 +16,7 @@ class memberController extends BaseController {
   });
 
   findById = this.wrapper(async (req, res) => {
-    const data = await this.#service.findById(req.params.id);
+    const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("member tidak ditemukan");
 
     return this.ok(res, data, "member berhasil didapatkan");
@@ -27,13 +27,18 @@ class memberController extends BaseController {
     return this.created(res, data, "member berhasil dibuat");
   });
 
+  patchVerified = this.wrapper(async (req, res) => {
+    const data = await this.#service.patchVerified(+req.params.id, req.body);
+    return this.ok(res, data, "perubahan berhasil diterapkan");
+  });
+
   update = this.wrapper(async (req, res) => {
-    const data = await this.#service.update(req.params.id, req.body);
+    const data = await this.#service.update(+req.params.id, req.body);
     return this.ok(res, data, "member berhasil diperbarui");
   });
 
   delete = this.wrapper(async (req, res) => {
-    const data = await this.#service.delete(req.params.id);
+    const data = await this.#service.delete(+req.params.id);
     return this.noContent(res, "member berhasil dihapus");
   });
 }

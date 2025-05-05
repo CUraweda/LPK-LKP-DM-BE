@@ -26,6 +26,11 @@ class memberattendanceController extends BaseController {
     const data = await this.#service.create(req.body);
     return this.created(res, data, "memberattendance berhasil dibuat");
   });
+  
+  attend = this.wrapper(async (req, res) => {
+    const data = await this.#service.attend(req.user, req.body);
+    return this.created(res, data, "memberattendance berhasil dibuat");
+  });
 
   update = this.wrapper(async (req, res) => {
     const data = await this.#service.update(req.params.id, req.body);

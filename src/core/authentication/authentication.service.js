@@ -5,23 +5,25 @@ import BaseService from '../../base/service.base.js';
 import prisma from '../../config/prisma.db.js';
 import { BadRequest, Forbidden, NotFound } from '../../exceptions/catch.execption.js';
 import { compare, hash } from '../../helpers/bcrypt.helper.js';
-import { generateAccessToken, generateRefreshToken } from '../../helpers/jwt.helper.js';
-import { connect } from 'http2';
+import { generateAccessToken, generateRefreshToken, generateResetPasswordToken } from '../../helpers/jwt.helper.js';
+import base64url from 'base64url';
+import EmailHelper from '../../helpers/email.helper.js';
 
 class AuthenticationService extends BaseService {
   constructor() {
     super(prisma);
+    this.mailHelper = new EmailHelper()
   }
 
   login = async (payload) => {
     const user = await this.db.user.findUnique({
-      where: { email: payload.email }, include: { member: true }
+      where: { email: payload.email }, include: { member: { select: { id: true, profileImage: true, dataVerified: true } } }
     });
     if (!user) throw new NotFound('Akun tidak ditemukan');
 
     const pwValid = await compare(payload.password, user.password);
     if (!pwValid) throw new BadRequest('Password tidak cocok');
-    // if (!user.member.dataVerified) throw new Forbidden("Pendaftaran member belum selesai")
+    if (!user.member.dataVerified) throw new Forbidden("Pendaftaran member belum selesai")
 
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user)
@@ -34,7 +36,7 @@ class AuthenticationService extends BaseService {
     const user = await this.db.user.findUnique({
       where: { email: payload.email },
     });
-  if (!user) throw new NotFound('Akun tidak ditemukan');
+    if (!user) throw new NotFound('Akun tidak ditemukan');
 
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user)
@@ -68,19 +70,48 @@ class AuthenticationService extends BaseService {
     });
   };
 
-  generateToken = async (id) => {
-    const userData = await prisma.users.findFirst({
-      where: { id },
+  forgotPassword = async (payload) => {
+    const user = await this.db.user.findUnique({ where: { email: payload.email } })
+    if (!user) throw new BadRequest("Akun tidak ditemukan")
+    const forgetToken = await generateResetPasswordToken(user.id);
+    const forgetExpiry = new Date(); 
+    forgetExpiry.setHours(forgetExpiry.getHours() + 1 - forgetExpiry.getTimezoneOffset() / 60);
+
+    await this.db.user.update({ where: { id: user.id }, data: { forgetToken, forgetExpiry } })
+
+    const encryptedToken = base64url.encode(forgetToken)
+    const url = `${process.env.LPK_URL}/reset-password/${encryptedToken}`
+
+    this.mailHelper.sendEmail(
+      { url },
+      payload.email,
+      "Kometa | Forgot Password",
+      "./src/email/views/reset_password.html",
+      ["./src/email/assets/Logo.jpg"]
+    );
+    
+    return "Email Lupa Password berhail terkirim, mohon tunggu!"
+  }
+
+  resetPassword = async (payload) => {
+    const encodedToken = payload.encoded_email;
+    const forgetToken = base64url.decode(encodedToken);
+    const decoded = jwt.decode(forgetToken);
+    const user = await this.db.user.findFirst({ where: { forgetToken, id: decoded.uid } });
+    if (!user || user.forgetExpiry < new Date()) throw new BadRequest("Token kadaluwaras atau tidak valid");
+
+    const hashedPassword = await hash(payload.new_password)
+    await this.db.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        forgetToken: null,
+        forgetExpiry: null,
+      },
     });
-    if (!userData.apiToken) {
-      const apiToken = crypto.randomBytes(32).toString('hex');
-      const user = await prisma.users.update({
-        where: { id },
-        data: { apiToken },
-      });
-      return { apiToken: user.apiToken };
-    } else return { apiToken: userData.apiToken };
-  };
+
+    return 'Password berhasil diupdate! Mohon login kembali'
+  }
 }
 
 export default AuthenticationService;

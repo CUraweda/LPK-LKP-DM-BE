@@ -22,13 +22,21 @@ r.post(
 
 r.post(
   '/register',
-  validatorMiddleware({ body: validator.register }),
+validatorMiddleware({ body: validator.register }),
   controller.register
 );
-r.patch(
-  "/"
+
+r.post(
+  '/forgot-pass',
+  validatorMiddleware({ body: validator.forgotPassword }),
+  controller.forgotPassword
 )
-r.get('/generate-token', auth(), controller.generateToken);
+r.put(
+  "/reset-pass",
+  validatorMiddleware({ body: validator.resetPass }),
+  controller.resetPassword
+)
 
 const authenticationRouter = r;
 export default authenticationRouter;
+
