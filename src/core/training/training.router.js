@@ -19,8 +19,8 @@ r.get("/show-one/:id", controller.findById);
 
 r.post(
   "/create",
-  auth(['ADMIN']),
-  validatorMiddleware({ body: validator.create }),
+  // auth(['ADMIN']),
+  // validatorMiddleware({ body: validator.create }),
   controller.create
   );
   

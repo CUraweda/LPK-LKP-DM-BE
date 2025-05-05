@@ -1,13 +1,13 @@
 import { Router } from "express";
 import validatorMiddleware from "../../middlewares/validator.middleware.js";
-import userController from "./user.controller.js";
-import userValidator from "./user.validator.js";
+import trainingscheduleController from "./trainingschedule.controller.js";
+import trainingscheduleValidator from "./trainingschedule.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
 
 const r = Router(),
-  validator = userValidator,
-  controller = new userController();
+  validator = trainingscheduleValidator,
+  controller = new trainingscheduleController();
 
 r.get(
   "/show-all",
@@ -31,7 +31,11 @@ r.post(
     controller.update
     );
     
-r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
+r.delete(
+  "/delete/:id", 
+  // auth(['ADMIN']),
+  controller.delete
+  );
 
-const userRouter = r;
-export default userRouter;
+const trainingscheduleRouter = r;
+export default trainingscheduleRouter;

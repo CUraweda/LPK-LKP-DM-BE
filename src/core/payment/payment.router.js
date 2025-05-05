@@ -54,7 +54,7 @@ r.get(
 r.post(
     "/create",
     // auth(['USER']),
-    validatorMiddleware({ body: validator.createPayment }),
+    validatorMiddleware({ body: validator.create }),
     controller.createPayment
 )
 

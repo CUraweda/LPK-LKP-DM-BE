@@ -58,6 +58,22 @@ enum ParentIdentifier {
   W //Wali
 }
 
+enum ScheduleType {
+  Materi
+  Ujian
+}
+
+enum ScheduleStatus {
+  AVAILABLE
+  UNAVAILABLE
+}
+
+enum EnrollmentStatus {
+  BOOKED
+  IN_PROGRESS
+  COMPLETED
+}
+
 //? END ENUM
 
 // MODELS
@@ -105,7 +121,7 @@ model Employee {
 
 model Transaction {
   id               Int       @id @default(autoincrement())
-  memberId         String
+  memberId         Int
   status           String
   purpose          String
   transactionId    String    @unique
@@ -123,6 +139,7 @@ model Transaction {
   createdAt        DateTime? @default(now())
 
   memberTransactions MemberTransaction[]
+  member             Member              @relation(fields: [memberId], references: [id])
 
   @@map("transaction")
 }
@@ -139,11 +156,38 @@ model Training {
   totalHours          Int
   targetTrainingHours Int
 
-  materials     Material[]
-  memberCourses MemberCourse[]
-  exams         Exam[]
+  materials           Material[]
+  memberCourses       MemberCourse[]
+  exams               Exam[]
+  trainingSchedule    TrainingSchedule[]
 
   @@map("training")
+}
+
+model TrainingSchedule {
+  id                  Int @id @default(autoincrement())
+  trainingId          Int
+  startTime           DateTime
+  endTime             DateTime
+  type                TrainingType
+  status              ScheduleStatus
+  enrollments         TrainingEnrollment[]
+
+  training            Training     @relation(fields: [trainingId], references: [id])
+  @@map("training_schedule")
+}
+
+model TrainingEnrollment {
+  id                  Int @id @default(autoincrement())
+  memberId            Int
+  scheduleId          Int
+  status              EnrollmentStatus
+  joinedAt            DateTime         @default(now())
+
+  schedule            TrainingSchedule      @relation(fields: [scheduleId], references: [id])
+  member              Member                @relation(fields: [memberId], references: [id])
+  @@unique([memberId, scheduleId])
+  @@map("training_enrollment")
 }
 
 model Exam {
@@ -211,6 +255,8 @@ model Member {
 
   identity     MemberIdentity?
   careers      MemberWork[]
+  enrollment   TrainingEnrollment[]
+  transaction  Transaction[]
   parents      MemberParent[]
   attendances  MemberAttendance[]
   salarys      MemberSalary[]

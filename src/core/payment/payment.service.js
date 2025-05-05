@@ -135,24 +135,34 @@ class paymentService extends BaseService {
     
     createPayment = async (payload) => {
         try {
-            console.log("|| Payload", payload);
-            const { transactionId, paymentType } = payload;
+            const { paymentType } = payload;
             payload['transactionId'] = this.generateTID(payload);
-            await this.db.transaction.create({ data: payload });
-            
-            const transaction = await this.db.transaction.findFirst({
-                where: { id: transactionId, isPaid: false },
-                include: { member: { include: { user: true } } },
+            const transactionTable = await this.db.transaction.create({ data: payload });
+            await this.db.memberTransaction.create({ 
+                data: {
+                    memberId: payload.memberId,
+                    isSuccess: false,
+                    paymentTotal: payload.paymentTotal,
+                    transactionId: transactionTable.id,
+                    paymentDate: new Date()
+                } 
             });
+            const member = await this.db.member.findUnique({ where: {id: payload.memberId} })
+            // console.log("|| Member: ",member)
+            const user = await this.db.user.findUnique({ where: {id: member.id }})
+            // console.log("|| User: ",user)
             
-            if (!transaction) throw new BadRequest('Transaction didn\'t exist');
-            console.log("|| Transaction", transaction);
+            payload['username'] = member.name
+            payload['email'] = user.email
+            payload['paymentType'] = payload['paymentMethod']
+            // console.log("|| Payload",payload)
             
-            const paymentData = await this.paymentHelper.create({ ...payload, transaction });
+            // console.log("|| Transaction", transactionTable);
+            const paymentData = await this.paymentHelper.create({ ...payload, transaction: transactionTable });
             console.log("|| Payment Data", paymentData);
             
             return await this.db.transaction.update({
-                where: { id: transaction.id },
+                where: { id: transactionTable.id },
                 data: {
                     paymentMethod: paymentType,
                     merchantTradeNo: paymentData?.merchantTradeNo,
@@ -165,10 +175,9 @@ class paymentService extends BaseService {
             });
         } catch (error) {
             console.error("Error in createPayment:", error);
-            throw error;  // Rethrow or handle accordingly
+            throw error;
         }
-    };   
-    
+    };
 
     update = async (id, payload) => {
         const data = await this.db.Transaction.update({
