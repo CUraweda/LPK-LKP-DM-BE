@@ -21,26 +21,35 @@ class memberService extends BaseService {
     const data = await this.db.member.findUnique({ where: { id } });
     return data;
   };
-  
+
   create = async (payload) => {
     const data = await this.db.member.create({ data: payload });
     return data;
   };
-  
+
   patchVerified = async (id, payload) => {
-    const data = await this.db.member.update({ where: { id }, data: { dataVerified: payload.verified} });
+    const data = await this.db.member.update({ where: { id }, data: { dataVerified: payload.verified } });
     return data;
   };
 
   update = async (id, payload) => {
     const data = await this.db.member.update({ where: { id }, data: payload });
-    return data; 
+    return data;
   };
 
   delete = async (id) => {
     const data = await this.db.member.delete({ where: { id } });
     return data;
   };
+
+  extendDataSiswa = async (user, payload) => {
+    const id = user.member.id
+    return await this.db.$transaction(async (prisma) => {
+      const { name, ...data } = payload
+      await prisma.member.update({ where: { id }, data: { name } })
+      await prisma.memberIdentity.upsert({ where: { memberId: id }, data })
+    })
+  }
 }
 
 export default memberService;  

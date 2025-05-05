@@ -20,6 +20,24 @@ export const memberValidator = {
     currentCourseId: Joi.number().integer(),
     dataVerified: Joi.boolean()
   }),
+  extend_data_siswa: Joi.object({
+    name: Joi.string(),
+    nationalId: Joi.string(), 
+    studentNumber: Joi.string(),
+    religion: Joi.string(),
+    gender: Joi.valid("L", "P"),
+    placeOfBirth: Joi.string(),
+    dateOfBirth: Joi.date(),
+    religion: Joi.string(),
+    phoneNumber: Joi.string(),
+    socialHelp: Joi.string(),
+    province: Joi.string(),
+    city: Joi.string(), 
+    district: Joi.string(),
+    village: Joi.string(),
+    postalCode: Joi.number().integer(),
+    detailedAddress: Joi.string()
+  })
 };
 
 export default memberValidator;

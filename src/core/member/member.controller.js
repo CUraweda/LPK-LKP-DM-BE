@@ -27,6 +27,11 @@ class memberController extends BaseController {
     return this.created(res, data, "member berhasil dibuat");
   });
 
+  extendDataSiswa = this.wrapper(async (req, res) => {
+    const data = await this.#service.extendDataSiswa(req.user, req.body);
+    return this.created(res, data, "member berhasil dibuat");
+  });
+
   patchVerified = this.wrapper(async (req, res) => {
     const data = await this.#service.patchVerified(+req.params.id, req.body);
     return this.ok(res, data, "perubahan berhasil diterapkan");

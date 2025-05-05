@@ -23,7 +23,6 @@ r.post(
   validatorMiddleware({ body: validator.create }),
   controller.create
 );
-
 r.patch(
   "/change/verified",
   auth(['ADMIN']),
@@ -36,8 +35,14 @@ r.put(
   validatorMiddleware({ body: validator.update }),
   controller.update
 );
-
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
+
+r.post(
+  "/extend-user-data-siswa",
+  auth(['SISWA']),
+  validatorMiddleware({ body: validator.extend_data_siswa }),
+  controller.extendDataSiswa
+)
 
 const memberRouter = r;
 export default memberRouter;

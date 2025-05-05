@@ -391,7 +391,7 @@ model MemberIdentity {
   postalCode       Int
   detailedAddress  String
   phoneNumber      String   @unique
-  isParentGuardian Boolean
+  isParentGuardian Boolean @default(false)
   socialHelp       String
   memberId         Int      @unique
 
