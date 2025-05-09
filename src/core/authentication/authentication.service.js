@@ -17,13 +17,13 @@ class AuthenticationService extends BaseService {
 
   login = async (payload) => {
     const user = await this.db.user.findUnique({
-      where: { email: payload.email }, include: { member: { select: { id: true, profileImage: true, dataVerified: true } } }
+      where: { email: payload.email }, include: { role: { select: { code: true } }, member: { select: { id: true, profileImage: true, dataVerified: true } } }
     });
     if (!user) throw new NotFound('Akun tidak ditemukan');
 
     const pwValid = await compare(payload.password, user.password);
     if (!pwValid) throw new BadRequest('Password tidak cocok');
-    if (!user.member.dataVerified) throw new Forbidden("Pendaftaran member belum selesai")
+    if (!user.member.dataVerified && (user.role.code != "ADMIN" ) ) throw new Forbidden("Pendaftaran member belum selesai")
 
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user)
@@ -61,9 +61,8 @@ class AuthenticationService extends BaseService {
       const existing = await prisma.user.findUnique({ where: { email } });
       if (existing) throw new Forbidden('Akun dengan email telah digunakan');
 
-      const initMember = await prisma.member.create()
       const createdUser = await prisma.user.create({
-        data: { roleId: findRole.id, email, password: await hash(password), memberId: initMember.id }
+        data: { roleId: findRole.id, email, password: await hash(password)}
       });
 
       return createdUser;

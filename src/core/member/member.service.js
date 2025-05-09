@@ -1,4 +1,5 @@
 import BaseService from "../../base/service.base.js";
+import memberConstant from "../../config/member.js";
 import prisma from '../../config/prisma.db.js';
 
 class memberService extends BaseService {
@@ -46,10 +47,39 @@ class memberService extends BaseService {
     const id = user.member.id
     return await this.db.$transaction(async (prisma) => {
       const { name, ...data } = payload
-      await prisma.member.update({ where: { id }, data: { name } })
       await prisma.memberIdentity.upsert({ where: { memberId: id }, data })
+      await prisma.member.update({ where: { id }, data: { name, memberState: memberConstant.memberState.Data_Ibu } })
     })
   }
+
+  extendDataIbu = async (user, payload) => {
+    const id = user.member.id
+    return await this.db.$transaction(async (prisma) => {
+      await prisma.memberParent.upsert({ where: { memberId: id }, create: { ...payload, relation: "I" }, update: { ...payload, relation: "I" } })
+      await prisma.member.update({ where: { id }, data: { memberState: memberConstant.memberState.Data_Ayah } })
+    })
+  }
+
+  extendDataAyah = async (user, payload) => {
+    const id = user.member.id
+    return await this.db.$transaction(async (prisma) => {
+      await prisma.memberParent.upsert({ where: { memberId: id }, create: { ...payload, relation: "A" }, update: { ...payload, relation: "A" }  })
+      await prisma.member.update({ where: { id }, data: { memberState: memberConstant.memberState.Data_Wali } })
+    })
+  }
+
+  extendDataWali = async (user, payload) => {
+    const id = user.member.id
+    if(payload.parentAsGuardian) return await this.db.$transaction(async (prisma) => {
+      await prisma.memberIdentity.update({ where: { memberId: id }, data: { isParentGuardian: true } })
+      await prisma.member.update({ where: { id }, data: { memberState: memberConstant.memberState.Pilih_Kursus } })
+    })
+    return await this.db.$transaction(async (prisma) => {
+      await prisma.memberParent.upsert({ where: { memberId: id }, create: { ...payload, relation: "W" }, update: { ...payload, relation: "W" } })
+      await prisma.member.update({ where: { id }, data: { memberState: memberConstant.memberState.Pilih_Kursus } })
+    })
+  }
+
 }
 
 export default memberService;  
