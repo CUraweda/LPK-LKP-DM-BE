@@ -199,11 +199,13 @@ model Dashboard {
   image            String?
   title            String?
   description      String?          @db.Text
+  add_string_1      String?          @db.Text
   siswa_counter    String?
   industri_counter String?
   alumni_counter   String?
-  training_id      Int
-  training         Training         @relation(fields: [training_id], references: [id])
+  training_id      Int?
+
+  training Training? @relation(fields: [training_id], references: [id])
 }
 
 model TrainingSchedule {

@@ -4,21 +4,21 @@ import { hash } from "../../src/helpers/bcrypt.helper.js";
 
 export async function userRole() {
     const adminExist = await prism.user.findUnique({ where: { email: "dummyadmin@gmail.com" } })
-    if(!adminExist){
+    if (!adminExist) {
         await prism.user.create({
             data: {
                 email: "dummyadmin@gmail.com",
-                password: "dummypass",
+                password: await hash("dummypass"),
                 roleId: 1
             }
         })
     }
     const siswaExist = await prism.user.findUnique({ where: { email: "dummysiswa@gmail.com" } })
-    if(!siswaExist){
+    if (!siswaExist) {
         await prism.user.create({
             data: {
                 email: "dummysiswa@gmail.com",
-                password: "dummypass",
+                password: await hash("dummypass"),
                 roleId: 2
             }
         })

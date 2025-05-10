@@ -1,10 +1,12 @@
 import prism from "../../src/config/prisma.db.js";
 import { userRole } from "./auth.seeder.js";
+import { seedDashboard } from "./dashboard.seeder.js";
 import { seedRole } from "./role.seeder.js";
 
 async function main() {
     await seedRole();
     await userRole();
+    await seedDashboard()
 }
 
 main()
