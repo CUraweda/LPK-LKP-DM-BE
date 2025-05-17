@@ -26,16 +26,19 @@ r.post(
   controller.create
   );
   
-  r.put(
-    "/reguler/update/:id",
-    // auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
+r.put(
+  "/reguler/update/:id",
+  // auth(['ADMIN']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+  );
     
 r.delete("/reguler/delete/:id", auth(['ADMIN']), controller.delete);
 
 // PEMERINTAH
+
+
+
 
 const trainingenrollmentRouter = r;
 export default trainingenrollmentRouter;

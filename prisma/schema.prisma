@@ -224,6 +224,7 @@ model TrainingSchedule {
 
 model TrainingEnrollment {
   id         Int              @id @default(autoincrement())
+  type       TrainingType
   memberId   Int
   scheduleId Int
   status     EnrollmentStatus
