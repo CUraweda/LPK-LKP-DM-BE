@@ -23,11 +23,11 @@ class AuthenticationService extends BaseService {
 
     const pwValid = await compare(payload.password, user.password);
     if (!pwValid) throw new BadRequest('Password tidak cocok');
-    if (!user.member.dataVerified && (user.role.code != "ADMIN" ) ) throw new Forbidden("Pendaftaran member belum selesai")
+    if (!user.member.dataVerified && (user.role.code != "ADMIN")) throw new Forbidden("Pendaftaran member belum selesai")
 
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user)
-    return { user: this.exclude(user, ['password', 'apiToken', 'isVerified']), token: { access_token, refresh_token } };
+    return { user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry', 'role']), token: { access_token, refresh_token } };
   };
 
   refreshToken = async (refresh) => {
@@ -40,7 +40,7 @@ class AuthenticationService extends BaseService {
 
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user)
-    return { user: this.exclude(user, ['password', 'apiToken', 'isVerified']), token: { access_token, refresh_token } };
+    return { user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry', 'role']), token: { access_token, refresh_token } };
   };
 
   findUserById = async (id) => {
@@ -62,18 +62,21 @@ class AuthenticationService extends BaseService {
       if (existing) throw new Forbidden('Akun dengan email telah digunakan');
 
       const createdUser = await prisma.user.create({
-        data: { roleId: findRole.id, email, password: await hash(password)}
+        data: { roleId: findRole.id, email, password: await hash(password) }
       });
 
-      return createdUser;
+      const access_token = await generateAccessToken(createdUser);
+      const refresh_token = await generateRefreshToken(createdUser)
+      return { user: this.exclude(createdUser, ['password', 'forgetToken', 'forgetExpiry', 'role']), token: { access_token, refresh_token } };
+
     });
   };
 
   forgotPassword = async (payload) => {
-    const user = await this.db.user.findUnique({ where: { email: payload.email } })
+    const user = await this.db.user.findUnique({ where: { email: payload.email }, include: { member: true } })
     if (!user) throw new BadRequest("Akun tidak ditemukan")
     const forgetToken = await generateResetPasswordToken(user.id);
-    const forgetExpiry = new Date(); 
+    const forgetExpiry = new Date();
     forgetExpiry.setHours(forgetExpiry.getHours() + 1 - forgetExpiry.getTimezoneOffset() / 60);
 
     await this.db.user.update({ where: { id: user.id }, data: { forgetToken, forgetExpiry } })
@@ -84,11 +87,15 @@ class AuthenticationService extends BaseService {
     this.mailHelper.sendEmail(
       { url },
       payload.email,
-      "Kometa | Forgot Password",
+      "LPK | Konfirmasi Lupa Password",
       "./src/email/views/reset_password.html",
+      {
+        member_name: user.member.name,
+        
+      }
       ["./src/email/assets/Logo.jpg"]
     );
-    
+
     return "Email Lupa Password berhail terkirim, mohon tunggu!"
   }
 

@@ -33,15 +33,25 @@ var readHTMLFile = function (path, callback) {
 };
 
 class EmailHelper {
+    formatAttachment(attachments){
+        return attachments.map((data, i) => ({
+            filename: "Logo " + i + ".jpg",
+            path: data,
+            cid: "logo" + i
+        }))
+    }
+
     async sendEmail(
         placeholder,
         to,
         subject,
         body,
+        args = {},
+        attachment = [],
         auth = null,
-        attachment = []
     ) {
         try {
+            attachment = this.formatAttachment(attachment)
             readHTMLFile(body, function (err, html) {
                 if (err) {
                     console.log("error reading file", err);
@@ -53,13 +63,7 @@ class EmailHelper {
                     from: email.account,
                     to, subject,
                     html: htmlToSend,
-                    attachments: [
-                        {
-                            filename: 'Logo.jpg',
-                            path: './public/res/Logo.jpg', // Local path to the image
-                            cid: 'logo' // Content ID used to reference the image in the HTML
-                        }
-                    ]
+                    attachments: attachment
                 };
                 transporter.sendMail(mailOptions, function (error, response) {
                     if (error) {
@@ -73,6 +77,7 @@ class EmailHelper {
             return false;
         }
     }
+
 }
 
 export default EmailHelper;

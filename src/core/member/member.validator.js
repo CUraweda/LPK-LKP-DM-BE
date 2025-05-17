@@ -28,7 +28,6 @@ export const memberValidator = {
     gender: Joi.valid("L", "P"),
     placeOfBirth: Joi.string(),
     dateOfBirth: Joi.date(),
-    religion: Joi.string(),
     phoneNumber: Joi.string(),
     socialHelp: Joi.string(),
     province: Joi.string(),
@@ -37,6 +36,37 @@ export const memberValidator = {
     village: Joi.string(),
     postalCode: Joi.number().integer(),
     detailedAddress: Joi.string()
+  }),
+  extend_data_ibu: Joi.object({
+    name: Joi.string(),
+    salary: Joi.number(),
+    workplace: Joi.string(),
+    placeOfBirth: Joi.string(),
+    dateOfBirth: Joi.date(),
+    phoneNumber: Joi.string()
+  }),
+  extend_data_ayah: Joi.object({
+    name: Joi.string(),
+    salary: Joi.number(),
+    workplace: Joi.string(),
+    placeOfBirth: Joi.string(),
+    dateOfBirth: Joi.date(),
+    phoneNumber: Joi.string()
+  }),
+  extend_data_wali: Joi.object({
+    parentAsGuardian: Joi.boolean().default(false),
+    name: Joi.string().optional(),
+    salary: Joi.number().optional(),
+    workplace: Joi.string().optional(),
+    placeOfBirth: Joi.string().optional(),
+    dateOfBirth: Joi.date().optional(),
+    phoneNumber: Joi.string().optional()
+  }),
+  extend_data_kursus: Joi.object({
+    trainingId: Joi.number().integer()
+  }),
+  extend_data_pembayaran: Joi.object({
+    paymentMethod: Joi.string()
   })
 };
 

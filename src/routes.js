@@ -20,6 +20,7 @@ import memberworkRouter from './core/memberwork/memberwork.router.js';
 import paymentRouter from './core/payment/payment.router.js';
 import trainingscheduleRouter from './core/trainingschedule/trainingschedule.router.js';
 import trainingenrollmentRouter from './core/trainingenrollment/trainingenrollment.router.js';
+import dashboardRouter from './core/dashboard/dashboard.router.js';
 
 const router = express.Router();
 
@@ -57,6 +58,10 @@ export const routeLists = [
         route: trainingRouter
     },
     {
+        path: '/ref/dashboard',
+        route: dashboardRouter
+    },
+    {
         path: '/training/schedule',
         route: trainingscheduleRouter
     },
@@ -73,39 +78,39 @@ export const routeLists = [
         route: userRouter
     },
     {
-        path: '/student/member',
+        path: '/member',
         route: memberRouter
     },
     {
-        path: '/student/memberattendance',
+        path: '/memberattendance',
         route: memberattendanceRouter
     },
     {
-        path: '/student/membercertificate',
+        path: '/membercertificate',
         route: membercertificateRouter
     },
     {
-        path: '/student/memberidentity',
+        path: '/memberidentity',
         route: memberidentityRouter
     },
     {
-        path: '/student/memberparent',
+        path: '/memberparent',
         route: memberparentRouter
     },
     {
-        path: '/student/membersalary',
+        path: '/membersalary',
         route: membersalaryRouter
     },
     {
-        path: '/student/membertest',
+        path: '/membertest',
         route: membertestRouter
     },
     {
-        path: '/student/membertransaction',
+        path: '/membertransaction',
         route: membertransactionRouter
     },
     {
-        path: '/student/memberwork',
+        path: '/memberwork',
         route: memberworkRouter
     },
 ];

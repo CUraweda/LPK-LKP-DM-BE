@@ -11,11 +11,14 @@ const r = Router(),
 
 r.get(
   "/show-all",
+  auth(["ADMIN"]),
   validatorMiddleware({ query: baseValidator.browseQuery }),
   controller.findAll
 );
 
-r.get("/show-one/:id", controller.findById);
+r.get("/show-one/:id", 
+  auth(["ADMIN"]),
+  controller.findById);
 
 r.post(
   "/create",
@@ -38,10 +41,40 @@ r.put(
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 r.post(
-  "/extend-user-data-siswa",
-  auth(['SISWA']),
+  "/extend-user-data-siswa/:id?",
+  auth(['SISWA', 'ADMIN']),
   validatorMiddleware({ body: validator.extend_data_siswa }),
   controller.extendDataSiswa
+)
+r.post(
+  "/extend-user-data-ibu/:id?",
+  auth(['SISWA', 'ADMIN']),
+  validatorMiddleware({ body: validator.extend_data_ibu }),
+  controller.extendDataIbu
+)
+r.post(
+  "/extend-user-data-ayah/:id?",
+  auth(['SISWA', 'ADMIN']),
+  validatorMiddleware({ body: validator.extend_data_ayah }),
+  controller.extendDataAyah
+)
+r.post(
+  "/extend-user-data-wali/:id?",
+  auth(['SISWA', 'ADMIN']),
+  validatorMiddleware({ body: validator.extend_data_wali }),
+  controller.extendDataWali
+)
+r.post(
+  "/extend-user-data-kursus/:id?",
+  auth(['SISWA', 'ADMIN']),
+  validatorMiddleware({ body: validator.extend_data_kursus }),
+  controller.extendDataTraining
+)
+r.post(
+  "/extend-user-data-pembayaran/:id?",
+  auth(['SISWA', 'ADMIN']),
+  validatorMiddleware({ body: validator.extend_data_pembayaran }),
+  controller.extendDataPembayaran
 )
 
 const memberRouter = r;
