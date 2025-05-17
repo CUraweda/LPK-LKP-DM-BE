@@ -10,7 +10,7 @@ class AuthenticationController extends BaseController {
     this.#service = new AuthenticationService();
   }
 
-  login = this.wrapper(async (req, res) => {
+login = this.wrapper(async (req, res) => {
     const data = await this.#service.login(req.body);
     return this.ok(res, data, 'Berhasil login!');
   });
