@@ -8,6 +8,7 @@ import { compare, hash } from '../../helpers/bcrypt.helper.js';
 import { generateAccessToken, generateRefreshToken, generateResetPasswordToken } from '../../helpers/jwt.helper.js';
 import base64url from 'base64url';
 import EmailHelper from '../../helpers/email.helper.js';
+import { access } from 'fs';
 
 class AuthenticationService extends BaseService {
   constructor() {
@@ -23,11 +24,14 @@ class AuthenticationService extends BaseService {
 
     const pwValid = await compare(payload.password, user.password);
     if (!pwValid) throw new BadRequest('Password tidak cocok');
-    if (!user.member.dataVerified && (user.role.code != "ADMIN")) throw new Forbidden("Pendaftaran member belum selesai | " +user.member.memberState)
-
+    
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user)
-    return { user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry', 'role']), token: { access_token, refresh_token } };
+    return { 
+      user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry', 'role']), 
+      ...((!user.member.dataVerified && (user.role.code != "ADMIN")) ? { access: false } : { access: true }),
+      token: { access_token, refresh_token },
+    };
   };
 
   refreshToken = async (refresh) => {
