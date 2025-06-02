@@ -22,15 +22,28 @@ r.post(
   // auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
-  
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
+);
+r.post(
+  "/create-admin",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.create_admin }),
+  controller.createAdmin
+);
+
+r.put(
+  "/update/:id",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
+
+r.put(
+  "/update-admin/:id",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.updateAdmin }),
+  controller.updateAdmin
+);
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const userRouter = r;

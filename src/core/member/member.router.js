@@ -15,10 +15,13 @@ r.get(
   validatorMiddleware({ query: baseValidator.browseQuery }),
   controller.findAll
 );
-
 r.get("/show-one/:id", 
   auth(["ADMIN"]),
   controller.findById);
+
+r.get("/show-me", 
+  auth(["ADMIN", "SISWA"]),
+  controller.findMe);
 
 r.post(
   "/create",

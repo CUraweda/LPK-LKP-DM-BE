@@ -1,3 +1,4 @@
+import { cp } from "fs";
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
 import { BadRequest } from "../../exceptions/catch.execption.js";
@@ -9,15 +10,16 @@ class memberattendanceService extends BaseService {
 
 
   formatMemberAttendance = (oldFormat, newData = { type: "H" }) => {
-    const index = 3
-    switch (type) {
+    let index = 3
+    console.log(oldFormat)
+    switch (newData.type) {
       case "A": index = 0; break;
       case "I": index = 1; break;
       case "S": index = 2; break;
       default: index = 3; break;
     }
     let formatedSplit = oldFormat.split("|")
-    formatedSplit[index] = +formatedSplit[index]++
+    formatedSplit[index] = +formatedSplit[index] + 1
     return formatedSplit.join("|")
   }
   findAll = async (query) => {
@@ -37,15 +39,18 @@ class memberattendanceService extends BaseService {
   };
 
   create = async (payload) => {
-    const member = await this.db.member.findById(payload.memberId)
+    payload.rawDate = new Date().toISOString()
+    payload.date = payload.rawDate.split("T")[0]
+    payload.time = payload.rawDate.split("T")[1]
+    const member = await this.db.member.findFirst({ where: { id: payload.memberId } })
     if (!member) throw new BadRequest("Relasi Member tidak ditemukan")
 
-    const data = await this.db.$transaction(async (prisma) => {
+    await this.db.$transaction(async (prisma) => {
       const createMember = await prisma.memberAttendance.create({ data: payload })
       if (!createMember) throw new BadRequest("Terjadi kesalahan saat membuat data member")
-      await prisma.member.update({ where: { id }, data: { formattedAttendance: this.formatMemberAttendance(member.formattedAttendance, payload) } })
+      await prisma.member.update({ where: { id: payload.memberId }, data: { formattedAttendance: this.formatMemberAttendance(member.formattedAttendance, payload) } })
+      return createMember;
     });
-    return data;
   };
 
   attend = async (user, payload) => {
@@ -53,14 +58,15 @@ class memberattendanceService extends BaseService {
     payload.rawDate = new Date().toISOString()
     payload.date = payload.rawDate.split("T")[0]
     payload.time = payload.rawDate.split("T")[1]
-    payload.type = "H"
 
-    const data = await this.db.$transaction(async (prisma) => {
+    await this.db.$transaction(async (prisma) => {
       const createMember = await prisma.memberAttendance.create({ data: payload })
       if (!createMember) throw new BadRequest("Terjadi kesalahan saat membuat data member")
-      await prisma.member.update({ where: { id }, data: { formattedAttendance: this.formatMemberAttendance(user.member.formattedAttendance, payload) } })
+      const formattedAttendance = this.formatMemberAttendance(user.member.formattedAttendance, payload)
+      console.log(formattedAttendance)
+      await prisma.member.update({ where: { id: createMember.memberId }, data: { formattedAttendance } })
+      return createMember;
     });
-    return data;
   };
 
   update = async (id, payload) => {

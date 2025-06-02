@@ -19,7 +19,7 @@ r.get("/show-one/:id", controller.findById);
 
 r.post(
   "/attend",
-  auth(['SISWA']),
+  auth(['SISWA', 'ADMIN']),
   validatorMiddleware({ body: validator.attend }),
   controller.attend
 );

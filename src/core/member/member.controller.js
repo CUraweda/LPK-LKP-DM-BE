@@ -22,12 +22,19 @@ class memberController extends BaseController {
     return this.ok(res, data, "member berhasil didapatkan");
   });
 
+  findMe = this.wrapper(async (req, res) => {
+    const data = await this.#service.findById(req.user.member.id);
+    if (!data) throw new NotFound("member tidak ditemukan");
+
+    return this.ok(res, data, "member berhasil didapatkan");
+  });
+
   create = this.wrapper(async (req, res) => {
     const data = await this.#service.create(req.body);
     return this.created(res, data, "member berhasil dibuat");
   });
 
-  extendDataSiswa = this.wrapper(async (req, res) => {
+extendDataSiswa = this.wrapper(async (req, res) => {
     req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
     await this.#service.extendDataSiswa(req.body);
     return this.created(res, "Data Siswa berhasil ditambahkan");

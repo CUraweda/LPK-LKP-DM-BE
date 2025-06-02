@@ -18,7 +18,7 @@ class AuthenticationService extends BaseService {
 
   login = async (payload) => {
     const user = await this.db.user.findUnique({
-      where: { email: payload.email }, include: { role: { select: { code: true } }, member: { select: { id: true, profileImage: true, dataVerified: true, memberState: true  } } }
+      where: { email: payload.email, isSuspended: false }, include: { role: { select: { code: true } }, member: { select: { id: true, profileImage: true, dataVerified: true, memberState: true  } } }
     });
     if (!user) throw new NotFound('Akun tidak ditemukan');
 
