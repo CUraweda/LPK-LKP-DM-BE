@@ -33,34 +33,29 @@ class trainingscheduleService extends BaseService {
   create = async (payload) => {
     try {
       const { trainingId, memberId, startTime, endTime, type } = payload;
-  
-      // Step 1: Create the new schedule
       const newSchedule = await this.db.trainingSchedule.create({
         data: {
           trainingId: trainingId,
           startTime: startTime,
           endTime: endTime,
           type: type,
-          status: 'AVAILABLE', // Initial status is AVAILABLE for the first user
+          status: 'AVAILABLE',
         },
       });
   
-      // Step 2: Enroll the user into the newly created schedule
       const enrollment = await this.db.trainingEnrollment.create({
         data: {
           memberId: memberId,
           scheduleId: newSchedule.id,
-          status: 'IN_PROGRESS', // Set status to IN_PROGRESS for the user
+          status: 'IN_PROGRESS',
         },
       });
   
-      // Step 3: After enrollment, change the schedule status to 'UNAVAILABLE' for other users
       await this.db.trainingSchedule.update({
         where: { id: newSchedule.id },
-        data: { status: 'UNAVAILABLE' }, // Once a user takes the schedule, make it unavailable for others
+        data: { status: 'UNAVAILABLE' },
       });
   
-      // Return the new schedule and enrollment
       const data = {
         newSchedule, enrollment
       }

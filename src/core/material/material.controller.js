@@ -23,9 +23,16 @@ class materialController extends BaseController {
   });
 
   create = this.wrapper(async (req, res) => {
-    const data = await this.#service.create(req.body);
-    return this.created(res, data, "material berhasil dibuat");
-  });
+  console.log('Text fields:', req.body);     // your form text data
+  console.log('File:', req.file);             // your uploaded file info
+
+  if (req.file) {
+    req.body.coverImage = req.file.filename; // store filename in body to save to DB
+  }
+
+  const data = await this.#service.create(req.body);
+  return this.created(res, data, "material berhasil dibuat");
+});
 
   update = this.wrapper(async (req, res) => {
     const data = await this.#service.update(req.params.id, req.body);

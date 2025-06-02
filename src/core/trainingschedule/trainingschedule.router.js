@@ -19,17 +19,17 @@ r.get("/show-one/:id", controller.findById);
 
 r.post(
   "/create",
-  // auth(['ADMIN']),
+  auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
+);
   
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
+r.put(
+  "/update/:id",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
     
 r.delete(
   "/delete/:id", 
