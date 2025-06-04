@@ -1,5 +1,5 @@
-import BaseController from "../../../../base/controller.base.js";
-import { NotFound } from "../../../../exceptions/catch.execption.js";
+import BaseController from "../../base/controller.base.js";
+import { NotFound } from "../../exceptions/catch.execption.js";
 import landingPageService from "./landingpage.service.js";
 
 class landingPageController extends BaseController {

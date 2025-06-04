@@ -1,48 +1,54 @@
-import { hash } from 'bcrypt';
 import crypto from 'crypto';
 import jwt from "jsonwebtoken";
+import { roleConstant } from '../../config/constant.js';
 import BaseService from '../../base/service.base.js';
 import prisma from '../../config/prisma.db.js';
-import { Forbidden, NotFound } from '../../exceptions/catch.execption.js';
-import { compare } from '../../helpers/bcrypt.helper.js';
-import { generateAccessToken, generateRefreshToken } from '../../helpers/jwt.helper.js';
+import { BadRequest, Forbidden, NotFound } from '../../exceptions/catch.execption.js';
+import { compare, hash } from '../../helpers/bcrypt.helper.js';
+import { generateAccessToken, generateRefreshToken, generateResetPasswordToken } from '../../helpers/jwt.helper.js';
+import base64url from 'base64url';
+import EmailHelper from '../../helpers/email.helper.js';
+import { access } from 'fs';
 
 class AuthenticationService extends BaseService {
   constructor() {
     super(prisma);
+    this.mailHelper = new EmailHelper()
   }
 
   login = async (payload) => {
-    const user = await this.db.users.findUnique({
-      where: { email: payload.email },
+    const user = await this.db.user.findUnique({
+      where: { email: payload.email }, include: { role: { select: { code: true } }, member: { select: { id: true, profileImage: true, dataVerified: true, memberState: true  } } }
     });
     if (!user) throw new NotFound('Akun tidak ditemukan');
 
     const pwValid = await compare(payload.password, user.password);
     if (!pwValid) throw new BadRequest('Password tidak cocok');
-
-    if (!user.is_verified) throw new Forbidden('Akun anda belum diverifikasi');
-
+    
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user)
-    return { user: this.exclude(user, ['password', 'apiToken', 'isVerified']), token: { access_token, refresh_token } };
+    return { 
+      user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry', 'role']), 
+      ...((!user.member.dataVerified && (user.role.code != "ADMIN")) ? { access: false } : { access: true }),
+      token: { access_token, refresh_token },
+    };
   };
 
   refreshToken = async (refresh) => {
     const payload = jwt.decode(refresh);
 
-    const user = await this.db.users.findUnique({
+    const user = await this.db.user.findUnique({
       where: { email: payload.email },
     });
     if (!user) throw new NotFound('Akun tidak ditemukan');
 
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user)
-    return { user: this.exclude(user, ['password', 'apiToken', 'isVerified']), token: { access_token, refresh_token } };
+    return { user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry', 'role']), token: { access_token, refresh_token } };
   };
 
   findUserById = async (id) => {
-    const data = await this.db.users.findUnique({
+    const data = await this.db.user.findUnique({
       where: { id }
     });
     return this.exclude(data, ['password']);
@@ -52,202 +58,70 @@ class AuthenticationService extends BaseService {
     const { email, password } = payload;
 
     return this.db.$transaction(async (prisma) => {
-      const findStudent = await prisma.roles.findFirst({
-        where: { is_student: true }
+      const findRole = await prisma.role.findFirst({
+        where: { identifier: roleConstant.STUDENT_CODE }
       });
-
-      if (!findStudent) throw new NotFound('Tidak ada role siswa')
-
-      const initUser = await prisma.users.create({
-        data: {
-          role_id: findStudent.id
-        }
-      });
-
-      const existing = await prisma.users.findUnique({ where: { email } });
+      if (!findRole) throw new NotFound('Tidak ada role siswa')
+      const existing = await prisma.user.findUnique({ where: { email } });
       if (existing) throw new Forbidden('Akun dengan email telah digunakan');
 
-      const createdUser = await prisma.users.update({
-        where: {
-          id: initUser.id
-        },
-        data: {
-          email,
-          password: await hash(password, 10),
-        },
+      const createdUser = await prisma.user.create({
+        data: { roleId: findRole.id, email, password: await hash(password) }
       });
 
-      await prisma.userMothers.create({
-        data: {
-          user_id: createdUser.id
-        }
-      });
-      await prisma.userFathers.create({
-        data: {
-          user_id: createdUser.id
-        }
-      });
-      await prisma.userGuardians.create({
-        data: {
-          user_id: createdUser.id
-        }
-      });
-      await prisma.userCourses.create({
-        data: {
-          user_id: createdUser.id
-        }
-      });
-      await prisma.userPayments.create({
-        data: {
-          user_id: createdUser.id
-        }
-      });
+      const access_token = await generateAccessToken(createdUser);
+      const refresh_token = await generateRefreshToken(createdUser)
+      return { user: this.exclude(createdUser, ['password', 'forgetToken', 'forgetExpiry', 'role']), token: { access_token, refresh_token } };
 
-      return createdUser;
     });
   };
 
-  asignStudent = async (user_id, payload) => {
-    return await this.db.$transaction(async (prisma) => {
-      const data = await this.db.users.update({
-        where: {
-          id: user_id,
-        },
-        data: payload
-      });
+  forgotPassword = async (payload) => {
+    const user = await this.db.user.findUnique({ where: { email: payload.email }, include: { member: true } })
+    if (!user) throw new BadRequest("Akun tidak ditemukan")
+    const forgetToken = await generateResetPasswordToken(user.id);
+    const forgetExpiry = new Date();
+    forgetExpiry.setHours(forgetExpiry.getHours() + 1 - forgetExpiry.getTimezoneOffset() / 60);
 
-      return data;
-    })
-  };
+    await this.db.user.update({ where: { id: user.id }, data: { forgetToken, forgetExpiry } })
 
-  asignMother = async (user_id, payload) => {
-    return await this.db.$transaction(async (prisma) => {
-      const data = await this.db.userMothers.update({
-        where: {
-          user_id,
-        },
-        data: payload
-      });
+    const encryptedToken = base64url.encode(forgetToken)
+    const url = `${process.env.LPK_URL}/reset-password/${encryptedToken}`
 
-      return data;
-    })
-  };
-
-  asignFather = async (user_id, payload) => {
-    return await this.db.$transaction(async (prisma) => {
-      const data = await prisma.userFathers.update({
-        where: {
-          user_id: parseInt(user_id),
-        },
-        data: payload
-      });
-
-      return data;
-    })
-  };
-
-  asignGuardian = async (user_id, payload) => {
-    const { is_parent_date } = payload;
-
-    return await this.db.$transaction(async (prisma) => {
-      const rawMother = await prisma.userMothers.findUnique({
-        where: {
-          user_id
-        }
-      })
-
-      if (!rawMother.name || !rawMother.job || !rawMother.income || !rawMother.birth_place || !rawMother.birth_date || !rawMother.religion || !rawMother.phone) {
-        throw new Forbidden('Anda belum mengisi Data Ibu')
+    this.mailHelper.sendEmail(
+      { url },
+      payload.email,
+      "LPK | Konfirmasi Lupa Password",
+      "./src/email/views/reset_password.html",
+      {
+        member_name: user.member.name,
+        
       }
+      ["./src/email/assets/Logo.jpg"]
+    );
 
-      if (!is_parent_date) {
-        await prisma.userGuardians.update({
-          where: {
-            user_id
-          },
-          data: {
-            is_parent_date,
-            name: null,
-            job: null,
-            income: null,
-            birth_place: null,
-            birth_date: null,
-            religion: null,
-            phone: null,
-          }
-        });
-      }
+    return "Email Lupa Password berhail terkirim, mohon tunggu!"
+  }
 
-      const motherData = this.exclude(rawMother, ['id']);
+  resetPassword = async (payload) => {
+    const encodedToken = payload.encoded_email;
+    const forgetToken = base64url.decode(encodedToken);
+    const decoded = jwt.decode(forgetToken);
+    const user = await this.db.user.findFirst({ where: { forgetToken, id: decoded.uid } });
+    if (!user || user.forgetExpiry < new Date()) throw new BadRequest("Token kadaluwaras atau tidak valid");
 
-      const data = await prisma.userGuardians.update({
-        where: {
-          user_id,
-        },
-        data: is_parent_date
-          ? {
-            is_parent_date,
-            ...motherData,
-          }
-          : payload
-      })
-
-      return data;
+    const hashedPassword = await hash(payload.new_password)
+    await this.db.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        forgetToken: null,
+        forgetExpiry: null,
+      },
     });
+
+    return 'Password berhasil diupdate! Mohon login kembali'
   }
-
-  asignCourse = async (user_id, payload) => {
-    const { name, level } = payload;
-
-    return await this.db.$transaction(async (prisma) => {
-      const course = await prisma.courses.findFirstOrThrow({
-        where: {
-          name,
-          level
-        }
-      })
-
-      if (!course) throw new NotFound('Pelatihan tidak ditemukan');
-
-      const data = await prisma.userCourses.update({
-        where: {
-          user_id
-        },
-        data: {
-          course_id: course.id,
-        }
-      });
-
-      return data;
-    })
-  }
-
-  asignPayment = async (user_id, payload) => {
-    return await this.db.$transaction(async (prisma) => {
-      const data = await prisma.userPayments.update({
-        where: {
-          user_id
-        },
-        data: payload
-      });
-
-      return data;
-    })
-  }
-
-  generateToken = async (id) => {
-    const userData = await prisma.users.findFirst({
-      where: { id },
-    });
-    if (!userData.apiToken) {
-      const apiToken = crypto.randomBytes(32).toString('hex');
-      const user = await prisma.users.update({
-        where: { id },
-        data: { apiToken },
-      });
-      return { apiToken: user.apiToken };
-    } else return { apiToken: userData.apiToken };
-  };
 }
 
 export default AuthenticationService;

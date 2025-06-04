@@ -1,0 +1,63 @@
+name: Deploy Node.js App with Prisma to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: Install SSH and SSHPass
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sshpass openssh-client rsync
+
+    - name: Sync Files to VPS (exclude .env and uploads folder)
+      run: |
+        sshpass -p "${{ secrets.VPS_PASSWORD_PROD }}" rsync -avz --delete --exclude '.env' --exclude 'uploads/' -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT_PROD }}" ./ ${{ secrets.VPS_USER_PROD }}@${{ secrets.VPS_HOST_PROD }}:/root/production/kometa
+
+    - name: Install Node.js, Verify npx, and Run Prisma Migrations
+      run: |
+        sshpass -p "${{ secrets.VPS_PASSWORD_PROD }}" ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT_PROD }} ${{ secrets.VPS_USER_PROD }}@${{ secrets.VPS_HOST_PROD }} << 'EOF'
+          # Pastikan NVM terinstal
+          export NVM_DIR="$HOME/.nvm"
+          if [ ! -d "$NVM_DIR" ]; then
+            echo "NVM not found, installing..."
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+            . "$NVM_DIR/nvm.sh"
+          fi
+
+          # Gunakan Node.js versi 20
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm install 20
+          nvm use 20
+          echo "Node.js version:"
+          node -v
+          echo "npm version:"
+          npm -v
+
+          # Pastikan npx dapat diakses
+          export PATH=$PATH:$HOME/.npm-global/bin
+
+          # Masuk ke direktori aplikasi
+          cd /root/production/kometa
+
+          # Install Dependecies
+          npm install
+
+          # Ambil nama migrasi terakhir
+          latest_migration=$(ls -t prisma/migrations | head -n 1)
+          echo "Applying migration: $latest_migration"
+
+          # Tandai migrasi terakhir sebagai sudah diterapkan
+          npx prisma migrate resolve --applied "$latest_migration"
+
+          # Jalankan semua migrasi
+          npx prisma migrate deploy
+        EOF

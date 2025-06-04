@@ -3,3 +3,8 @@ node_modules
 .env
 auth_info
 ./prisma/interfaces/*
+prisma/generator/
+prisma/migrations/
+uploads
+package-lock.json
+git-dp.sh

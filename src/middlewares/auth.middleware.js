@@ -40,9 +40,9 @@ export default function auth(roles) {
       }
 
       // Cari user berdasarkan decoded token
-      const user = await prisma.users.findFirst({
+      const user = await prisma.user.findFirst({
         where: { id: decoded.userId },
-        include: { role: true } // Ambil relasi roles
+        include: { role: true, member: true } // Ambil relasi roles
       });
 
       if (!user) {
@@ -57,8 +57,8 @@ export default function auth(roles) {
 
       // Jika parameter roles disediakan, periksa apakah user memiliki role yang sesuai
       if (roles && roles.length > 0) {
-        const userRoleCodes = user.role.map(role => role.code);
-        const hasAccess = roles.some(allowedRole => userRoleCodes.includes(allowedRole));
+        const userRoleCodes = user.role.code
+        const hasAccess = roles.some(allowedRole => userRoleCodes == allowedRole);
         if (!hasAccess) {
           return next(
             new ApiError(

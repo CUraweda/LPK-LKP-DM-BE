@@ -22,47 +22,21 @@ r.post(
 
 r.post(
   '/register',
-  validatorMiddleware({ body: validator.register }),
+validatorMiddleware({ body: validator.register }),
   controller.register
 );
 
 r.post(
-  '/asign-student/:id',
-  validatorMiddleware({ body: validator.asignStudent }),
-  controller.asignStudent
-);
-
-r.post(
-  '/asign-mother/:id',
-  validatorMiddleware({ body: validator.asignMotherAndFather }),
-  controller.asignMother
-);
-
-r.post(
-  '/asign-father/:id',
-  validatorMiddleware({ body: validator.asignMotherAndFather }),
-  controller.asignFather
-);
-
-r.post(
-  '/asign-guardian/:id',
-  validatorMiddleware({ body: validator.asignGuardian }),
-  controller.asignGuardian
-);
-
-r.post(
-  '/asign-course/:id',
-  validatorMiddleware({ body: validator.asignCourse }),
-  controller.asignCourse
-);
-
-r.post(
-  '/asign-payment/:id',
-  validatorMiddleware({ body: validator.asignCourse }),
-  controller.asignPayment
-);
-
-r.get('/generate-token', auth(), controller.generateToken);
+  '/forgot-pass',
+  validatorMiddleware({ body: validator.forgotPassword }),
+  controller.forgotPassword
+)
+r.put(
+  "/reset-pass",
+  validatorMiddleware({ body: validator.resetPass }),
+  controller.resetPassword
+)
 
 const authenticationRouter = r;
 export default authenticationRouter;
+
