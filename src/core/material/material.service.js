@@ -23,7 +23,11 @@ class materialService extends BaseService {
   };
 
   create = async (payload) => {
-    const data = await this.db.material.create({ data: payload });
+    const convertId = Number(payload.trainingId);
+    const data = await this.db.material.create({ 
+      data: { ...payload,
+      trainingId: convertId }
+    });
     return data;
   };
 
