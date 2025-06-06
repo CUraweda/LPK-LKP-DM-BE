@@ -21,6 +21,13 @@ class trainingscheduleController extends BaseController {
 
     return this.ok(res, data, "trainingschedule berhasil didapatkan");
   });
+  
+  findByMember = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByMember(req.params.id);
+    if (!data) throw new NotFound("trainingschedule tidak ditemukan");
+
+    return this.ok(res, data, "trainingschedule berhasil didapatkan");
+  });
 
   create = this.wrapper(async (req, res) => {
     const data = await this.#service.create(req.body);

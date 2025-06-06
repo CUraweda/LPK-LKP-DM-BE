@@ -30,6 +30,23 @@ class trainingscheduleService extends BaseService {
     return data;
   };
 
+  findByMember = async (id) => {
+    const intId = Number(id);
+    const data = await this.db.trainingSchedule.findMany({
+      where: {
+        enrollments: {
+          some: {
+            memberId: intId
+          }
+        }
+      },
+      include: {
+        enrollments: true,
+      }
+    });
+    return data;
+  }
+
   create = async (payload) => {
     try {
       const { trainingId, memberId, startTime, endTime, type } = payload;
@@ -41,26 +58,23 @@ class trainingscheduleService extends BaseService {
           startTime: startTime,
           endTime: endTime,
           type: type,
-          status: 'AVAILABLE', // Initial status is AVAILABLE for the first user
+          status: 'AVAILABLE',
         },
       });
   
-      // Step 2: Enroll the user into the newly created schedule
       const enrollment = await this.db.trainingEnrollment.create({
         data: {
           memberId: memberId,
           scheduleId: newSchedule.id,
-          status: 'IN_PROGRESS', // Set status to IN_PROGRESS for the user
+          status: 'BOOKED',
         },
       });
   
-      // Step 3: After enrollment, change the schedule status to 'UNAVAILABLE' for other users
       await this.db.trainingSchedule.update({
         where: { id: newSchedule.id },
-        data: { status: 'UNAVAILABLE' }, // Once a user takes the schedule, make it unavailable for others
+        data: { status: 'UNAVAILABLE' },
       });
   
-      // Return the new schedule and enrollment
       const data = {
         newSchedule, enrollment
       }
