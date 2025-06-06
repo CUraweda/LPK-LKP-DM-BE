@@ -23,8 +23,23 @@ class materialController extends BaseController {
   });
 
   create = this.wrapper(async (req, res) => {
-    const data = await this.#service.create(req.body);
-    return this.created(res, data, "material berhasil dibuat");
+    console.log(req.files)
+    const coverImage = req.files?.coverImage?.[0];
+    const filePdf = req.files?.filePdf?.[0];
+
+    if (!coverImage || !filePdf) {
+      throw new Error('Gambar atau file PDF tidak ditemukan');
+    }
+
+    const payload = {
+      ...req.body,
+      coverImage: `/uploads/materials/${coverImage.filename}`,
+      link: `/uploads/materials/${filePdf.filename}`,
+      size: (filePdf.size / 1024).toFixed(2) + ' KB'
+    };
+
+    const data = await this.#service.create(payload);
+    return this.created(res, data, "Material berhasil dibuat");
   });
 
   update = this.wrapper(async (req, res) => {
