@@ -22,8 +22,8 @@ r.post(
 
 r.post(
   '/register',
-validatorMiddleware({ body: validator.register }),
-controller.register
+  validatorMiddleware({ body: validator.register }),
+  controller.register
 );
 
 r.post(

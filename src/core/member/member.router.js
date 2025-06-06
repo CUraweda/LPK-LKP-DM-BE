@@ -4,6 +4,7 @@ import memberController from "./member.controller.js";
 import memberValidator from "./member.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
+import uploader from "../../middlewares/multer.middleware.js";
 
 const r = Router(),
   validator = memberValidator,
@@ -46,6 +47,7 @@ r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 r.post(
   "/extend-user-data-siswa/:id?",
   auth(['SISWA', 'ADMIN']),
+  uploader("/member", "image", "PP").single("profilePict"),
   validatorMiddleware({ body: validator.extend_data_siswa }),
   controller.extendDataSiswa
 )

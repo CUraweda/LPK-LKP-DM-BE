@@ -78,7 +78,7 @@ export class PaymentHelper {
     _checkMethod(method, usage) {
         if (method === "QRIS") {
             return this.pCurawedaUrl.qris[usage] || false
-        } else if (method === "VA") {
+        } else if ( method.includes("VA")) {
             return this.pCurawedaUrl.va[usage] || false
         } else return false
     }
@@ -98,22 +98,25 @@ export class PaymentHelper {
         const { val, name } = method
         switch (name) {
             case "qris-create":
-                body['username'] = body.username,
-                body['email'] = body.email,
+                body['username'] = body.username
+                body['email'] = body.email
                 body['amount'] = body.transaction.paymentTotal.toString()
+                body['paymentType'] = body.paymentMethod
                 body['productType'] = body.paymentMethod
                 body['productInfo'] = { id: this.#lpkPCODE.code, name: this.#lpkPCODE.name, type: `${this.#lpkPCODE.name}|${this.#lpkPCODE.name}|${this.#lpkPCODE.code}`, quantity: 1 }
                 body['productName'] = `${this.#lpkPCODE.name}|${this.#lpkPCODE.name}|${this.#lpkPCODE.code}`
                 break
-                case "va-create":
-                body['username'] = body.name,
-                body['email'] = body.email,
+            case "va-create":
+                body['username'] = body.username
+                body['email'] = body.email
+                body['payer'] = body.username
                 body['amount'] = body.transaction.paymentTotal.toString()
+                body['paymentType'] = body.paymentMethod
                 body['productType'] = body.paymentMethod
                 body['productInfo'] = { id: this.#lpkPCODE.code, name: this.#lpkPCODE.name, type: `${this.#lpkPCODE.name}|${this.#lpkPCODE.name}|${this.#lpkPCODE.code}`, quantity: 1 }
                 body['productName'] = `${this.#lpkPCODE.name}|${this.#lpkPCODE.name}|${this.#lpkPCODE.code}`
                 break
-            }
+        }
         const options = { abortEarly: false, allowUnknown: true, stripUnknown: true, };
         try {
             return await val.validateAsync(body, options)
@@ -127,10 +130,8 @@ export class PaymentHelper {
     async create(body) {
         const method = this._checkMethod(body.paymentMethod, "create")
         if (!method) throw new BadRequest("Invalid Payment Method")
-
-        body['appUrl'] = `${this.#bUrl}/api/payment/notify/${this._encryptTID(body.transactionId)}`
+        body['appUrl'] = `${this.#bUrl}/api/v1/payment/notify/${this._encryptTID(body.transaction.transactionId)}`
         body = await this._formatBody(method, body)
-
         return await axios.post(`${this.#pUrl}/${method.path}`, body, { httpsAgent: this.#httpsAgent }).then((res) => {
             res.data['expiredDate'] = this._parseDate(res.data)
             return res.data

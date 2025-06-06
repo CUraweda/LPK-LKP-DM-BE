@@ -36,6 +36,8 @@ class memberController extends BaseController {
 
 extendDataSiswa = this.wrapper(async (req, res) => {
     req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
+    if(!req.file) this.BadRequest(res, "Foto siswa harus disertakan")
+    req.body["profileImage"] = req.file.path
     await this.#service.extendDataSiswa(req.body);
     return this.created(res, "Data Siswa berhasil ditambahkan");
   });
@@ -61,12 +63,12 @@ extendDataSiswa = this.wrapper(async (req, res) => {
   extendDataTraining  = this.wrapper(async (req, res) => {
     req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
     await this.#service.extendDataTraining(req.body);
-    return this.created(res, data, "Data Kursus berhasil ditambahkan");
+    return this.created(res, "Data Kursus berhasil ditambahkan");
   });
   
   extendDataPembayaran  = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
-    await this.#service.extendDataPembayaran(req.body);
+    req.body['user'] = req.user
+    const data = await this.#service.extendDataPembayaran(req.body);
     return this.created(res, data, "Data Pembayaran berhasil ditambahkan");
   });
 

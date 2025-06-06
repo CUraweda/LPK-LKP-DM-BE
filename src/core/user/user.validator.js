@@ -24,7 +24,7 @@ export const userValidator = {
     memberId: Joi.number().integer(),
     roleId: Joi.number().integer()
   }),
-  
+   
   updateAdmin: Joi.object({
     name: Joi.string(),
     isSuspended: Joi.boolean().default(false),

@@ -21,6 +21,7 @@ import paymentRouter from './core/payment/payment.router.js';
 import trainingscheduleRouter from './core/trainingschedule/trainingschedule.router.js';
 import trainingenrollmentRouter from './core/trainingenrollment/trainingenrollment.router.js';
 import dashboardRouter from './core/dashboard/dashboard.router.js';
+import trainingcategoryRouter from './core/trainingcategory/trainingcategory.router.js'
 
 const router = express.Router();
 
@@ -68,6 +69,10 @@ export const routeLists = [
     {
         path: '/training',
         route: trainingenrollmentRouter
+    },
+    {
+        path: '/ref/training-category',
+        route: trainingcategoryRouter
     },
     {
         path: '/ref/transaction',

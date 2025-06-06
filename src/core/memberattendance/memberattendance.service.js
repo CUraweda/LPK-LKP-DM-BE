@@ -11,7 +11,6 @@ class memberattendanceService extends BaseService {
 
   formatMemberAttendance = (oldFormat, newData = { type: "H" }) => {
     let index = 3
-    console.log(oldFormat)
     switch (newData.type) {
       case "A": index = 0; break;
       case "I": index = 1; break;
@@ -63,7 +62,6 @@ class memberattendanceService extends BaseService {
       const createMember = await prisma.memberAttendance.create({ data: payload })
       if (!createMember) throw new BadRequest("Terjadi kesalahan saat membuat data member")
       const formattedAttendance = this.formatMemberAttendance(user.member.formattedAttendance, payload)
-      console.log(formattedAttendance)
       await prisma.member.update({ where: { id: createMember.memberId }, data: { formattedAttendance } })
       return createMember;
     });
