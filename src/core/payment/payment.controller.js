@@ -10,49 +10,24 @@ class paymentController extends BaseController {
         this.#service = new paymentService();
     }
     
-    findAll = this.wrapper(async (req, res) => {
-        const data = await this.#service.findAll(req.query);
-        return this.ok(res, data, 'Banyak paymentHistory berhasil didapatkan');
-    });
-    
-    findRecapStatus = this.wrapper(async (req, res) => {
-        const data = await this.#service.findRecapStatus();
-        return this.ok(res, data, 'Banyak paymentHistory berhasil didapatkan');
-    });
+    findMe = this.wrapper(async (req, res) => {
+        const data = await this.#service.findMe(req.user)
+        if (!data) throw new NotFound('Pembayaran tidak ditemukan');
 
-
-    findById = this.wrapper(async (req, res) => {
-        const data = await this.#service.findById(req.params.id);
-        if (!data) throw new NotFound('paymentHistory tidak ditemukan');
-
-        return this.ok(res, data, 'paymentHistory berhasil didapatkan');
+        return this.ok(res, data, 'Pembayaran berhasil didapatkan');
     });
 
     notify = this.wrapper(async (req, res) => {
         const data = await this.#service.notifyPayment(req.params.id, { 
         status: req.headers['x-status']
         });
-        return this.created(res, data, 'paymentHistory berhasil dibuat');
-    });
-
-    create = this.wrapper(async (req, res) => {
-        const data = await this.#service.create(req.body);
-        return this.created(res, data, 'paymentHistory berhasil dibuat');
+        return this.created(res, data, 'Pembayaran berhasil dibuat');
     });
 
     createPayment = this.wrapper(async (req, res) => {
+        req.body['user'] = req.user
         const data = await this.#service.createPayment(req.body);
-        return this.created(res, data, 'paymentHistory berhasil dibuat');
-    });
-
-    update = this.wrapper(async (req, res) => {
-        const data = await this.#service.update(req.params.id, req.body);
-        return this.ok(res, data, 'paymentHistory berhasil diperbarui');
-    });
-
-    delete = this.wrapper(async (req, res) => {
-        const data = await this.#service.delete(req.params.id);
-        return this.noContent(res, 'paymentHistory berhasil dihapus');
+        return this.created(res, data, 'Pembayaran berhasil dibuat');
     });
 }
 

@@ -18,7 +18,7 @@ class AuthenticationService extends BaseService {
 
   login = async (payload) => {
     const user = await this.db.user.findUnique({
-      where: { email: payload.email }, include: { role: { select: { code: true } }, member: { select: { id: true, profileImage: true, dataVerified: true, memberState: true  } } }
+      where: { email: payload.email, isSuspended: false }, include: { role: { select: { code: true } }, member: { select: { id: true, profileImage: true, dataVerified: true, memberState: true  } } }
     });
     if (!user) throw new NotFound('Akun tidak ditemukan');
 
@@ -86,18 +86,14 @@ class AuthenticationService extends BaseService {
     await this.db.user.update({ where: { id: user.id }, data: { forgetToken, forgetExpiry } })
 
     const encryptedToken = base64url.encode(forgetToken)
-    const url = `${process.env.LPK_URL}/reset-password/${encryptedToken}`
+    const url = `${process.env.FRONTEND_URL}/reset-password/${encryptedToken}`
 
     this.mailHelper.sendEmail(
-      { url },
+      { RESET_URL: url, USER_NAME: user.member.name },
       payload.email,
       "LPK | Konfirmasi Lupa Password",
       "./src/email/views/reset_password.html",
-      {
-        member_name: user.member.name,
-        
-      }
-      ["./src/email/assets/Logo.jpg"]
+      ["public/private/logo_lpk.png"]
     );
 
     return "Email Lupa Password berhail terkirim, mohon tunggu!"

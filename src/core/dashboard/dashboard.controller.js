@@ -15,25 +15,32 @@ class dashboardController extends BaseController {
     return this.ok(res, data, "Banyak dashboard berhasil didapatkan");
   });
 
+  findArrange = this.wrapper(async (req, res) => {
+    const data = await this.#service.findArrange();
+    return this.ok(res, data, "Banyak dashboard berhasil didapatkan");
+  });
+
   findById = this.wrapper(async (req, res) => {
-    const data = await this.#service.findById(req.params.id);
+    const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("dashboard tidak ditemukan");
 
     return this.ok(res, data, "dashboard berhasil didapatkan");
   });
 
   create = this.wrapper(async (req, res) => {
+    if(req.file) req.body['image'] =  req.file.path
     const data = await this.#service.create(req.body);
     return this.created(res, data, "dashboard berhasil dibuat");
   });
-
+  
   update = this.wrapper(async (req, res) => {
-    const data = await this.#service.update(req.params.id, req.body);
+    if(req.file) req.body['image'] =  req.file.path 
+    const data = await this.#service.update(+req.params.id, req.body);
     return this.ok(res, data, "dashboard berhasil diperbarui");
   });
 
   delete = this.wrapper(async (req, res) => {
-    const data = await this.#service.delete(req.params.id);
+    const data = await this.#service.delete(+req.params.id);
     return this.noContent(res, "dashboard berhasil dihapus");
   });
 }

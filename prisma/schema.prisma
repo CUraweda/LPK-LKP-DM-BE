@@ -110,6 +110,7 @@ model User {
   roleId       Int
   forgetToken  String?   @db.Text
   forgetExpiry DateTime?
+  isSuspended  Boolean   @default(false)
 
   employee      Employee?
   member        Member?   @relation(fields: [memberId], references: [id])
@@ -150,7 +151,7 @@ model Transaction {
   status           String
   purpose          String
   transactionId    String    @unique
-  isPaid           Boolean
+  isPaid           Boolean   @default(false)
   paymentMethod    String?
   paymentTotal     Float
   paymentDate      DateTime?
@@ -175,12 +176,13 @@ model Training {
   description         String
   trainingImage       String
   type                TrainingType
-  category            String
+  categoryId          Int
   totalParticipants   Int
   totalCourses        Int
   totalHours          Int
   targetTrainingHours Int
 
+  trainingCategory TrainingCategory   @relation(fields: [categoryId], references: [id])
   materials        Material[]
   memberCourses    MemberCourse[]
   exams            Exam[]
@@ -190,12 +192,20 @@ model Training {
   @@map("training")
 }
 
+model TrainingCategory {
+  id       Int        @id @default(autoincrement())
+  title    String
+  image    String?
+  Training Training[]
+  Member   Member[]
+}
+
 model Dashboard {
   id               Int              @id @default(autoincrement())
   sectionID        dashboardSection
   sectionName      String
   uid              String           @unique
-  is_title         Boolean          @default(false)
+  isTitle          Boolean          @default(false)
   image            String?
   title            String?
   description      String?          @db.Text
@@ -266,17 +276,17 @@ model Material {
 
 model Chat {
   id         Int      @id @default(autoincrement())
-  senderId   Int
+  senderId   Int?
   receiverId Int
-  message    String
-  imageLink  String
-  fileSize   String
-  fileLink   String
+  message    String?
+  imageLink  String?
+  fileSize   String?
+  fileLink   String?
   sentAt     DateTime
   type       ChatType
 
-  sender   User @relation("ChatSender", fields: [senderId], references: [id])
-  receiver User @relation("ChatReceiver", fields: [receiverId], references: [id])
+  sender   User? @relation("ChatSender", fields: [senderId], references: [id])
+  receiver User  @relation("ChatReceiver", fields: [receiverId], references: [id])
 
   @@map("chats")
 }
@@ -295,22 +305,25 @@ model Member {
   formattedAttendance String?     @default("0|0|0|0") //?Formated: Alpha|Izin|Sakit|Hadir
   firstAttendanceDate DateTime?
   currentCourseId     Int?
+  courseCategoryId    Int?
+  courseLevel         Int         @default(0)
   dataVerified        Boolean     @default(false)
   verifiedAt          DateTime?
   createdAt           DateTime?
   memberState         memberState @default(DS)
 
-  identity     MemberIdentity?
-  careers      MemberWork[]
-  enrollment   TrainingEnrollment[]
-  transaction  Transaction[]
-  parents      MemberParent[]
-  attendances  MemberAttendance[]
-  salarys      MemberSalary[]
-  tests        MemberTest[]
-  transactions MemberTransaction[]
-  courses      MemberCourse[]       @relation(name: "MemberToCourses")
-  User         User?
+  identity       MemberIdentity?
+  careers        MemberWork[]
+  enrollment     TrainingEnrollment[]
+  transaction    Transaction[]
+  parents        MemberParent[]
+  attendances    MemberAttendance[]
+  salarys        MemberSalary[]
+  tests          MemberTest[]
+  transactions   MemberTransaction[]
+  courseCategory TrainingCategory?    @relation(fields: [courseCategoryId], references: [id])
+  courses        MemberCourse[]       @relation(name: "MemberToCourses")
+  User           User?
 
   @@map("member")
 }
@@ -318,7 +331,7 @@ model Member {
 model MemberTransaction {
   id            Int      @id @default(autoincrement())
   memberId      Int
-  isSuccess     Boolean
+  isSuccess     Boolean  @default(false)
   paymentTotal  Float
   transactionId Int
   paymentDate   DateTime
@@ -397,12 +410,12 @@ model MemberTest {
 model MemberAttendance {
   id              Int            @id @default(autoincrement())
   memberId        Int
-  date            DateTime
-  time            DateTime
+  date            String
+  time            String
   rawDate         DateTime
-  attendanceImage String
-  location        String
-  description     String
+  attendanceImage String?
+  location        String?
+  description     String?
   type            AttendanceType
 
   member Member @relation(fields: [memberId], references: [id])
@@ -449,7 +462,7 @@ model MemberIdentity {
 
 model MemberParent {
   id           Int              @id @default(autoincrement())
-  uid          String           @unique 
+  uid          String           @unique
   name         String
   relation     ParentIdentifier
   workplace    String

@@ -2,10 +2,12 @@ import BaseService from "../../base/service.base.js";
 import memberConstant from "../../config/member.js";
 import prisma from '../../config/prisma.db.js';
 import { BadRequest } from "../../exceptions/catch.execption.js";
+import paymentService from "../payment/payment.service.js";
 
 class memberService extends BaseService {
   constructor() {
     super(prisma);
+    this.paymentService = new paymentService()
   }
 
   findAll = async (query) => {
@@ -47,9 +49,9 @@ class memberService extends BaseService {
   extendDataSiswa = async (payload) => {
     const id = payload.memberId
     return await this.db.$transaction(async (prisma) => {
-      const { name, ...data } = payload
+      const { name, profileImage, ...data } = payload
       await prisma.memberIdentity.upsert({ where: { memberId: id }, create: data, update: data })
-      await prisma.member.update({ where: { id }, data: { name, memberState: memberConstant.memberState.Data_Ibu } })
+      await prisma.member.update({ where: { id }, data: { name, memberState: memberConstant.memberState.Data_Ibu, profileImage } })
     })
   }
 
@@ -66,22 +68,22 @@ class memberService extends BaseService {
       await prisma.member.update({ where: { id }, data: { memberState: memberConstant.memberState.Data_Ayah } })
     })
   }
-  
+
   extendDataAyah = async (payload) => {
     const id = payload.memberId
     const uid = this.formatUIDParent(id, "A")
     payload['uid'] = uid
     return await this.db.$transaction(async (prisma) => {
-      await prisma.memberParent.upsert({ where: { memberId: id, uid, relation: "A" }, create: { ...payload, relation: "A" }, update: { ...payload, relation: "A" }  })
+      await prisma.memberParent.upsert({ where: { memberId: id, uid, relation: "A" }, create: { ...payload, relation: "A" }, update: { ...payload, relation: "A" } })
       await prisma.member.update({ where: { id }, data: { memberState: memberConstant.memberState.Data_Wali } })
     })
   }
-  
+
   extendDataWali = async (payload) => {
     const id = payload.memberId
     const uid = this.formatUIDParent(id, "W")
     payload['uid'] = uid
-    if(payload.parentAsGuardian) return await this.db.$transaction(async (prisma) => {
+    if (payload.parentAsGuardian) return await this.db.$transaction(async (prisma) => {
       await prisma.memberIdentity.update({ where: { memberId: id }, data: { isParentGuardian: true } })
       await prisma.member.update({ where: { id }, data: { memberState: memberConstant.memberState.Pilih_Kursus } })
     })
@@ -95,18 +97,16 @@ class memberService extends BaseService {
   extendDataTraining = async (payload) => {
     const id = payload.memberId
     return await this.db.$transaction(async (prisma) => {
-      const trainingData = await prisma.training.findFirst({ where: { id: payload.trainingId } })
-      if(!trainingData) throw new BadRequest("Data Training tidak ditemukan")
-      await prisma.memberCourse.update({ where: { memberId: id }, data: { memberId: id, trainingId: trainingData.id, status: "Sedang" } })
-      await prisma.member.update({where: { id }, data: { currentCourseId: payload.trainingId, totalCoursePrice: "2000000", totalCourses: 1 } })
+      const categoryData = await prisma.trainingCategory.findFirst({ where: { id: payload.trainingId } })
+      if (!categoryData) throw new BadRequest("Data Kategori tidak ditemukan")
+      return await prisma.member.update({ where: { id }, data: { courseCategoryId: payload.courseCategoryId,  totalCoursePrice: 2000000, totalCourses: 1, courseLevel: payload.courseLevel } })
     })
   }
 
-  extendDataPembayaran = async(payload) => {
-    const id = payload.memberId
-    return await this.db.$transaction(async (prisma) => {
-      await prisma.memberTransaction.create({ data: { memberId: id, paymentTotal: user.member.totalCousePrice, } })
-    })
+  extendDataPembayaran = async (payload) => {
+    const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000,  purpose: "Pendaftaran", status: "Tunda"})
+    const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, ...rest } = createdPayment
+    return { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }
   }
 }
 
