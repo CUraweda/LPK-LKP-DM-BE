@@ -4,10 +4,10 @@ export const trainingenrollmentValidator = {
   create: Joi.object({
     memberId: Joi.number().required(),
     scheduleId: Joi.number().required(),
-    status: Joi.string().valid('Available','Unavailable', 'In_Progress', 'Completed').required()
+    status: Joi.string().valid('BOOKED', 'IN_PROGRESS', 'COMPLETED').required()
   }),
   update: Joi.object({
-    status: Joi.string().valid('Available','Unavailable', 'In_Progress', 'Completed').required(),
+    status: Joi.string().valid('BOOKED', 'IN_PROGRESS', 'COMPLETED').required()
   }),
 };
 

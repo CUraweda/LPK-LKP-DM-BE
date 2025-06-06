@@ -7,3 +7,4 @@ prisma/generator/
 prisma/migrations/
 uploads
 package-lock.json
+git-dp.sh
