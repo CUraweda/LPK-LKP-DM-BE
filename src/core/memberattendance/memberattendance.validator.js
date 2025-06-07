@@ -9,8 +9,9 @@ export const memberattendanceValidator = {
     type: Joi.valid("H", "I", "S", "A")
   }),
   attend: Joi.object({
-    location: Joi.string(),
-    description: Joi.string(),
+    type: Joi.valid("H", "I", "S", "A"),
+    location: Joi.string().optional(),
+    description: Joi.string().optional(),
   }),
   update: Joi.object({
     rawDate: Joi.date(),
