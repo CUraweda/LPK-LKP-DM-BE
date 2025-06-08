@@ -99,7 +99,7 @@ class memberService extends BaseService {
     return await this.db.$transaction(async (prisma) => {
       const categoryData = await prisma.trainingCategory.findFirst({ where: { id: payload.trainingId } })
       if (!categoryData) throw new BadRequest("Data Kategori tidak ditemukan")
-      return await prisma.member.update({ where: { id }, data: { courseCategoryId: payload.courseCategoryId,  totalCoursePrice: 2000000, totalCourses: 1, courseLevel: payload.courseLevel } })
+      return await prisma.member.update({ where: { id }, data: { courseCategoryId: payload.courseCategoryId,  totalCoursePrice: 2000000, totalCourses: 1, courseLevel: payload.courseLevel, memberState: memberConstant.memberState.Pembayaran  } })
     })
   }
 
