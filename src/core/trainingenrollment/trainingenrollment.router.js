@@ -24,7 +24,7 @@ r.post(
   // auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
+);
   
 r.put(
   "/reguler/update/:id",

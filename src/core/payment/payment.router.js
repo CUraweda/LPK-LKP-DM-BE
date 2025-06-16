@@ -21,6 +21,7 @@ r.get(
     "/notify/:id",
     controller.notify
 )
+
 r.post(
     "/create",
     auth(['SISWA']),

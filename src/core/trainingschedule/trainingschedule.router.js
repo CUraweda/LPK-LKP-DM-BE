@@ -21,7 +21,7 @@ r.get("/show-by-member/:id", controller.findByMember);
 
 r.post(
   "/create",
-  // auth(['ADMIN']),
+  auth(['SISWA']),
   validatorMiddleware({ body: validator.create }),
   controller.create
   );

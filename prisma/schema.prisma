@@ -26,7 +26,10 @@ enum ChatType {
 }
 
 enum WorkStatus {
-  Pekerja_Penuh_Waktu
+  Tetap
+  Kontrak
+  Part_Time
+  Freelance
 }
 
 enum ExamStatus {
@@ -176,13 +179,13 @@ model Training {
   description         String
   trainingImage       String
   type                TrainingType
-  categoryId          Int
+  categoryId          Int?
   totalParticipants   Int
   totalCourses        Int
   totalHours          Int
   targetTrainingHours Int
 
-  trainingCategory TrainingCategory   @relation(fields: [categoryId], references: [id])
+  trainingCategory TrainingCategory?   @relation(fields: [categoryId], references: [id])
   materials        Material[]
   memberCourses    MemberCourse[]
   exams            Exam[]
@@ -224,7 +227,6 @@ model TrainingSchedule {
   startTime   DateTime
   endTime     DateTime
   type        TrainingType
-  status      ScheduleStatus
   enrollments TrainingEnrollment[]
 
   training Training @relation(fields: [trainingId], references: [id])
@@ -310,6 +312,7 @@ model Member {
   dataVerified        Boolean     @default(false)
   verifiedAt          DateTime?
   createdAt           DateTime?
+  isGraduate          Boolean     @default(false)
   memberState         memberState @default(DS)
 
   identity       MemberIdentity?
@@ -392,13 +395,13 @@ model MemberSalary {
 
 model MemberTest {
   id                 Int        @id @default(autoincrement())
-  startTime          DateTime
-  questionsCompleted Int
-  hoursCompleted     Int
+  answer             Json?
+  questionsCompleted Int?
+  secondsCompleted   Int?
   memberId           Int
   examId             Int
-  attendedAt         DateTime
-  finishedAt         DateTime
+  startTime          DateTime
+  finishedAt         DateTime?
   status             ExamStatus
 
   member Member @relation(fields: [memberId], references: [id])
