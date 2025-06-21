@@ -18,6 +18,13 @@ r.get(
 
 r.get("/show-one/:id", controller.findById);
 
+r.get("/show-training/:id", controller.findByTrainingId);
+
+r.get(
+  "/show-title/:q",
+  controller.findByMateri
+);
+
 r.get(
   '/download/:id',
   auth(['ADMIN', 'USER']),

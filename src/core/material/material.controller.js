@@ -23,6 +23,20 @@ class materialController extends BaseController {
     return this.ok(res, data, "material berhasil didapatkan");
   });
 
+  findByTrainingId = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByTrainingId(req.params.id);
+    if (!data) throw new NotFound("material tidak ditemukan");
+
+    return this.ok(res, data, "material berhasil didapatkan");
+  });
+  
+  findByMateri = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByMateri(req.params.q);
+    if (!data) throw new NotFound("material tidak ditemukan");
+
+    return this.ok(res, data, "material berhasil didapatkan");
+  });
+
   downloadPdf = this.wrapper(async (req, res) => {
     const id = Number(req.params.id);
     const { filePath, fileName } = await this.#service.downloadPdf(id);

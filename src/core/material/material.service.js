@@ -25,6 +25,17 @@ class materialService extends BaseService {
     return data;
   };
 
+  findByTrainingId = async (id) => {
+    const convertId = Number(id);
+    const data = await this.db.material.findMany({ where: { trainingId: convertId } });
+    return data;
+  };
+
+  findByMateri = async (q) => {
+    const data = await this.db.material.findMany({ where: { title: q } });
+    return data;
+  };
+
   downloadPdf = async (id) => {
     try {
       const material = await this.findById(id);
