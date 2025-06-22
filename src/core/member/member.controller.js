@@ -15,6 +15,26 @@ class memberController extends BaseController {
     return this.ok(res, data, "Banyak member berhasil didapatkan");
   });
 
+  findActive = this.wrapper(async (req, res) => {
+    const data = await this.#service.findActive(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
+  findInactive = this.wrapper(async (req, res) => {
+    const data = await this.#service.findInactive(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
+  findByPeriod = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByPeriod(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
+  searchName = this.wrapper(async (req, res) => {
+    const data = await this.#service.searchName(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
   findById = this.wrapper(async (req, res) => {
     const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("member tidak ditemukan");
