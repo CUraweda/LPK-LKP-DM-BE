@@ -25,6 +25,11 @@ class memberController extends BaseController {
     return this.ok(res, data, "Banyak member berhasil didapatkan");
   });
 
+  findGraduated = this.wrapper(async (req, res) => {
+    const data = await this.#service.findGraduated(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
   findByPeriod = this.wrapper(async (req, res) => {
     const data = await this.#service.findByPeriod(req.query);
     return this.ok(res, data, "Banyak member berhasil didapatkan");

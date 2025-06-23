@@ -1,5 +1,6 @@
 import BaseController from "../../base/controller.base.js";
 import { NotFound } from "../../exceptions/catch.execption.js";
+import { sendOn } from "../../socket/index.js";
 import chatService from "./chat.service.js";
 
 class chatController extends BaseController {
@@ -43,6 +44,7 @@ class chatController extends BaseController {
     req.body['senderId'] = req.user.id
     req.body['type'] = this.checkType(req.body)
     const data = await this.#service.send(req.body);
+    sendOn("message_refresh", { userIds: [req.body.senderId, req.body.receiverId] })
     return this.created(res, data, "chat berhasil dibuat");
   });
 

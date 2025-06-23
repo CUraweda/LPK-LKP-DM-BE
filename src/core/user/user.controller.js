@@ -15,6 +15,11 @@ class userController extends BaseController {
     return this.ok(res, data, "Banyak user berhasil didapatkan");
   });
 
+  findByName = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByName(req.query.search);
+    return this.ok(res, data, "User berhasil didapatkan");
+  });
+
   findById = this.wrapper(async (req, res) => {
     const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("user tidak ditemukan");

@@ -43,6 +43,13 @@ r.get(
   controller.searchName
 );
 
+r.get(
+  "/show-graduated",
+  validatorMiddleware({ body: validator.create }),
+  auth(["ADMIN"]),
+  controller.searchName
+);
+
 r.get("/show-one/:id", 
   auth(["ADMIN"]),
   controller.findById);

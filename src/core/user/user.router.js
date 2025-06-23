@@ -11,15 +11,26 @@ const r = Router(),
 
 r.get(
   "/show-all",
+  auth(['ADMIN']),
   validatorMiddleware({ query: baseValidator.browseQuery }),
   controller.findAll
 );
 
-r.get("/show-one/:id", controller.findById);
+r.get(
+  "/show-by-name",
+  auth(['ADMIN']),
+  controller.findByName
+);
+
+r.get(
+  "/show-one/:id",
+  auth(['ADMIN']),
+  controller.findById
+);
 
 r.post(
   "/create",
-  // auth(['ADMIN']),
+  auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
 );

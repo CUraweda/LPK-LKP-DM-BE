@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
 import httpStatus from 'http-status-codes';
+import fs from "fs"
 
 // import { startWhatsApp } from './utils/whatsappClient.js';
 import handleError from './exceptions/handler.exception.js';

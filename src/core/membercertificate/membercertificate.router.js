@@ -34,6 +34,11 @@ r.put(
   controller.update
 );
 
+r.get(
+  "/download/:id",
+  auth(['ADMIN', "SISWA"]),
+  controller.download
+)
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const membercertificateRouter = r;

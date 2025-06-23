@@ -19,6 +19,11 @@ class userService extends BaseService {
     return data;
   };
 
+  findByName = async (name) => {
+    const data = await this.db.user.findMany({ where: { member: { name: { contains: name } } }, include: { member: true } })
+    return data
+  }
+
   findById = async (id) => {
     const data = await this.db.user.findUnique({ where: { id } });
     return data;
