@@ -16,24 +16,31 @@ class membercertificateController extends BaseController {
   });
 
   findById = this.wrapper(async (req, res) => {
-    const data = await this.#service.findById(req.params.id);
+    const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("membercertificate tidak ditemukan");
 
     return this.ok(res, data, "membercertificate berhasil didapatkan");
   });
-
+  
   create = this.wrapper(async (req, res) => {
+    if(!req.file) throw this.BadRequest(res, "Mohon sertakan PDF");
+    req.body['imageLink'] = req.file.path
+    req.body['imageSize'] = req.file.size
     const data = await this.#service.create(req.body);
     return this.created(res, data, "membercertificate berhasil dibuat");
   });
-
+  
   update = this.wrapper(async (req, res) => {
-    const data = await this.#service.update(req.params.id, req.body);
+    if(req.file){
+      req.body['imageLink'] = req.file.path
+      req.body['imageSize'] = req.file.size
+    }
+    const data = await this.#service.update(+req.params.id, req.body);
     return this.ok(res, data, "membercertificate berhasil diperbarui");
   });
 
   delete = this.wrapper(async (req, res) => {
-    const data = await this.#service.delete(req.params.id);
+    const data = await this.#service.delete(+req.params.id);
     return this.noContent(res, "membercertificate berhasil dihapus");
   });
 }

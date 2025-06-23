@@ -312,18 +312,19 @@ model Member {
   createdAt           DateTime?
   memberState         memberState @default(DS)
 
-  identity       MemberIdentity?
-  careers        MemberWork[]
-  enrollment     TrainingEnrollment[]
-  transaction    Transaction[]
-  parents        MemberParent[]
-  attendances    MemberAttendance[]
-  salarys        MemberSalary[]
-  tests          MemberTest[]
-  transactions   MemberTransaction[]
-  courseCategory TrainingCategory?    @relation(fields: [courseCategoryId], references: [id])
-  courses        MemberCourse[]       @relation(name: "MemberToCourses")
-  User           User?
+  identity          MemberIdentity?
+  careers           MemberWork[]
+  enrollment        TrainingEnrollment[]
+  transaction       Transaction[]
+  parents           MemberParent[]
+  attendances       MemberAttendance[]
+  salarys           MemberSalary[]
+  tests             MemberTest[]
+  transactions      MemberTransaction[]
+  courseCategory    TrainingCategory?    @relation(fields: [courseCategoryId], references: [id])
+  courses           MemberCourse[]       @relation(name: "MemberToCourses")
+  User              User?
+  MemberCertificate MemberCertificate[]
 
   @@map("member")
 }
@@ -343,14 +344,13 @@ model MemberTransaction {
 }
 
 model MemberCertificate {
-  id               Int    @id @default(autoincrement())
-  memberCourseId   Int?
-  certificateImage String
-  link             String
-  title            String
-  size             String
+  id         Int    @id @default(autoincrement())
+  memberId   Int?
+  imageLink  String
+  imageTitle String
+  imageSize  Int
 
-  course MemberCourse? @relation(fields: [memberCourseId], references: [id])
+  member Member?       @relation(fields: [memberId], references: [id])
 
   @@map("member_certificate")
 }
@@ -429,9 +429,8 @@ model MemberCourse {
   trainingId Int
   status     CourseStatus
 
-  training    Training            @relation(fields: [trainingId], references: [id])
-  member      Member              @relation(name: "MemberToCourses", fields: [memberId], references: [id])
-  certificate MemberCertificate[] // one-to-many (because in your schema you used array)
+  training          Training            @relation(fields: [trainingId], references: [id])
+  member            Member              @relation(name: "MemberToCourses", fields: [memberId], references: [id])
 
   @@map("member_course")
 }

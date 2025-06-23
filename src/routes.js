@@ -91,7 +91,7 @@ export const routeLists = [
         route: memberattendanceRouter
     },
     {
-        path: '/membercertificate',
+        path: '/member-certificate',
         route: membercertificateRouter
     },
     {
