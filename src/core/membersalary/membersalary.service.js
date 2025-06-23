@@ -8,32 +8,35 @@ class membersalaryService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.membersalary.findMany({ ...q });
+    const data = await this.db.memberSalary.findMany({ ...q });
 
     if (query.paginate) {
-      const countData = await this.db.membersalary.count({ where: q.where });
+      const countData = await this.db.memberSalary.count({ where: q.where });
       return this.paginate(data, countData, q);
     }
     return data;
   };
 
   findById = async (id) => {
-    const data = await this.db.membersalary.findUnique({ where: { id } });
+    const convertId = Number(id)
+    const data = await this.db.memberSalary.findUnique({ where: { id: convertId } });
     return data;
   };
 
   create = async (payload) => {
-    const data = await this.db.membersalary.create({ data: payload });
+    const data = await this.db.memberSalary.create({ data: payload });
     return data;
   };
 
   update = async (id, payload) => {
-    const data = await this.db.membersalary.update({ where: { id }, data: payload });
+    const convertId = Number(id)
+    const data = await this.db.memberSalary.update({ where: { id: convertId }, data: payload });
     return data;
   };
 
   delete = async (id) => {
-    const data = await this.db.membersalary.delete({ where: { id } });
+    const convertId = Number(id)
+    const data = await this.db.memberSalary.delete({ where: { id: convertId } });
     return data;
   };
 }

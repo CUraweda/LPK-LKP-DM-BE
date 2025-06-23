@@ -18,7 +18,8 @@ export const memberValidator = {
     totalMaterials: Joi.number().integer(),
     totalCareers: Joi.number().integer(),
     currentCourseId: Joi.number().integer(),
-    dataVerified: Joi.boolean()
+    dataVerified: Joi.boolean(),
+    isGraduate: Joi.boolean()
   }),
   extend_data_siswa: Joi.object({
     name: Joi.string(),

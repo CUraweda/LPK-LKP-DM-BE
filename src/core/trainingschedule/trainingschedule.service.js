@@ -49,43 +49,73 @@ class trainingscheduleService extends BaseService {
 
   create = async (payload) => {
     try {
-      const { trainingId, memberId, startTime, endTime, type } = payload;
-  
-      // Step 1: Create the new schedule
-      const newSchedule = await this.db.trainingSchedule.create({
-        data: {
-          trainingId: trainingId,
-          startTime: startTime,
-          endTime: endTime,
-          type: type,
-          status: 'AVAILABLE',
-        },
+      const { trainingId, memberId, startTime, type } = payload;
+      const training = await this.db.training.findFirst({ where: { id: trainingId }})
+      const endTime = new Date(startTime);
+      endTime.setUTCHours(endTime.getUTCHours() + training.targetTrainingHours);
+      
+      const booked = await this.db.trainingEnrollment.findFirst({
+        where: {
+          memberId,
+          schedule: {
+            trainingId,
+            startTime,
+            type
+          }
+        }
       });
-  
-      const enrollment = await this.db.trainingEnrollment.create({
-        data: {
-          memberId: memberId,
-          scheduleId: newSchedule.id,
-          status: 'BOOKED',
-        },
-      });
-  
-      await this.db.trainingSchedule.update({
-        where: { id: newSchedule.id },
-        data: { status: 'UNAVAILABLE' },
-      });
-  
-      const data = {
-        newSchedule, enrollment
+      if (booked) {
+        throw new Error("You already booked this schedule.");
       }
 
-      return data;
+      const existing = await this.db.trainingSchedule.findFirst({
+        where: {
+          trainingId,
+          startTime,
+          type
+        },
+        include: {
+          enrollments: true
+        }
+      });
+
+      if (existing) {
+        const enrollment = await this.db.trainingEnrollment.create({
+          data: {
+            memberId,
+            scheduleId: existing.id,
+            status: "BOOKED"
+          }
+        });
+        return {
+          schedule: existing,
+          enrollment
+        };
+      }
+
+      const newSchedule = await this.db.trainingSchedule.create({
+        data: {
+          trainingId,
+          startTime,
+          endTime: endTime.toISOString(),
+          type,
+          enrollments: {
+            create: {
+              memberId,
+              status: 'BOOKED'
+            }
+          }
+        },
+        include: { enrollments: true }
+      });
+      
+      return newSchedule;
+
     } catch (error) {
       console.error("Error creating schedule and enrollment:", error);
-      throw Error(error)
+      throw Error(error);
     }
   };
-  
 
   update = async (id, payload) => {
     const data = await this.db.trainingSchedule.update({ where: { id }, data: payload });

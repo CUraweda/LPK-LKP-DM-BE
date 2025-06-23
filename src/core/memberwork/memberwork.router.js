@@ -4,6 +4,7 @@ import memberworkController from "./memberwork.controller.js";
 import memberworkValidator from "./memberwork.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
+import { uploadMany } from "../../middlewares/upload.middleware.js";
 
 const r = Router(),
   validator = memberworkValidator,
@@ -18,19 +19,35 @@ r.get(
 r.get("/show-one/:id", controller.findById);
 
 r.post(
-  "/create",
-  auth(['ADMIN']),
+  '/create',
+  auth(['ADMIN', 'SISWA']),
+  uploadMany('./uploads', '/company-logos', [
+    {
+      name: 'companyLogo',
+      mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+      maxCount: 1,
+      limitSize: 10 * 1024 * 1024,
+    },
+  ]),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
-  
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
+);
+
+r.put(
+  "/update/:id",
+  auth(['ADMIN', 'SISWA']),
+  uploadMany('./uploads', '/company-logos', [
+    {
+      name: 'companyLogo',
+      mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+      maxCount: 1,
+      limitSize: 10 * 1024 * 1024,
+    },
+  ]),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const memberworkRouter = r;

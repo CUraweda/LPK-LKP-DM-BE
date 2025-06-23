@@ -52,14 +52,16 @@ class paymentService extends BaseService {
 
     notifyPayment = async (id, args = {}) => {
         const { status } = args;
+        console.log(`ID: ${id}\n`)
         id = this.paymentHelper._decryptTID(id);
+        console.log(`Decrypted ID: ${id}\n`)
         const data = await this.db.transaction.findFirst({
             where: { transactionId: id, isPaid: false },
             include: { member: { include: { User: true } } },
         });
+        console.log(`\n${status}\n\n${id}\n\n${JSON.stringify(data)}\n`)
         if (!data) throw new BadRequest('Transaksi tidak ditemukan');
         const updateMember = data.purpose === 'Pendaftaran';
-
         let updateData = {};
         switch (status) {
             case 'SUCCESS':
@@ -69,7 +71,6 @@ class paymentService extends BaseService {
                     status: 'Selesai',
                 };
                 updateData['memberTransaction'] = {
-                    status: 'Lunas',
                     isSuccess: true,
                     paymentDate: new Date()
                 };
@@ -88,8 +89,11 @@ class paymentService extends BaseService {
         };
         await this.chatService.sendToAdmin(messagePayload);
 
+        const memberTrx = await this.db.memberTransaction.findFirst({ where: { transactionId: data.id }});
+        if(!memberTrx) throw new Error("MemberTransaction not found!")
+
         if (updateData.memberData) await this.db.member.update({ where: { id: data.memberId }, data: updateData.memberData, });
-        if (updateData.memberTransaction) await this.db.memberTransaction.update({ where: { transactionId: data.transactionId }, data: updateData.memberTransaction, });
+        if (memberTrx) await this.db.memberTransaction.update({ where: { id: memberTrx.id }, data: updateData.memberTransaction, });
         const updatedData = await this.db.transaction.update({ where: { id: data.id }, data: updateData.Transaction, });
         if (!updatedData) throw new BadRequest('Error occured while updating');
 

@@ -12,14 +12,102 @@ class memberService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.member.findMany({ ...q });
+
+    const data = await this.db.member.findMany({
+      ...q,
+      include: {
+        User: true,
+        identity: true,
+      },
+    });
 
     if (query.paginate) {
       const countData = await this.db.member.count({ where: q.where });
       return this.paginate(data, countData, q);
     }
+
     return data;
   };
+
+  findActive = async (query) => {
+    const q = this.transformBrowseQuery(query);
+
+    const data = await this.db.member.findMany({
+      ...q,
+      where: { isGraduate: false },
+      include: {
+        User: true,
+        identity: true,
+      },
+    });
+
+    if (query.paginate) {
+      const countData = await this.db.member.count({ where: q.where });
+      return this.paginate(data, countData, q);
+    }
+
+    return data;
+  };
+
+  findInactive = async (query) => {
+    const q = this.transformBrowseQuery(query);
+
+    const data = await this.db.member.findMany({
+      ...q,
+      where: { isGraduate: true },
+      include: {
+        User: true,
+        identity: true,
+      },
+    });
+
+    if (query.paginate) {
+      const countData = await this.db.member.count({ where: q.where });
+      return this.paginate(data, countData, q);
+    }
+
+    return data;
+  };
+
+  findByPeriod = async (query) => {
+    const { startDate, endDate } = query;
+
+    const where = {};
+    if (startDate && endDate) {
+      where.createdAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
+      };
+    }
+
+    const data = await this.db.member.findMany({
+      where,
+      include: {
+        User: true,
+        identity: true,
+      },
+    });
+    return data;
+  };
+
+  searchName = async (query) => {
+    console.log(query);
+
+    const data = await this.db.member.findMany({
+      where: {
+        name: {
+          contains: query.name
+        },
+      },
+      include: {
+        User: true,
+        identity: true,
+      },
+    });
+
+    return data;
+  };
+
 
   findById = async (id) => {
     const data = await this.db.member.findUnique({ where: { id } });

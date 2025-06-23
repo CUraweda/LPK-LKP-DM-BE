@@ -16,6 +16,33 @@ r.get(
   validatorMiddleware({ query: baseValidator.browseQuery }),
   controller.findAll
 );
+
+r.get(
+  "/show-active",
+  auth(["ADMIN"]),
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.findActive
+);
+
+r.get(
+  "/show-inactive",
+  auth(["ADMIN"]),
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.findInactive
+);
+
+r.get(
+  "/show-period",
+  auth(["ADMIN"]),
+  controller.findByPeriod
+);
+
+r.get(
+  "/search-name",
+  auth(["ADMIN"]),
+  controller.searchName
+);
+
 r.get("/show-one/:id", 
   auth(["ADMIN"]),
   controller.findById);
