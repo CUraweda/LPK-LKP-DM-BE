@@ -16,21 +16,28 @@ r.get(
 );
 
 r.get("/show-one/:id", controller.findById);
+r.get("/show-me", auth(['ADMIN', 'SISWA']), controller.findByUser)
 
 r.post(
   "/create",
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
-  
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
+);
+r.post(
+  "/send",
+  auth(['SISWA']),
+  validatorMiddleware({ body: validator.send }),
+  controller.send
+)
+
+r.put(
+  "/update/:id",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const chatRouter = r;

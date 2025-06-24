@@ -4,6 +4,7 @@ import memberController from "./member.controller.js";
 import memberValidator from "./member.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
+import uploader from "../../middlewares/multer.middleware.js";
 
 const r = Router(),
   validator = memberValidator,
@@ -16,9 +17,50 @@ r.get(
   controller.findAll
 );
 
+r.get(
+  "/show-active",
+  auth(["ADMIN"]),
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.findActive
+);
+
+r.get(
+  "/show-inactive",
+  auth(["ADMIN"]),
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.findInactive
+);
+
+r.get(
+  "/show-period",
+  auth(["ADMIN"]),
+  controller.findByPeriod
+);
+
+r.get(
+  "/search-name",
+  auth(["ADMIN"]),
+  controller.searchName
+);
+
+r.get(
+  "/show-graduated",
+  validatorMiddleware({ body: validator.create }),
+  auth(["ADMIN"]),
+  controller.searchName
+);
+
 r.get("/show-one/:id", 
   auth(["ADMIN"]),
   controller.findById);
+
+r.get("/show-me", 
+  auth(["ADMIN", "SISWA"]),
+  controller.findMe);
+
+r.get("/show-pembayaran-registration", 
+  auth(['SISWA']),
+  controller.validateRegistrationPayment);
 
 r.post(
   "/create",
@@ -43,6 +85,7 @@ r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 r.post(
   "/extend-user-data-siswa/:id?",
   auth(['SISWA', 'ADMIN']),
+  uploader("/member", "image", "PP").single("profilePict"),
   validatorMiddleware({ body: validator.extend_data_siswa }),
   controller.extendDataSiswa
 )

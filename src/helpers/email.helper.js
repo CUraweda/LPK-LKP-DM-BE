@@ -31,27 +31,21 @@ var readHTMLFile = function (path, callback) {
         }
     });
 };
+const formatAttachment = (attachments) => {
+return attachments.map((data, i) => ({
+    filename: "Logo " + i + `.${data.split(".")[1]}`,
+    path: data,
+    cid: "logo" + i
+    }))
+}
 
 class EmailHelper {
-    formatAttachment(attachments){
-        return attachments.map((data, i) => ({
-            filename: "Logo " + i + ".jpg",
-            path: data,
-            cid: "logo" + i
-        }))
-    }
-
     async sendEmail(
         placeholder,
-        to,
-        subject,
-        body,
-        args = {},
+        to, subject, body,
         attachment = [],
-        auth = null,
     ) {
         try {
-            attachment = this.formatAttachment(attachment)
             readHTMLFile(body, function (err, html) {
                 if (err) {
                     console.log("error reading file", err);
@@ -63,7 +57,7 @@ class EmailHelper {
                     from: email.account,
                     to, subject,
                     html: htmlToSend,
-                    attachments: attachment
+                    attachments: formatAttachment(attachment)
                 };
                 transporter.sendMail(mailOptions, function (error, response) {
                     if (error) {

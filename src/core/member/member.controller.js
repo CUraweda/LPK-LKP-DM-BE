@@ -15,8 +15,45 @@ class memberController extends BaseController {
     return this.ok(res, data, "Banyak member berhasil didapatkan");
   });
 
+  findActive = this.wrapper(async (req, res) => {
+    const data = await this.#service.findActive(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
+  findInactive = this.wrapper(async (req, res) => {
+    const data = await this.#service.findInactive(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
+  findGraduated = this.wrapper(async (req, res) => {
+    const data = await this.#service.findGraduated(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
+  findByPeriod = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByPeriod(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
+  searchName = this.wrapper(async (req, res) => {
+    const data = await this.#service.searchName(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
+  validateRegistrationPayment = this.wrapper(async (req, res) => {
+    const data = await this.#service.validateRegistrationPayment(req.user);
+    return this.ok(res, data, "Validasi Pembayaran Berhasil Dikirimkan");
+  });
+
   findById = this.wrapper(async (req, res) => {
     const data = await this.#service.findById(+req.params.id);
+    if (!data) throw new NotFound("member tidak ditemukan");
+
+    return this.ok(res, data, "member berhasil didapatkan");
+  });
+
+  findMe = this.wrapper(async (req, res) => {
+    const data = await this.#service.findById(req.user.member.id);
     if (!data) throw new NotFound("member tidak ditemukan");
 
     return this.ok(res, data, "member berhasil didapatkan");
@@ -27,8 +64,10 @@ class memberController extends BaseController {
     return this.created(res, data, "member berhasil dibuat");
   });
 
-  extendDataSiswa = this.wrapper(async (req, res) => {
+extendDataSiswa = this.wrapper(async (req, res) => {
     req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
+    if(!req.file) this.BadRequest(res, "Foto siswa harus disertakan")
+    req.body["profileImage"] = req.file.path
     await this.#service.extendDataSiswa(req.body);
     return this.created(res, "Data Siswa berhasil ditambahkan");
   });
@@ -54,12 +93,12 @@ class memberController extends BaseController {
   extendDataTraining  = this.wrapper(async (req, res) => {
     req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
     await this.#service.extendDataTraining(req.body);
-    return this.created(res, data, "Data Kursus berhasil ditambahkan");
+    return this.created(res, "Data Kursus berhasil ditambahkan");
   });
   
   extendDataPembayaran  = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
-    await this.#service.extendDataPembayaran(req.body);
+    req.body['user'] = req.user
+    const data = await this.#service.extendDataPembayaran(req.body);
     return this.created(res, data, "Data Pembayaran berhasil ditambahkan");
   });
 

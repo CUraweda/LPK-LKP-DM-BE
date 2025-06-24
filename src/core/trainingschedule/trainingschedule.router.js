@@ -17,9 +17,11 @@ r.get(
 
 r.get("/show-one/:id", controller.findById);
 
+r.get("/show-by-member/:id", controller.findByMember);
+
 r.post(
   "/create",
-  // auth(['ADMIN']),
+  auth(['SISWA']),
   validatorMiddleware({ body: validator.create }),
   controller.create
   );

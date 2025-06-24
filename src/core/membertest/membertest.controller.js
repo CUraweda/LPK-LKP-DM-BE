@@ -21,6 +21,13 @@ class membertestController extends BaseController {
 
     return this.ok(res, data, "membertest berhasil didapatkan");
   });
+  
+  findByExam = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByExam(req.params.id);
+    if (!data) throw new NotFound("membertest tidak ditemukan");
+
+    return this.ok(res, data, "membertest berhasil didapatkan");
+  });
 
   create = this.wrapper(async (req, res) => {
     const data = await this.#service.create(req.body);
