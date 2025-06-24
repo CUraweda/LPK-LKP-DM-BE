@@ -40,6 +40,11 @@ class memberController extends BaseController {
     return this.ok(res, data, "Banyak member berhasil didapatkan");
   });
 
+  validateRegistrationPayment = this.wrapper(async (req, res) => {
+    const data = await this.#service.validateRegistrationPayment(req.user);
+    return this.ok(res, data, "Validasi Pembayaran Berhasil Dikirimkan");
+  });
+
   findById = this.wrapper(async (req, res) => {
     const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("member tidak ditemukan");

@@ -108,6 +108,23 @@ class memberService extends BaseService {
     return data;
   };
 
+  validateRegistrationPayment = async (user) => {
+    const data = await this.db.member.findFirst({ where: { id: user.member.id }, include: { registrationPayment: { include: { transaction: true } } } })
+    const currentDate = new Date();
+    if(data.registrationPaymentId || data?.registrationPayment?.transaction?.expiredDate << currentDate){
+      return { 
+        validPayment: true,
+        paymentMethod: data.registrationPayment.transaction.paymentMethod,
+        paymentTotal: data.registrationPayment.transaction.paymentTotal,
+        qrisLink: data.registrationPayment.transaction.qrisLink,
+        virtualAccountNo: data.registrationPayment.transaction.virtualAccountNo,
+        expiredDate: data.registrationPayment.transaction.expiredDate,
+       }
+    }else {
+      return { validPayment: false }
+    }
+  }
+
 
   findById = async (id) => {
     const data = await this.db.member.findUnique({ where: { id } });
