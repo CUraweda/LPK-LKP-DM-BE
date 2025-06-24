@@ -185,7 +185,7 @@ model Training {
   totalHours          Int
   targetTrainingHours Int
 
-  trainingCategory TrainingCategory?   @relation(fields: [categoryId], references: [id])
+  trainingCategory TrainingCategory?  @relation(fields: [categoryId], references: [id])
   materials        Material[]
   memberCourses    MemberCourse[]
   exams            Exam[]
@@ -295,53 +295,56 @@ model Chat {
 
 // MEMBER SCHEMA
 model Member {
-  id                  Int         @id @default(autoincrement())
-  name                String?
-  profileImage        String?
-  totalCourses        Int?        @default(0)
-  totalCoursePrice    Float?      @default(0)
-  totalCourseHours    Int?        @default(0)
-  totalExamsCompleted Int?        @default(0)
-  totalMaterials      Int?        @default(0)
-  totalCareers        Int?        @default(0)
-  formattedAttendance String?     @default("0|0|0|0") //?Formated: Alpha|Izin|Sakit|Hadir
-  firstAttendanceDate DateTime?
-  currentCourseId     Int?
-  courseCategoryId    Int?
-  courseLevel         Int         @default(0)
-  dataVerified        Boolean     @default(false)
-  verifiedAt          DateTime?
-  createdAt           DateTime?
-  isGraduate          Boolean     @default(false)
-  memberState         memberState @default(DS)
+  id                    Int         @id @default(autoincrement())
+  name                  String?
+  profileImage          String?
+  totalCourses          Int?        @default(0)
+  totalCoursePrice      Float?      @default(0)
+  totalCourseHours      Int?        @default(0)
+  totalExamsCompleted   Int?        @default(0)
+  totalMaterials        Int?        @default(0)
+  totalCareers          Int?        @default(0)
+  formattedAttendance   String?     @default("0|0|0|0") //?Formated: Alpha|Izin|Sakit|Hadir
+  firstAttendanceDate   DateTime?
+  currentCourseId       Int?
+  courseCategoryId      Int?
+  courseLevel           Int         @default(0)
+  dataVerified          Boolean     @default(false)
+  verifiedAt            DateTime?
+  createdAt             DateTime?
+  isGraduate            Boolean     @default(false)
+  memberState           memberState @default(DS)
+  registrationPaymentId Int?        @unique
 
-  identity          MemberIdentity?
-  careers           MemberWork[]
-  enrollment        TrainingEnrollment[]
-  transaction       Transaction[]
-  parents           MemberParent[]
-  attendances       MemberAttendance[]
-  salarys           MemberSalary[]
-  tests             MemberTest[]
-  transactions      MemberTransaction[]
-  courseCategory    TrainingCategory?    @relation(fields: [courseCategoryId], references: [id])
-  courses           MemberCourse[]       @relation(name: "MemberToCourses")
-  User              User?
-  MemberCertificate MemberCertificate[]
+  identity            MemberIdentity?
+  careers             MemberWork[]
+  enrollment          TrainingEnrollment[]
+  transaction         Transaction[]
+  parents             MemberParent[]
+  attendances         MemberAttendance[]
+  salarys             MemberSalary[]
+  tests               MemberTest[]
+  transactions        MemberTransaction[]  @relation("AllTransactions")
+  registrationPayment MemberTransaction?   @relation("RegistrationPayment", fields: [registrationPaymentId], references: [id])
+  courseCategory      TrainingCategory?    @relation(fields: [courseCategoryId], references: [id])
+  courses             MemberCourse[]       @relation(name: "MemberToCourses")
+  User                User?
+  MemberCertificate   MemberCertificate[]
 
   @@map("member")
 }
 
 model MemberTransaction {
   id            Int      @id @default(autoincrement())
-  memberId      Int
+  memberId      Int?
   isSuccess     Boolean  @default(false)
   paymentTotal  Float
   transactionId Int
   paymentDate   DateTime
 
-  transaction Transaction @relation(fields: [transactionId], references: [id])
-  member      Member      @relation(fields: [memberId], references: [id])
+  transaction     Transaction @relation(fields: [transactionId], references: [id])
+  member          Member?     @relation("AllTransactions", fields: [memberId], references: [id])
+  registrationFor Member?     @relation("RegistrationPayment")
 
   @@map("member_transaction")
 }
@@ -353,7 +356,7 @@ model MemberCertificate {
   imageTitle String
   imageSize  Int
 
-  member Member?       @relation(fields: [memberId], references: [id])
+  member Member? @relation(fields: [memberId], references: [id])
 
   @@map("member_certificate")
 }
@@ -432,8 +435,8 @@ model MemberCourse {
   trainingId Int
   status     CourseStatus
 
-  training          Training            @relation(fields: [trainingId], references: [id])
-  member            Member              @relation(name: "MemberToCourses", fields: [memberId], references: [id])
+  training Training @relation(fields: [trainingId], references: [id])
+  member   Member   @relation(name: "MemberToCourses", fields: [memberId], references: [id])
 
   @@map("member_course")
 }
