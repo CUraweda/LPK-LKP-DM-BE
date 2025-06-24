@@ -58,6 +58,10 @@ r.get("/show-me",
   auth(["ADMIN", "SISWA"]),
   controller.findMe);
 
+r.get("/show-pembayaran-registration", 
+  auth(['SISWA']),
+  controller.validateRegistrationPayment);
+
 r.post(
   "/create",
   auth(['ADMIN']),
