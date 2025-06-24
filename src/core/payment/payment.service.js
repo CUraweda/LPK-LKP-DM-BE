@@ -52,14 +52,11 @@ class paymentService extends BaseService {
 
     notifyPayment = async (id, args = {}) => {
         const { status } = args;
-        console.log(`ID: ${id}\n`)
-        id = this.paymentHelper._decryptTID(id);
-        console.log(`Decrypted ID: ${id}\n`)
+        // id = this.paymentHelper._decryptTID(id);
         const data = await this.db.transaction.findFirst({
             where: { transactionId: id, isPaid: false },
             include: { member: { include: { User: true } } },
         });
-        console.log(`\n${status}\n\n${id}\n\n${JSON.stringify(data)}\n`)
         if (!data) throw new BadRequest('Transaksi tidak ditemukan');
         const updateMember = data.purpose === 'Pendaftaran';
         let updateData = {};
@@ -89,8 +86,8 @@ class paymentService extends BaseService {
         };
         await this.chatService.sendToAdmin(messagePayload);
 
-        const memberTrx = await this.db.memberTransaction.findFirst({ where: { transactionId: data.id }});
-        if(!memberTrx) throw new Error("MemberTransaction not found!")
+        const memberTrx = await this.db.memberTransaction.findFirst({ where: { transactionId: data.id } });
+        if (!memberTrx) throw new Error("MemberTransaction not found!")
 
         if (updateData.memberData) await this.db.member.update({ where: { id: data.memberId }, data: updateData.memberData, });
         if (memberTrx) await this.db.memberTransaction.update({ where: { id: memberTrx.id }, data: updateData.memberTransaction, });
@@ -107,16 +104,21 @@ class paymentService extends BaseService {
         try {
             const { user, ...rest } = payload;
             rest['transactionId'] = this.generateTID(payload);
-            const transactionTable = await this.db.transaction.create({ data: { ...rest, memberId: user.member.id } });
-            await this.db.memberTransaction.create({
-                data: {
-                    memberId: payload.user.memberId,
-                    paymentTotal: payload.paymentTotal,
-                    transactionId: transactionTable.id,
-                    paymentDate: new Date()
-                }
-            });
-            
+            const memberData = await this.db.member.findFirst({ where: { id: user.member.id }, select: { registrationPaymentId: true } })
+            let transactionTable
+            if (!memberData.registrationPaymentId) {
+                transactionTable = await this.db.transaction.create({ data: { ...rest, memberId: user.member.id } });
+                await this.db.memberTransaction.create({
+                    data: {
+                        memberId: payload.user.memberId,
+                        paymentTotal: payload.paymentTotal,
+                        transactionId: transactionTable.id,
+                        paymentDate: new Date()
+                    }
+                });
+                await this.db.member.update({ where: { id: payload.user.memberId }, data: { registrationPaymentId: transactionTable.id } })
+            } else transactionTable = await this.db.transaction.findFirst({ where: { id: memberData.registrationPaymentId } })
+
             payload['username'] = payload.user.member.name
             payload['email'] = payload.user.email
             const paymentData = await this.paymentHelper.create({ ...payload, transaction: transactionTable });

@@ -31,10 +31,10 @@ class memberService extends BaseService {
 
   findActive = async (query) => {
     const q = this.transformBrowseQuery(query);
+    q.where['isGraduate'] = false;
 
     const data = await this.db.member.findMany({
       ...q,
-      where: { isGraduate: false },
       include: {
         User: true,
         identity: true,
@@ -51,10 +51,10 @@ class memberService extends BaseService {
 
   findInactive = async (query) => {
     const q = this.transformBrowseQuery(query);
+    q.where['isGraduate'] = true;
 
     const data = await this.db.member.findMany({
       ...q,
-      where: { isGraduate: true },
       include: {
         User: true,
         identity: true,
@@ -187,12 +187,12 @@ class memberService extends BaseService {
     return await this.db.$transaction(async (prisma) => {
       const categoryData = await prisma.trainingCategory.findFirst({ where: { id: payload.trainingId } })
       if (!categoryData) throw new BadRequest("Data Kategori tidak ditemukan")
-      return await prisma.member.update({ where: { id }, data: { courseCategoryId: payload.courseCategoryId,  totalCoursePrice: 2000000, totalCourses: 1, courseLevel: payload.courseLevel, memberState: memberConstant.memberState.Pembayaran  } })
+      return await prisma.member.update({ where: { id }, data: { courseCategoryId: payload.courseCategoryId, totalCoursePrice: 2000000, totalCourses: 1, courseLevel: payload.courseLevel, memberState: memberConstant.memberState.Pembayaran } })
     })
   }
 
   extendDataPembayaran = async (payload) => {
-    const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000,  purpose: "Pendaftaran", status: "Tunda"})
+    const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda" })
     const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, ...rest } = createdPayment
     return { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }
   }
