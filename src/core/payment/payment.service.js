@@ -52,14 +52,11 @@ class paymentService extends BaseService {
 
     notifyPayment = async (id, args = {}) => {
         const { status } = args;
-        console.log(`ID: ${id}\n`)
-        id = this.paymentHelper._decryptTID(id);
-        console.log(`Decrypted ID: ${id}\n`)
+        // id = this.paymentHelper._decryptTID(id);
         const data = await this.db.transaction.findFirst({
             where: { transactionId: id, isPaid: false },
             include: { member: { include: { User: true } } },
         });
-        console.log(`\n${status}\n\n${id}\n\n${JSON.stringify(data)}\n`)
         if (!data) throw new BadRequest('Transaksi tidak ditemukan');
         const updateMember = data.purpose === 'Pendaftaran';
         let updateData = {};
