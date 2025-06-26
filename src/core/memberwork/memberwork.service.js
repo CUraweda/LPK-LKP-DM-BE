@@ -23,6 +23,12 @@ class memberworkService extends BaseService {
     return data;
   };
 
+  findByUser = async (id) => {
+    const userId = Number(id)
+    const data = await this.db.memberWork.findMany({ where: { memberId: userId } });
+    return data;
+  };
+
   create = async (payload) => {
     const member = await this.db.member.findUnique({where: { id: payload.memberId }})
     if(member.isGraduate != true){

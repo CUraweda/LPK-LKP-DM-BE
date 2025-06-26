@@ -118,13 +118,28 @@ class trainingscheduleService extends BaseService {
   };
 
   update = async (id, payload) => {
-    const data = await this.db.trainingSchedule.update({ where: { id }, data: payload });
-    return data;
+    const convertId = Number(id)
+    if(payload.startTime){
+      const existing = await this.db.trainingSchedule.findFirst({ where: { id: convertId }})
+      const training = await this.db.training.findFirst({ where: { id: existing.trainingId }})
+      const endTime = new Date(payload.startTime);
+      endTime.setUTCHours(endTime.getUTCHours() + training.targetTrainingHours);
+      const payload_data = {
+        ...payload,
+          endTime: endTime.toISOString(),
+      }
+      const data = await this.db.trainingSchedule.update({ where: { id: convertId }, data: payload_data });
+      return data;
+    } else {
+      const data = await this.db.trainingSchedule.update({ where: { id: convertId }, data: payload });
+      return data;
+    }
   };
 
   delete = async (id) => {
-    const intId = Number(id)
-    const data = await this.db.trainingSchedule.delete({ where: { id: intId } });
+    const scheduleId = Number(id)
+    await this.db.trainingEnrollment.deleteMany({ where: { scheduleId } });
+    const data = await this.db.trainingSchedule.delete({ where: { id: scheduleId }});
     return data;
   };
 }

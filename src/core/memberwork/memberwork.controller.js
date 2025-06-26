@@ -23,6 +23,14 @@ class memberworkController extends BaseController {
 
     return this.ok(res, data, "memberwork berhasil didapatkan");
   });
+  
+  findByUser = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByUser(req.params.id);
+    if (!data) throw new NotFound("training tidak ditemukan");
+
+    return this.ok(res, data, "training berhasil didapatkan");
+  });
+
 
   create = this.wrapper(async (req, res) => {
     const logoFile = req.files?.companyLogo?.[0];
@@ -63,7 +71,6 @@ class memberworkController extends BaseController {
     const data = await this.#service.update(id, payload);
     return this.ok(res, data, "MemberWork berhasil diperbarui");
   });
-
 
   delete = this.wrapper(async (req, res) => {
     const data = await this.#service.delete(req.params.id);

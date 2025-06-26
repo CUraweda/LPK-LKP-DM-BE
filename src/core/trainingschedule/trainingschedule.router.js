@@ -21,21 +21,21 @@ r.get("/show-by-member/:id", controller.findByMember);
 
 r.post(
   "/create",
-  auth(['SISWA']),
+  auth(['ADMIN','SISWA']),
   validatorMiddleware({ body: validator.create }),
   controller.create
   );
   
   r.put(
     "/update/:id",
-    auth(['ADMIN']),
+    auth(['ADMIN', 'SISWA']),
     validatorMiddleware({ body: validator.update }),
     controller.update
     );
     
 r.delete(
   "/delete/:id", 
-  // auth(['ADMIN']),
+  auth(['ADMIN']),
   controller.delete
   );
 

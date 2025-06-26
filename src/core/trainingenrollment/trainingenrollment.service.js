@@ -18,7 +18,8 @@ class trainingenrollmentService extends BaseService {
   };
 
   findById = async (id) => {
-    const data = await this.db.trainingEnrollment.findUnique({ where: { id } });
+    const convertId = Number(id)
+    const data = await this.db.trainingEnrollment.findUnique({ where: { id: convertId } });
     return data;
   };
 
@@ -28,13 +29,14 @@ class trainingenrollmentService extends BaseService {
   };
 
   update = async (id, payload) => {
-    const intId = Number(id)
-    const data = await this.db.trainingEnrollment.update({ where: { id: intId }, data: payload });
+    const convertId = Number(id)
+    const data = await this.db.trainingEnrollment.update({ where: { id: convertId }, data: payload });
     return data;
   };
-
+  
   delete = async (id) => {
-    const data = await this.db.trainingEnrollment.delete({ where: { id } });
+    const convertId = Number(id)
+    const data = await this.db.trainingEnrollment.delete({ where: { id: convertId } });
     return data;
   };
 }

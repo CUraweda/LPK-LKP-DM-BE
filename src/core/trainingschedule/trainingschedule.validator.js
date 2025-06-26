@@ -8,7 +8,10 @@ export const trainingscheduleValidator = {
     type: Joi.string().valid('R', 'P').required(),
   }),
   update: Joi.object({
-    // no-data
+    memberId: Joi.number().optional(),
+    trainingId: Joi.number().optional(),
+    startTime: Joi.date().optional(),
+    type: Joi.string().valid('R', 'P').optional(),
   }),
 };
 

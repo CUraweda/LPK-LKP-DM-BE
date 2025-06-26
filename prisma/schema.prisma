@@ -184,6 +184,7 @@ model Training {
   totalCourses        Int
   totalHours          Int
   targetTrainingHours Int
+  isActive            Boolean      @default(false)
 
   trainingCategory TrainingCategory?  @relation(fields: [categoryId], references: [id])
   materials        Material[]

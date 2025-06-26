@@ -1,12 +1,10 @@
 import Joi from "joi";
 
 export const materialValidator = {
-  create: Joi.object({
-    // no-data
-  }),
-  update: Joi.object({
-    // no-data
-  }),
+  createUpdate: Joi.object({
+    trainingId: Joi.number().integer().required(),
+    title: Joi.string().required()
+  })
 };
 
 export default materialValidator;

@@ -67,7 +67,7 @@ export const routeLists = [
         route: trainingscheduleRouter
     },
     {
-        path: '/training',
+        path: '/training/enrollment',
         route: trainingenrollmentRouter
     },
     {
