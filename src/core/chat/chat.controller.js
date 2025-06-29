@@ -1,14 +1,15 @@
 import BaseController from "../../base/controller.base.js";
 import { NotFound } from "../../exceptions/catch.execption.js";
 import { sendOn } from "../../socket/index.js";
+import groupchatService from "../groupchat/groupchat.service.js";
 import chatService from "./chat.service.js";
-
 class chatController extends BaseController {
-  #service;
+  #service; #groupChatService;
 
   constructor() {
     super();
     this.#service = new chatService();
+    this.#groupChatService = new groupchatService()
   }
 
   checkType(body){
@@ -36,13 +37,15 @@ class chatController extends BaseController {
 
   create = this.wrapper(async (req, res) => {
     req.body['type'] = this.checkType(req.body)
+    req.body['groupId'] = (await this.#groupChatService.checkGroupChat(req.body)).id
     const data = await this.#service.create(req.body);
     return this.created(res, data, "chat berhasil dibuat");
-});
-
+  });
+  
   send = this.wrapper(async (req, res) => {
     req.body['senderId'] = req.user.id
     req.body['type'] = this.checkType(req.body)
+    req.body['groupId'] = (await this.#groupChatService.checkGroupChat(req.body)).id
     const data = await this.#service.send(req.body);
     sendOn("message_refresh", { userIds: [req.body.senderId, req.body.receiverId] })
     return this.created(res, data, "chat berhasil dibuat");

@@ -18,6 +18,12 @@ r.get(
 
 r.get("/show-one/:id", controller.findById);
 
+r.get(
+  "/count", 
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.count
+);
+
 r.post(
   "/create",
   auth(['ADMIN']),

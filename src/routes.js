@@ -22,6 +22,7 @@ import trainingscheduleRouter from './core/trainingschedule/trainingschedule.rou
 import trainingenrollmentRouter from './core/trainingenrollment/trainingenrollment.router.js';
 import dashboardRouter from './core/dashboard/dashboard.router.js';
 import trainingcategoryRouter from './core/trainingcategory/trainingcategory.router.js'
+import groupchatRouter from './core/groupchat/groupchat.router.js';
 
 const router = express.Router();
 
@@ -37,6 +38,10 @@ export const routeLists = [
     {
         path: '/payment',
         route: paymentRouter
+    },
+    {
+        path: '/group-chat',
+        route: groupchatRouter
     },
     {
         path: '/chat',

@@ -5,10 +5,10 @@ class chatService extends BaseService {
   constructor() {
     super(prisma);
   }
-
+  
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.chat.findMany({ ...q });
+    const data = await this.db.chat.findMany({ ...q, orderBy: { sentAt: 'asc' } });
 
     if (query.paginate) {
       const countData = await this.db.chat.count({ where: q.where });
@@ -23,7 +23,7 @@ class chatService extends BaseService {
   };
 
   findByUser = async (id) => {
-    const data = await this.db.chat.findMany({ where: { receiverId: id } });
+    const data = await this.db.chat.findMany({ orderBy: { sentAt: 'asc' }, where: { receiverId: id, senderId: id } });
     return data;
   };
 
