@@ -15,6 +15,11 @@ class userController extends BaseController {
     return this.ok(res, data, "Banyak user berhasil didapatkan");
   });
 
+  count = this.wrapper(async (req, res) => {
+    const data = await this.#service.count(req.query);
+    return this.ok(res, data, "Banyak user berhasil didapatkan");
+  });
+
   findByName = this.wrapper(async (req, res) => {
     const data = await this.#service.findByName(req.query.search);
     return this.ok(res, data, "User berhasil didapatkan");
@@ -33,6 +38,8 @@ class userController extends BaseController {
   });
 
   createAdmin = this.wrapper(async (req, res) => {
+    if (!req.file) throw this.BadRequest(res, "Mohon sertakan foto profil")
+    req.body['profileImage'] = req.file.path
     const data = await this.#service.createAdmin(req.body);
     return this.created(res, data, "user berhasil dibuat");
   });
@@ -43,11 +50,12 @@ class userController extends BaseController {
   });
 
   updateAdmin = this.wrapper(async (req, res) => {
+    if (req.file) req.body['profileImage'] = req.file.path
     const data = await this.#service.updateAdmin(+req.params.id, req.body);
     return this.ok(res, data, "user berhasil diperbarui");
   });
 
-  delete = this.wrapper(async (req, res) => {
+delete = this.wrapper(async (req, res) => {
     const data = await this.#service.delete(+req.params.id);
     return this.noContent(res, "user berhasil dihapus");
   });

@@ -17,6 +17,11 @@ class membercertificateService extends BaseService {
     return data;
   };
 
+  count = async (query) => {
+    const q = this.transformBrowseQuery(query);
+    return await this.db.memberCertificate.count({ where: q.where });
+  };
+
   findById = async (id) => {
     const data = await this.db.memberCertificate.findUnique({ where: { id } });
     return data;

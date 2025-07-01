@@ -17,6 +17,11 @@ class membercertificateController extends BaseController {
     return this.ok(res, data, "Banyak membercertificate berhasil didapatkan");
   });
 
+  count = this.wrapper(async (req, res) => {
+    const data = await this.#service.count(req.query);
+    return this.ok(res, data, "Banyak membercertificate berhasil didapatkan");
+  });
+
   findById = this.wrapper(async (req, res) => {
     const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("membercertificate tidak ditemukan");

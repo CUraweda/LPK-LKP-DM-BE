@@ -10,6 +10,24 @@ class dashboardController extends BaseController {
     this.#service = new dashboardService();
   }
 
+  formatSection = (sectionID) => {
+    switch (sectionID) {
+      case "HERO_BANNER": return "Hero Banner";
+      case "TENTANG_KAMI": return "Tentang Kami";
+      case "VISI": return "Visi";
+      case "MISI": return "Misi";
+      case "KEPERCAYAAN_PRESTASI": return "Kepercayaan & Prestasi";
+      case "PROGRAM_PELATIHAN": return "Program Pelatihan";
+      case "TIM": return "Tim";
+      case "KARYA_SISWA": return "Karya Siswa";
+      case "TESTIMONI": return "Testimoni";
+      case "INDUSTRI": return "Industri";
+      case "FAQ": return "FAQ";
+      case "FOOTER": return "Footer";
+      default: return sectionID; 
+    }
+  }
+
   findAll = this.wrapper(async (req, res) => {
     const data = await this.#service.findAll(req.query);
     return this.ok(res, data, "Banyak dashboard berhasil didapatkan");
@@ -28,13 +46,15 @@ class dashboardController extends BaseController {
   });
 
   create = this.wrapper(async (req, res) => {
-    if(req.file) req.body['image'] =  req.file.path
+    if (req.file) req.body['image'] = req.file.path
+    req.body['sectionName'] = this.formatSection(req.body['sectionID'])
     const data = await this.#service.create(req.body);
     return this.created(res, data, "dashboard berhasil dibuat");
   });
   
   update = this.wrapper(async (req, res) => {
-    if(req.file) req.body['image'] =  req.file.path 
+    if (req.file) req.body['image'] = req.file.path
+    req.body['sectionName'] = this.formatSection(req.body['sectionID'])
     const data = await this.#service.update(+req.params.id, req.body);
     return this.ok(res, data, "dashboard berhasil diperbarui");
   });

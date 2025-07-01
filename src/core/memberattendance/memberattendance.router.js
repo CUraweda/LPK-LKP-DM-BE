@@ -4,6 +4,7 @@ import memberattendanceController from "./memberattendance.controller.js";
 import memberattendanceValidator from "./memberattendance.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
+import uploader from "../../middlewares/multer.middleware.js";
 
 const r = Router(),
   validator = memberattendanceValidator,
@@ -11,18 +12,39 @@ const r = Router(),
 
 r.get(
   "/show-all",
-  validatorMiddleware({ query: baseValidator.browseQuery }),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.findAll
 );
 
 r.get("/show-one/:id", controller.findById);
 
+r.get(
+  "/show-my-recap",
+  auth(['SISWA', 'ADMIN']),
+  controller.myRecap
+);
+
+r.get(
+  "/count-all",
+  auth(['ADMIN']),
+  controller.countAll
+)
+
 r.post(
   "/attend",
   auth(['SISWA', 'ADMIN']),
+  uploader("/member/attendance", "image", "ATTENDANCE" ).single("image"),
   validatorMiddleware({ body: validator.attend }),
   controller.attend
 );
+
+r.post(
+  "/range-data",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.rangeData }),
+  controller.findRange
+);
+
 
 r.post(
   "/create",

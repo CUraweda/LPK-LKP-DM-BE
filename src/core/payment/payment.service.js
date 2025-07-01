@@ -52,7 +52,7 @@ class paymentService extends BaseService {
 
     notifyPayment = async (id, args = {}) => {
         const { status } = args;
-        // id = this.paymentHelper._decryptTID(id);
+        id = this.paymentHelper._decryptTID(id);
         const data = await this.db.transaction.findFirst({
             where: { transactionId: id, isPaid: false },
             include: { member: { include: { User: true } } },

@@ -13,7 +13,7 @@ const r = Router(),
 r.get(
   "/show-all",
   auth(["ADMIN"]),
-  validatorMiddleware({ query: baseValidator.browseQuery }),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.findAll
 );
 
@@ -32,23 +32,24 @@ r.get(
 );
 
 r.get(
-  "/show-period",
+  "/count",
   auth(["ADMIN"]),
-  controller.findByPeriod
-);
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.count
+)
 
 r.get(
-  "/search-name",
+  "/count",
   auth(["ADMIN"]),
-  controller.searchName
-);
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.count
+)
 
 r.get(
-  "/show-graduated",
-  validatorMiddleware({ body: validator.create }),
+  "/show-detail/:id",
   auth(["ADMIN"]),
-  controller.searchName
-);
+  controller.showDetail
+)
 
 r.get("/show-one/:id", 
   auth(["ADMIN"]),

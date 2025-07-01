@@ -5,10 +5,10 @@ class chatService extends BaseService {
   constructor() {
     super(prisma);
   }
-
+  
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.chat.findMany({ ...q });
+    const data = await this.db.chat.findMany({ ...q, orderBy: { sentAt: 'asc' } });
 
     if (query.paginate) {
       const countData = await this.db.chat.count({ where: q.where });
@@ -23,11 +23,11 @@ class chatService extends BaseService {
   };
 
   findByUser = async (id) => {
-    const data = await this.db.chat.findMany({ where: { receiverId: id } });
+    const data = await this.db.chat.findMany({ orderBy: { sentAt: 'asc' }, where: { receiverId: id, senderId: id } });
     return data;
   };
 
-  create = async (payload) => {
+  sendAdmin = async (payload) => {
     const data = await this.db.chat.create({ data: payload });
     return data;
   };
@@ -36,18 +36,7 @@ class chatService extends BaseService {
     const data = await this.db.chat.create({ data: payload });
     return data;
   };
-
-  sendToAdmin = async (payload) => {
-    const adminDatas = await this.db.user.findMany({ where: { role: { code: "ADMIN" } } })
-    const data = await this.db.chat.createMany({
-      data: adminDatas.map((admin) => ({
-        receiverId: admin.id, sentAt: new Date(),
-        ...payload
-      }))
-    })
-    return data
-  }
-
+  
   update = async (id, payload) => {
     const data = await this.db.chat.update({ where: { id: +id }, data: payload });
     return data;

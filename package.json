@@ -12,7 +12,7 @@
     "prisma:seed:dev": "node ./prisma/seeder/dev-seed.js",
     "prisma:seed:prod": "node ./prisma/seeder/prod-seed.js",
     "prisma:reset": "npx prisma migrate reset --force",
-    "gen:core": "node generator/core.js --name trainingCategory --model-name trainingCategory",
+    "gen:core": "node generator/core.js --name page --model-name page",
     "prisma:interface": "npx @kalissaac/prisma-typegen ./prisma/interfaces/types.d.ts ./prisma/schema.prisma"
   },
   "author": "Curaweda Palagan Innotech",
