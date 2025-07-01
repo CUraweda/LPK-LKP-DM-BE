@@ -27,7 +27,7 @@ class chatService extends BaseService {
     return data;
   };
 
-  create = async (payload) => {
+  sendAdmin = async (payload) => {
     const data = await this.db.chat.create({ data: payload });
     return data;
   };
@@ -36,18 +36,7 @@ class chatService extends BaseService {
     const data = await this.db.chat.create({ data: payload });
     return data;
   };
-
-  sendToAdmin = async (payload) => {
-    const adminDatas = await this.db.user.findMany({ where: { role: { code: "ADMIN" } } })
-    const data = await this.db.chat.createMany({
-      data: adminDatas.map((admin) => ({
-        receiverId: admin.id, sentAt: new Date(),
-        ...payload
-      }))
-    })
-    return data
-  }
-
+  
   update = async (id, payload) => {
     const data = await this.db.chat.update({ where: { id: +id }, data: payload });
     return data;

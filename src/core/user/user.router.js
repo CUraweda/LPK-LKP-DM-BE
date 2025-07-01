@@ -4,6 +4,7 @@ import userController from "./user.controller.js";
 import userValidator from "./user.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
+import uploader from "../../middlewares/multer.middleware.js";
 
 const r = Router(),
   validator = userValidator,
@@ -12,14 +13,8 @@ const r = Router(),
 r.get(
   "/show-all",
   auth(['ADMIN']),
-  validatorMiddleware({ query: baseValidator.browseQuery }),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.findAll
-);
-
-r.get(
-  "/show-by-name",
-  auth(['ADMIN']),
-  controller.findByName
 );
 
 r.get(
@@ -28,15 +23,23 @@ r.get(
   controller.findById
 );
 
+r.get(
+  '/count',
+  auth(['ADMIN']),
+  controller.count
+)
+
 r.post(
   "/create",
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
+
   controller.create
 );
 r.post(
   "/create-admin",
   auth(['ADMIN']),
+  uploader("/user", "image", "PP").single("profilePict"),
   validatorMiddleware({ body: validator.create_admin }),
   controller.createAdmin
 );
@@ -51,6 +54,7 @@ r.put(
 r.put(
   "/update-admin/:id",
   auth(['ADMIN']),
+  uploader("/user", "image", "PP").single("profilePict"),
   validatorMiddleware({ body: validator.updateAdmin }),
   controller.updateAdmin
 );

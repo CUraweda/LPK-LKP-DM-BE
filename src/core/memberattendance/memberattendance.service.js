@@ -1,7 +1,7 @@
 import { cp } from "fs";
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
-import { BadRequest } from "../../exceptions/catch.execption.js";
+import { BadRequest, NotFound } from "../../exceptions/catch.execption.js";
 
 class memberattendanceService extends BaseService {
   constructor() {
@@ -21,9 +21,12 @@ class memberattendanceService extends BaseService {
     formatedSplit[index] = +formatedSplit[index] + 1
     return formatedSplit.join("|")
   }
+
   findAll = async (query) => {
+    const { date } = query
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.memberAttendance.findMany({ ...q, orderBy: { rawDate: "desc" }   });
+    if (date) q.where['date'] = date
+    const data = await this.db.memberAttendance.findMany({ ...q, orderBy: { rawDate: "desc" } });
 
     if (query.paginate) {
       const countData = await this.db.memberAttendance.count({ where: q.where });
@@ -32,9 +35,43 @@ class memberattendanceService extends BaseService {
     return data;
   };
 
+  countAll = async () => {
+    const dataFilter = { H: 0, I: 0, S: 0, A: 0 };
+    await this.db.memberAttendance.findMany({ select: { type: true } }).then((dt) =>
+      dt.forEach((data) => { dataFilter[data.type]++ })
+    )
+    return dataFilter;
+  };
+
   findById = async (id) => {
     const data = await this.db.memberAttendance.findUnique({ where: { id } });
     return data;
+  };
+
+  findRange = async (body) => {
+    const trainingData = await this.db.training.findFirst({ where: { id: body['trainingId'] }, select: { title: true } })
+    if (!trainingData) throw new NotFound("Data Pelatihan Tidak Ditemukan")
+
+    let totalData = { H: 0, I: 0, S: 0, A: 0 }, memberData = {}
+    await this.db.memberAttendance.findMany({
+      where: {
+        date: {
+          gte: body.fromDate,
+          lte: body.toDate
+        }
+      },
+      select: { type: true, member: { select: { name: true } } }
+    }).then((attendances) => {
+      attendances.map((attendance) => {
+        if(!memberData[attendance.member.name]) memberData[attendance.member.name] = { H: 0, I: 0, S: 0, A: 0 }
+        memberData[attendance.member.name][attendance.type]++
+        totalData[attendance.type]++
+      })
+    })
+
+    return {
+      trainingData, totalData, memberData
+    }
   };
 
   myRecap = async (user, filter) => {

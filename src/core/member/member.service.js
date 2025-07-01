@@ -11,7 +11,15 @@ class memberService extends BaseService {
   }
 
   findAll = async (query) => {
+    const { startDate, endDate } = query;
     const q = this.transformBrowseQuery(query);
+    
+    if (startDate && endDate) {
+      q.where.createdAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
+      };
+    }
 
     const data = await this.db.member.findMany({
       ...q,
@@ -25,6 +33,16 @@ class memberService extends BaseService {
       const countData = await this.db.member.count({ where: q.where });
       return this.paginate(data, countData, q);
     }
+
+    return data;
+  };
+
+  count = async (query) => {
+    const q = this.transformBrowseQuery(query);
+
+    const data = await this.db.member.count({
+      ...q,
+    });
 
     return data;
   };
@@ -69,58 +87,19 @@ class memberService extends BaseService {
     return data;
   };
 
-  findByPeriod = async (query) => {
-    const { startDate, endDate } = query;
-
-    const where = {};
-    if (startDate && endDate) {
-      where.createdAt = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
-      };
-    }
-
-    const data = await this.db.member.findMany({
-      where,
-      include: {
-        User: true,
-        identity: true,
-      },
-    });
-    return data;
-  };
-
-  searchName = async (query) => {
-    console.log(query);
-
-    const data = await this.db.member.findMany({
-      where: {
-        name: {
-          contains: query.name
-        },
-      },
-      include: {
-        User: true,
-        identity: true,
-      },
-    });
-
-    return data;
-  };
-
   validateRegistrationPayment = async (user) => {
     const data = await this.db.member.findFirst({ where: { id: user.member.id }, include: { registrationPayment: { include: { transaction: true } } } })
     const currentDate = new Date();
-    if(data.registrationPaymentId || data?.registrationPayment?.transaction?.expiredDate << currentDate){
-      return { 
+    if (data.registrationPaymentId || data?.registrationPayment?.transaction?.expiredDate << currentDate) {
+      return {
         validPayment: true,
         paymentMethod: data.registrationPayment.transaction.paymentMethod,
         paymentTotal: data.registrationPayment.transaction.paymentTotal,
         qrisLink: data.registrationPayment.transaction.qrisLink,
         virtualAccountNo: data.registrationPayment.transaction.virtualAccountNo,
         expiredDate: data.registrationPayment.transaction.expiredDate,
-       }
-    }else {
+      }
+    } else {
       return { validPayment: false }
     }
   }
@@ -130,6 +109,16 @@ class memberService extends BaseService {
     const data = await this.db.member.findUnique({ where: { id } });
     return data;
   };
+
+  findDetail = async (id) => {
+    const data = await this.db.member.findFirst({
+      where: { id }, select: {
+        id: true, phoneNumber: true, profileImage: true,
+        identity: true, parents: true
+      }
+    })
+    return data
+  }
 
   create = async (payload) => {
     const data = await this.db.member.create({ data: payload });
@@ -154,9 +143,9 @@ class memberService extends BaseService {
   extendDataSiswa = async (payload) => {
     const id = payload.memberId
     return await this.db.$transaction(async (prisma) => {
-      const { name, profileImage, ...data } = payload
+      const { name, profileImage, phoneNumber, ...data } = payload
       await prisma.memberIdentity.upsert({ where: { memberId: id }, create: data, update: data })
-      await prisma.member.update({ where: { id }, data: { name, memberState: memberConstant.memberState.Data_Ibu, profileImage } })
+      await prisma.member.update({ where: { id }, data: { name, memberState: memberConstant.memberState.Data_Ibu, profileImage, phoneNumber } })
     })
   }
 

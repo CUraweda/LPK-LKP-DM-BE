@@ -28,21 +28,22 @@ class dashboardService extends BaseService {
   };
 
   create = async (payload) => {
-    const sectionNumber = await this.db.dashboard.count({ where:  { sectionID: payload.sectionID } })
-    if(sectionNumber > 0)  payload['uid'] = `${payload.sectionID}_${sectionNumber + 1}`
-    if(sectionNumber == 0) {
+    const sectionNumber = await this.db.dashboard.count({ where: { sectionID: payload.sectionID } })
+    if (sectionNumber > 0) payload['uid'] = `${payload.sectionID}_${sectionNumber + 1}`
+    if (sectionNumber == 0) {
       payload['uid'] = `${payload.sectionID}_${sectionNumber + 1}`
       payload['isTitle'] = true
     }
     const data = await this.db.dashboard.create({ data: payload });
     return data;
   };
-  
+
   update = async (id, payload) => {
-    if(payload.sectionID){
-      const sectionNumber = await this.db.dashboard.count({ where:  { sectionID: payload.sectionID } })
-      if(sectionNumber > 0)  payload['uid'] = `${payload.sectionID}_${sectionNumber + 1}`
-      if(sectionNumber == 0) {
+    const previousData = await this.db.dashboard.findFirst({ where: { id } })
+    if (payload.sectionID != previousData.sectionID) {
+      const sectionNumber = await this.db.dashboard.count({ where: { sectionID: payload.sectionID } })
+      if (sectionNumber > 0) payload['uid'] = `${payload.sectionID}_${sectionNumber + 1}`
+      if (sectionNumber == 0) {
         payload['uid'] = `${payload.sectionID}_${sectionNumber + 1}`
         payload['isTitle'] = true
       }

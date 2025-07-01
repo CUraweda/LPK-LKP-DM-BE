@@ -22,16 +22,16 @@ r.get("/show-one/:id", controller.findById);
 r.post(
   "/create",
   auth(['ADMIN']),
-  validatorMiddleware({ body: validator.create }),
   uploader("/dashboard", "image", "PP").single("image"),
+  validatorMiddleware({ body: validator.create }),
   controller.create
 );
 
 r.put(
   "/update/:id",
   auth(['ADMIN']),
-  validatorMiddleware({ body: validator.update }),
   uploader("/dashboard", "image", "PP").single("image"),
+  validatorMiddleware({ body: validator.update }),
   controller.update
 );
 

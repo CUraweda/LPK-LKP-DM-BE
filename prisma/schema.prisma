@@ -87,6 +87,11 @@ enum memberState {
   SEL //Selesai
 }
 
+enum avaliablePage {
+  REGISTER
+  LOGIN
+}
+
 enum dashboardSection {
   HERO_BANNER
   TENTANG_KAMI
@@ -115,12 +120,11 @@ model User {
   forgetExpiry DateTime?
   isSuspended  Boolean   @default(false)
 
-  employee      Employee?
-  member        Member?     @relation(fields: [memberId], references: [id])
-  role          Role        @relation(fields: [roleId], references: [id])
-  chatsSent     Chat[]      @relation("ChatSender")
-  chatsReceived Chat[]      @relation("ChatReceiver")
-  GroupChat     GroupChat[]
+  employee  Employee?
+  member    Member?    @relation(fields: [memberId], references: [id])
+  role      Role       @relation(fields: [roleId], references: [id])
+  ChatRecap ChatRecap?
+  Chat      Chat[]
 
   @@map("user")
 }
@@ -223,6 +227,16 @@ model Dashboard {
   training Training? @relation(fields: [training_id], references: [id])
 }
 
+model Page {
+  id           Int           @id @default(autoincrement())
+  pageID       avaliablePage
+  uid          String        @unique
+  dividerTitle String
+  title        String?
+  description  String?       @db.Text
+  file         String?
+}
+
 model TrainingSchedule {
   id          Int                  @id @default(autoincrement())
   trainingId  Int
@@ -278,33 +292,29 @@ model Material {
   @@map("material")
 }
 
-model GroupChat {
-  id              Int      @id @default(autoincrement())
-  senderId        Int
-  receiverId      Int
-  groupSenderId   String  @unique //?format: senderId|receiverId
-  groupReceiverId String  @unique //?format: receiver|sender
+model ChatRecap {
+  id              Int      @id @unique
+  userId          Int      @unique
+  totalMessage    Int      @default(0)
+  unreadedMessage Int      @default(0)
   createdAt       DateTime @default(now())
 
-  sender          User    @relation(fields: [senderId], references: [id])
+  user User   @relation(fields: [userId], references: [id])
   Chat Chat[]
 }
 
 model Chat {
-  id         Int      @id @default(autoincrement())
-  senderId   Int?
-  receiverId Int
-  groupId    Int?
-  message    String?
-  imageLink  String?
-  fileSize   String?
-  fileLink   String?
-  type       ChatType
-  sentAt     DateTime
+  id          Int      @id @default(autoincrement())
+  senderId    Int
+  chatRecapId Int?
+  message     String?
+  fileSize    Int?
+  fileLink    String?
+  type        ChatType
+  sentAt      DateTime
 
-  sender   User?      @relation("ChatSender", fields: [senderId], references: [id])
-  receiver User       @relation("ChatReceiver", fields: [receiverId], references: [id])
-  group    GroupChat? @relation(fields: [groupId], references: [id])
+  chatRecap ChatRecap? @relation(fields: [chatRecapId], references: [id])
+  sender    User?      @relation(fields: [senderId], references: [id])
 
   @@map("chats")
 }
@@ -313,6 +323,7 @@ model Chat {
 model Member {
   id                    Int         @id @default(autoincrement())
   name                  String?
+  phoneNumber           String?     @unique
   profileImage          String?
   totalCourses          Int?        @default(0)
   totalCoursePrice      Float?      @default(0)
@@ -471,7 +482,7 @@ model MemberIdentity {
   village          String
   postalCode       Int
   detailedAddress  String
-  phoneNumber      String   @unique
+  // phoneNumber      String   @unique
   isParentGuardian Boolean  @default(false)
   socialHelp       String //?Example: '|PKH|,|KPS|,|KIP|'
   memberId         Int      @unique

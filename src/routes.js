@@ -22,7 +22,8 @@ import trainingscheduleRouter from './core/trainingschedule/trainingschedule.rou
 import trainingenrollmentRouter from './core/trainingenrollment/trainingenrollment.router.js';
 import dashboardRouter from './core/dashboard/dashboard.router.js';
 import trainingcategoryRouter from './core/trainingcategory/trainingcategory.router.js'
-import groupchatRouter from './core/groupchat/groupchat.router.js';
+import chatrecapRouter from './core/chatrecap/chatrecap.router.js';
+import pageRouter from './core/page/page.router.js';
 
 const router = express.Router();
 
@@ -40,8 +41,8 @@ export const routeLists = [
         route: paymentRouter
     },
     {
-        path: '/group-chat',
-        route: groupchatRouter
+        path: '/chat-recap',
+        route: chatrecapRouter
     },
     {
         path: '/chat',
@@ -66,6 +67,10 @@ export const routeLists = [
     {
         path: '/ref/dashboard',
         route: dashboardRouter
+    },
+    {
+        path: '/ref/page',
+        route: pageRouter
     },
     {
         path: '/training/schedule',

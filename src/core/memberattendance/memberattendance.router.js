@@ -12,7 +12,7 @@ const r = Router(),
 
 r.get(
   "/show-all",
-  validatorMiddleware({ query: baseValidator.browseQuery }),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.findAll
 );
 
@@ -24,6 +24,12 @@ r.get(
   controller.myRecap
 );
 
+r.get(
+  "/count-all",
+  auth(['ADMIN']),
+  controller.countAll
+)
+
 r.post(
   "/attend",
   auth(['SISWA', 'ADMIN']),
@@ -31,6 +37,14 @@ r.post(
   validatorMiddleware({ body: validator.attend }),
   controller.attend
 );
+
+r.post(
+  "/range-data",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.rangeData }),
+  controller.findRange
+);
+
 
 r.post(
   "/create",
