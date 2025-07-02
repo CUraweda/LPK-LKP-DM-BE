@@ -30,57 +30,116 @@ class trainingscheduleService extends BaseService {
     return data;
   };
 
+  findByMember = async (id) => {
+    const intId = Number(id);
+    const data = await this.db.trainingSchedule.findMany({
+      where: {
+        enrollments: {
+          some: {
+            memberId: intId
+          }
+        }
+      },
+      include: {
+        enrollments: true,
+      }
+    });
+    return data;
+  }
+
   create = async (payload) => {
     try {
-      const { trainingId, memberId, startTime, endTime, type } = payload;
-  
-      // Step 1: Create the new schedule
-      const newSchedule = await this.db.trainingSchedule.create({
-        data: {
-          trainingId: trainingId,
-          startTime: startTime,
-          endTime: endTime,
-          type: type,
-          status: 'AVAILABLE', // Initial status is AVAILABLE for the first user
-        },
+      const { trainingId, memberId, startTime, type } = payload;
+      const training = await this.db.training.findFirst({ where: { id: trainingId }})
+      const endTime = new Date(startTime);
+      endTime.setUTCHours(endTime.getUTCHours() + training.targetTrainingHours);
+      
+      const booked = await this.db.trainingEnrollment.findFirst({
+        where: {
+          memberId,
+          schedule: {
+            trainingId,
+            startTime,
+            type
+          }
+        }
       });
-  
-      // Step 2: Enroll the user into the newly created schedule
-      const enrollment = await this.db.trainingEnrollment.create({
-        data: {
-          memberId: memberId,
-          scheduleId: newSchedule.id,
-          status: 'IN_PROGRESS', // Set status to IN_PROGRESS for the user
-        },
-      });
-  
-      // Step 3: After enrollment, change the schedule status to 'UNAVAILABLE' for other users
-      await this.db.trainingSchedule.update({
-        where: { id: newSchedule.id },
-        data: { status: 'UNAVAILABLE' }, // Once a user takes the schedule, make it unavailable for others
-      });
-  
-      // Return the new schedule and enrollment
-      const data = {
-        newSchedule, enrollment
+      if (booked) {
+        throw new Error("You already booked this schedule.");
       }
 
-      return data;
+      const existing = await this.db.trainingSchedule.findFirst({
+        where: {
+          trainingId,
+          startTime,
+          type
+        },
+        include: {
+          enrollments: true
+        }
+      });
+
+      if (existing) {
+        const enrollment = await this.db.trainingEnrollment.create({
+          data: {
+            memberId,
+            scheduleId: existing.id,
+            status: "BOOKED"
+          }
+        });
+        return {
+          schedule: existing,
+          enrollment
+        };
+      }
+
+      const newSchedule = await this.db.trainingSchedule.create({
+        data: {
+          trainingId,
+          startTime,
+          endTime: endTime.toISOString(),
+          type,
+          enrollments: {
+            create: {
+              memberId,
+              status: 'BOOKED'
+            }
+          }
+        },
+        include: { enrollments: true }
+      });
+      
+      return newSchedule;
+
     } catch (error) {
       console.error("Error creating schedule and enrollment:", error);
-      throw Error(error)
+      throw Error(error);
     }
   };
-  
 
   update = async (id, payload) => {
-    const data = await this.db.trainingSchedule.update({ where: { id }, data: payload });
-    return data;
+    const convertId = Number(id)
+    if(payload.startTime){
+      const existing = await this.db.trainingSchedule.findFirst({ where: { id: convertId }})
+      const training = await this.db.training.findFirst({ where: { id: existing.trainingId }})
+      const endTime = new Date(payload.startTime);
+      endTime.setUTCHours(endTime.getUTCHours() + training.targetTrainingHours);
+      const payload_data = {
+        ...payload,
+          endTime: endTime.toISOString(),
+      }
+      const data = await this.db.trainingSchedule.update({ where: { id: convertId }, data: payload_data });
+      return data;
+    } else {
+      const data = await this.db.trainingSchedule.update({ where: { id: convertId }, data: payload });
+      return data;
+    }
   };
 
   delete = async (id) => {
-    const intId = Number(id)
-    const data = await this.db.trainingSchedule.delete({ where: { id: intId } });
+    const scheduleId = Number(id)
+    await this.db.trainingEnrollment.deleteMany({ where: { scheduleId } });
+    const data = await this.db.trainingSchedule.delete({ where: { id: scheduleId }});
     return data;
   };
 }

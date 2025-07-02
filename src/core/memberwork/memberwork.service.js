@@ -8,32 +8,46 @@ class memberworkService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.memberwork.findMany({ ...q });
+    const data = await this.db.memberWork.findMany({ ...q });
 
     if (query.paginate) {
-      const countData = await this.db.memberwork.count({ where: q.where });
+      const countData = await this.db.memberWork.count({ where: q.where });
       return this.paginate(data, countData, q);
     }
     return data;
   };
 
   findById = async (id) => {
-    const data = await this.db.memberwork.findUnique({ where: { id } });
+    const convertId = Number(id)
+    const data = await this.db.memberWork.findUnique({ where: { id: convertId } });
+    return data;
+  };
+
+  findByUser = async (id) => {
+    const userId = Number(id)
+    const data = await this.db.memberWork.findMany({ where: { memberId: userId } });
     return data;
   };
 
   create = async (payload) => {
-    const data = await this.db.memberwork.create({ data: payload });
+    const member = await this.db.member.findUnique({where: { id: payload.memberId }})
+    if(member.isGraduate != true){
+      throw new Error("Anda tidak bisa menambahkan pekerjaan jika belum lulus!")
+    }
+    const data = await this.db.memberWork.create({ data: payload });
     return data;
   };
 
+
   update = async (id, payload) => {
-    const data = await this.db.memberwork.update({ where: { id }, data: payload });
+    const convertId = Number(id)
+    const data = await this.db.memberWork.update({ where: { id: convertId }, data: payload });
     return data;
   };
 
   delete = async (id) => {
-    const data = await this.db.memberwork.delete({ where: { id } });
+    const convertId = Number(id)
+    const data = await this.db.memberWork.delete({ where: { id: convertId } });
     return data;
   };
 }

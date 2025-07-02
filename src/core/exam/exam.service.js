@@ -18,7 +18,8 @@ class examService extends BaseService {
   };
 
   findById = async (id) => {
-    const data = await this.db.exam.findUnique({ where: { id } });
+    const convertId = Number(id);
+    const data = await this.db.exam.findUnique({ where: { id: convertId } });
     return data;
   };
 
@@ -28,12 +29,14 @@ class examService extends BaseService {
   };
 
   update = async (id, payload) => {
-    const data = await this.db.exam.update({ where: { id }, data: payload });
+    const convertId = Number(id);
+    const data = await this.db.exam.update({ where: { id: convertId }, data: payload });
     return data;
   };
 
   delete = async (id) => {
-    const data = await this.db.exam.delete({ where: { id } });
+    const convertId = Number(id);
+    const data = await this.db.exam.delete({ where: { id: convertId } });
     return data;
   };
 }

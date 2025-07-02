@@ -22,6 +22,13 @@ class membersalaryController extends BaseController {
     return this.ok(res, data, "membersalary berhasil didapatkan");
   });
 
+  findByUser = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByUser(req.params.id);
+    if (!data) throw new NotFound("membersalary tidak ditemukan");
+
+    return this.ok(res, data, "membersalary berhasil didapatkan");
+  });
+
   create = this.wrapper(async (req, res) => {
     const data = await this.#service.create(req.body);
     return this.created(res, data, "membersalary berhasil dibuat");

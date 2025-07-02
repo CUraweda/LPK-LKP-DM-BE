@@ -4,6 +4,7 @@ import chatController from "./chat.controller.js";
 import chatValidator from "./chat.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
+import uploader from "../../middlewares/multer.middleware.js";
 
 const r = Router(),
   validator = chatValidator,
@@ -16,21 +17,31 @@ r.get(
 );
 
 r.get("/show-one/:id", controller.findById);
+r.get("/show-me", auth(['ADMIN', 'SISWA']), controller.findByUser)
 
 r.post(
-  "/create",
+  "/send-admin",
   auth(['ADMIN']),
+  uploader("/chat", "*", "CT"). single("fSend"),
   validatorMiddleware({ body: validator.create }),
-  controller.create
-  );
-  
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
+  controller.sendAdmin
+);
+r.post(
+  "/send",
+  auth(['SISWA']),
+  uploader("/chat", "*", "CT").single("fSend"),
+  validatorMiddleware({ body: validator.send }),
+  controller.send
+)
+
+r.put(
+  "/update/:id",
+  auth(['ADMIN']),
+  uploader("/chat", "*", "CT").single("fSend"),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const chatRouter = r;

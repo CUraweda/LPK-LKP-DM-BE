@@ -8,32 +8,51 @@ class membertestService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.membertest.findMany({ ...q });
+    const data = await this.db.memberTest.findMany({ ...q });
 
     if (query.paginate) {
-      const countData = await this.db.membertest.count({ where: q.where });
+      const countData = await this.db.memberTest.count({ where: q.where });
       return this.paginate(data, countData, q);
     }
     return data;
   };
 
   findById = async (id) => {
-    const data = await this.db.membertest.findUnique({ where: { id } });
+    const convertId = Number(id)
+    const data = await this.db.memberTest.findUnique({ where: { id: convertId } });
+    return data;
+  };
+
+  findByExam = async (id) => {
+    const convertId = Number(id)
+    const data = await this.db.memberTest.findMany({ where: { examId: convertId } });
     return data;
   };
 
   create = async (payload) => {
-    const data = await this.db.membertest.create({ data: payload });
+    const startTime = new Date()
+    const payload_data = {
+      ...payload,
+      startTime
+    }
+    const data = await this.db.memberTest.create({ data: payload_data });
     return data;
   };
 
   update = async (id, payload) => {
-    const data = await this.db.membertest.update({ where: { id }, data: payload });
+    const convertId = Number(id)
+    const finishedAt = new Date()
+    const payload_data = {
+      ...payload,
+      finishedAt
+    }
+    const data = await this.db.memberTest.update({ where: { id: convertId }, data: payload_data });
     return data;
   };
 
   delete = async (id) => {
-    const data = await this.db.membertest.delete({ where: { id } });
+    const convertId = Number(id)
+    const data = await this.db.memberTest.delete({ where: { id: convertId } });
     return data;
   };
 }
