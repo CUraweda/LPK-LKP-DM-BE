@@ -30,22 +30,62 @@ class trainingscheduleService extends BaseService {
     return data;
   };
 
-  findByMember = async (id) => {
+  findByMember = async (id, query = {}) => {
     const intId = Number(id);
-    const data = await this.db.trainingSchedule.findMany({
+    const now = new Date();
+
+    let startTimeFilter = {};
+    if (query.startTime) {
+      const parsedDate = new Date(query.startTime);
+      if (!isNaN(parsedDate.getTime())) {
+        startTimeFilter = {
+          startTime: {
+            gte: parsedDate,
+          },
+        };
+      }
+    }
+
+    const schedules = await this.db.trainingSchedule.findMany({
       where: {
-        enrollments: {
-          some: {
-            memberId: intId
-          }
-        }
+        AND: [
+          {
+            enrollments: {
+              some: {
+                memberId: intId,
+              },
+            },
+          },
+          startTimeFilter,
+        ],
       },
       include: {
-        enrollments: true,
-      }
+        training: true,
+        enrollments: {
+          where: {
+            memberId: intId,
+          },
+          include: {
+            member: true,
+          },
+        },
+      },
+      orderBy: { startTime: 'asc' },
     });
-    return data;
-  }
+
+    const remainingSchedule = schedules.filter((schedule) => {
+      return new Date(schedule.endTime) > now;
+    }).length;
+
+    return {
+      status: true,
+      message: "Berhasil ambil data training schedule",
+      data: {
+        schedules,
+        remainingSchedule,
+      },
+    };
+  };
 
   create = async (payload) => {
     try {
