@@ -205,6 +205,8 @@ model TrainingCategory {
   id       Int        @id @default(autoincrement())
   title    String
   image    String?
+  uid      String?    @unique
+  level    Int?
   Training Training[]
   Member   Member[]
 }
