@@ -19,7 +19,13 @@ r.get(
 r.get("/show-one/:id", controller.findById);
 
 r.get(
-  "/count", 
+  "/show-me",
+  auth(['SISWA', 'ADMIN']),
+  controller.findMe
+)
+
+r.get(
+  "/count",
   validatorMiddleware({ query: baseValidator.browseQuery }),
   controller.count
 );

@@ -17,6 +17,12 @@ class membercertificateController extends BaseController {
     return this.ok(res, data, "Banyak membercertificate berhasil didapatkan");
   });
 
+  findMe = this.wrapper(async (req, res) => {
+    req.query['where'] = `memberId:${req.user.memberId}`
+    const data = await this.#service.findAll(req.query);
+    return this.ok(res, data, "Banyak member berhasil didapatkan");
+  });
+
   count = this.wrapper(async (req, res) => {
     const data = await this.#service.count(req.query);
     return this.ok(res, data, "Banyak membercertificate berhasil didapatkan");
@@ -51,7 +57,7 @@ class membercertificateController extends BaseController {
     if (!certificateBody) throw this.BadRequest(res, "Data tidak ditemukan")
     const filePath = certificateBody.imageLink
     if (!existsSync(filePath)) throw new NotFound("File dihapus atau tidak ditemukan")
-    
+
     const filename = path.basename(filePath);
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader(
