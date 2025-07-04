@@ -1,5 +1,6 @@
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
+import { verifyToken } from "../../helpers/jwt.helper.js";
 
 class trainingscheduleService extends BaseService {
   constructor() {
@@ -30,21 +31,50 @@ class trainingscheduleService extends BaseService {
     return data;
   };
 
-  findByMember = async (id, query = {}) => {
-    const intId = Number(id);
-    const now = new Date();
+  findByMember = async (query = {}, headers) => {
+    const authHeader = headers?.authorization || headers?.Authorization;
+    const token = authHeader?.split(' ')[1];
+    if (!token) {
+      throw new Error('No authorization token found');
+    }
 
+    let decodedUser;
+    try {
+      decodedUser = verifyToken(token);
+    } catch (err) {
+      console.error("Invalid token:", err);
+      throw new Error('Invalid or expired token');
+    }
+
+    const user = await this.db.user.findFirst({
+      where: { id: decodedUser.userId },
+      include: { member: true },
+    });
+
+    if (!user || !user.member) {
+      throw new Error('User or associated member not found');
+    }
+
+    const memberId = user.member.id;
+
+    const now = new Date();
     let startTimeFilter = {};
+
     if (query.startTime) {
       const parsedDate = new Date(query.startTime);
       if (!isNaN(parsedDate.getTime())) {
+        const endDate = new Date(parsedDate);
+        endDate.setDate(endDate.getDate() + 7);
+
         startTimeFilter = {
           startTime: {
             gte: parsedDate,
+            lt: endDate,
           },
         };
       }
     }
+
 
     const schedules = await this.db.trainingSchedule.findMany({
       where: {
@@ -52,7 +82,7 @@ class trainingscheduleService extends BaseService {
           {
             enrollments: {
               some: {
-                memberId: intId,
+                memberId: memberId,
               },
             },
           },
@@ -63,7 +93,7 @@ class trainingscheduleService extends BaseService {
         training: true,
         enrollments: {
           where: {
-            memberId: intId,
+            memberId: memberId,
           },
           include: {
             member: true,
@@ -77,15 +107,9 @@ class trainingscheduleService extends BaseService {
       return new Date(schedule.endTime) > now;
     }).length;
 
-    return {
-      status: true,
-      message: "Berhasil ambil data training schedule",
-      data: {
-        schedules,
-        remainingSchedule,
-      },
-    };
+    return { schedules, remainingSchedule };
   };
+
 
   create = async (payload) => {
     try {

@@ -17,7 +17,7 @@ r.get(
 
 r.get("/show-one/:id", controller.findById);
 
-r.get("/show-by-member/:id", controller.findByMember);
+r.get("/show-by-member", controller.findByMember);
 
 r.post(
   "/create",
