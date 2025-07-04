@@ -29,7 +29,7 @@ class memberController extends BaseController {
     const data = await this.#service.findGraduated(req.query);
     return this.ok(res, data, "Banyak member berhasil didapatkan");
   });
-  
+    
   validateRegistrationPayment = this.wrapper(async (req, res) => {
     const data = await this.#service.validateRegistrationPayment(req.user);
     return this.ok(res, data, "Validasi Pembayaran Berhasil Dikirimkan");
