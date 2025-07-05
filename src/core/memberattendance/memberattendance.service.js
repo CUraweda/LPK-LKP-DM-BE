@@ -139,7 +139,7 @@ class memberattendanceService extends BaseService {
     const member = await this.db.member.findFirst({ where: { id: payload.memberId } })
     if (!member) throw new BadRequest("Relasi Member tidak ditemukan")
 
-    await this.db.$transaction(async (prisma) => {
+    return await this.db.$transaction(async (prisma) => {
       const createMember = await prisma.memberAttendance.create({ data: payload })
       if (!createMember) throw new BadRequest("Terjadi kesalahan saat membuat data member")
       await prisma.member.update({ where: { id: payload.memberId }, data: { formattedAttendance: this.formatMemberAttendance(member.formattedAttendance, payload) } })

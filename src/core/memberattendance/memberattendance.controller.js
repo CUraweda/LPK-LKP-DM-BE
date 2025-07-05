@@ -15,6 +15,12 @@ class memberattendanceController extends BaseController {
     return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
   });
 
+  findMe = this.wrapper(async (req, res) => {
+    req.query['where'] = `memberId:${req.user.memberId}`
+    const data = await this.#service.findAll(req.query);
+    return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
+  });
+
   countAll = this.wrapper(async (req, res) => {
     const data = await this.#service.countAll();
     return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
@@ -42,6 +48,7 @@ class memberattendanceController extends BaseController {
   });
 
   create = this.wrapper(async (req, res) => {
+    if (!req.file) req.body['attendanceImage'] = req.file.path
     const data = await this.#service.create(req.body);
     return this.created(res, data, "memberattendance berhasil dibuat");
   });

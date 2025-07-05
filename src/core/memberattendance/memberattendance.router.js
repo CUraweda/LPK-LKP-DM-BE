@@ -25,6 +25,12 @@ r.get(
 );
 
 r.get(
+  "/show-me",
+  auth(['SISWA', 'ADMIN']),
+  controller.findMe
+);
+
+r.get(
   "/count-all",
   auth(['ADMIN']),
   controller.countAll
@@ -49,6 +55,7 @@ r.post(
 r.post(
   "/create",
   auth(['ADMIN']),
+  uploader("/member/attendance", "image", "ATTENDANCE" ).single("image"),
   validatorMiddleware({ body: validator.create }),
   controller.create
 );
