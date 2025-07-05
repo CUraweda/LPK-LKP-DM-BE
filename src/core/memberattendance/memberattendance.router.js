@@ -25,6 +25,12 @@ r.get(
 );
 
 r.get(
+  "/show-me",
+  auth(['SISWA', 'ADMIN']),
+  controller.findMe
+);
+
+r.get(
   "/count-all",
   auth(['ADMIN']),
   controller.countAll

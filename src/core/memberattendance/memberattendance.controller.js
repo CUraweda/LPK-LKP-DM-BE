@@ -15,6 +15,12 @@ class memberattendanceController extends BaseController {
     return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
   });
 
+  findMe = this.wrapper(async (req, res) => {
+    req.query['where'] = `memberId:${req.user.memberId}`
+    const data = await this.#service.findAll(req.query);
+    return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
+  });
+
   countAll = this.wrapper(async (req, res) => {
     const data = await this.#service.countAll();
     return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
