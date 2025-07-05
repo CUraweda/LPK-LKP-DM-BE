@@ -49,6 +49,7 @@ r.post(
 r.post(
   "/create",
   auth(['ADMIN']),
+  uploader("/member/attendance", "image", "ATTENDANCE" ).single("image"),
   validatorMiddleware({ body: validator.create }),
   controller.create
 );
