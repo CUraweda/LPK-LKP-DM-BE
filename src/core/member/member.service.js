@@ -12,9 +12,21 @@ class memberService extends BaseService {
   }
 
   findAll = async (query) => {
-    const { startDate, endDate } = query;
+    const { startDate, endDate, status } = query;
     const q = this.transformBrowseQuery(query);
-    
+
+    if (status) {
+      switch (status) {
+        case "Sedang Pelatihan":
+          q.where.isGraduate = false
+          break;
+        case "Selesai Pelatihan":
+          q.where.isGraduate = true
+          break;
+        default:
+          break;
+      }
+    }
     if (startDate && endDate) {
       q.where.createdAt = {
         gte: new Date(startDate),
@@ -40,6 +52,16 @@ class memberService extends BaseService {
 
   count = async (query) => {
     const q = this.transformBrowseQuery(query);
+    const { date } = query
+
+    if (date) {
+      let start_date = new Date(date)
+      let end_date = new Date(date)
+      start_date.setHours(0, 0, 0, 0);
+      end_date.setHours(23, 59, 59, 999);
+
+      q.where.createdAt = { gte: start_date, lte: end_date }
+    }
 
     const data = await this.db.member.count({
       ...q,
@@ -105,6 +127,19 @@ class memberService extends BaseService {
     }
   }
 
+  countRecap = async () => {
+    let start_date = new Date()
+    let end_date = new Date()
+    start_date.setHours(0, 0, 0, 0);
+    end_date.setHours(23, 59, 59, 999);
+
+    let recapData = { siswaBaru: 0, siswa: 0, totalSiswa: 0 }
+    recapData.siswaBaru = await this.db.member.count({ where: { createdAt: { gte: start_date, lte: end_date }, isGraduate: false } })
+    recapData.siswa = await this.db.member.count({ where: { isGraduate: false } })
+    recapData.totalSiswa = await this.db.member.count()
+
+    return recapData
+  }
 
   findById = async (id) => {
     const data = await this.db.member.findUnique({ where: { id } });

@@ -26,7 +26,7 @@ r.get(
 
 r.get(
   "/count",
-  validatorMiddleware({ query: baseValidator.browseQuery }),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.count
 );
 

@@ -49,12 +49,13 @@ class memberattendanceService extends BaseService {
   };
 
   findRange = async (body) => {
-    const trainingData = await this.db.training.findFirst({ where: { id: body['trainingId'] }, select: { title: true } })
+    const trainingData = await this.db.training.findFirst({ where: { id: body['trainingId'] }, select: { id: true, title: true } })
     if (!trainingData) throw new NotFound("Data Pelatihan Tidak Ditemukan")
 
     let totalData = { H: 0, I: 0, S: 0, A: 0 }, memberData = {}
     await this.db.memberAttendance.findMany({
       where: {
+        member: { trainingId: trainingData.id },
         date: {
           gte: body.fromDate,
           lte: body.toDate
@@ -75,7 +76,8 @@ class memberattendanceService extends BaseService {
   };
 
   myRecap = async (user, filter) => {
-    let { iteration } = filter
+    let { iteration, no_auth } = filter
+    no_auth = (no_auth == "1")
     let start_date = new Date()
     let end_date = new Date()
 
@@ -114,17 +116,17 @@ class memberattendanceService extends BaseService {
     const dataFilter = { H: 0, I: 0, S: 0, A: 0 };
     await this.db.memberAttendance.findMany({
       where: {
-        memberId: user.member.id,
+        ...(no_auth && {  memberId: user.member.id }),
         rawDate: { gte: start_date, lte: end_date }
       }
     }).then((dt) =>
       dt.forEach((data) => { dataFilter[data.type]++ })
     )
-
+    
     const dataAll = { H: 0, I: 0, S: 0, A: 0 }
     await this.db.memberAttendance.findMany({
       where: {
-        memberId: user.member.id,
+        ...(no_auth && {  memberId: user.member.id }),
       }
     }).then((dt) =>
       dt.forEach((data) => { dataAll[data.type]++ })

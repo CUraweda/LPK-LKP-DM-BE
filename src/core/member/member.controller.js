@@ -29,6 +29,11 @@ class memberController extends BaseController {
     const data = await this.#service.findGraduated(req.query);
     return this.ok(res, data, "Banyak member berhasil didapatkan");
   });
+
+  // countRecap = this.wrapper(async (req, res) => {
+  //   const data = await this.#service.findGraduated(req.query);
+  //   return this.ok(res, data, "Banyak member berhasil didapatkan");
+  // });
     
   validateRegistrationPayment = this.wrapper(async (req, res) => {
     const data = await this.#service.validateRegistrationPayment(req.user);
@@ -60,8 +65,11 @@ class memberController extends BaseController {
     const data = await this.#service.count(req.query);
     return this.ok(res, data, "Total Member berhasil didapatkan");
   });
-
-
+  
+  countRecap = this.wrapper(async (req, res) => {
+    const data = await this.#service.countRecap();
+    return this.ok(res, data, "Total Member berhasil didapatkan");
+  });
 
   create = this.wrapper(async (req, res) => {
     const data = await this.#service.create(req.body);

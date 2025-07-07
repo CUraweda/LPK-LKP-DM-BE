@@ -26,6 +26,11 @@ class chatController extends BaseController {
     return this.ok(res, data, "Banyak chat berhasil didapatkan");
   });
 
+  countRecap = this.wrapper(async (req, res) => {
+    const data = await this.#service.countRecap();
+    return this.ok(res, data, "Banyak chat berhasil didapatkan");
+  });
+
   findById = this.wrapper(async (req, res) => {
     const data = await this.#service.findById(req.params.id);
     if (!data) throw new NotFound("chat tidak ditemukan");

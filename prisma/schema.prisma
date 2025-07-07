@@ -269,7 +269,7 @@ model TrainingEnrollment {
 }
 
 model Exam {
-  id             Int    @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   trainingId     Int
   title          String
   description    String
@@ -343,12 +343,12 @@ model Member {
   courseLevel           Int         @default(0)
   dataVerified          Boolean     @default(false)
   verifiedAt            DateTime?
-  createdAt             DateTime?
+  createdAt             DateTime?   @default(now())
   isGraduate            Boolean     @default(false)
   memberState           memberState @default(DS)
   registrationPaymentId Int?        @unique
 
-  training            Training?   @relation(fields: [trainingId], references: [id])
+  training            Training?            @relation(fields: [trainingId], references: [id])
   identity            MemberIdentity?
   careers             MemberWork[]
   enrollment          TrainingEnrollment[]
@@ -388,6 +388,7 @@ model MemberCertificate {
   imageLink  String
   imageTitle String
   imageSize  Int
+  createdAt DateTime @default(now())
 
   member Member? @relation(fields: [memberId], references: [id])
 
