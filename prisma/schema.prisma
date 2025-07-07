@@ -189,6 +189,7 @@ model Training {
   totalCourses        Int
   totalHours          Int
   targetTrainingHours Int
+  level               Int?
   isActive            Boolean      @default(false)
 
   trainingCategory TrainingCategory?  @relation(fields: [categoryId], references: [id])
@@ -197,6 +198,7 @@ model Training {
   exams            Exam[]
   trainingSchedule TrainingSchedule[]
   Dashboard        Dashboard[]
+  member           Member[]
 
   @@map("training")
 }
@@ -274,6 +276,7 @@ model Exam {
   totalQuestions Int
   totalHours     Int
   questions      Json
+  date           DateTime?
 
   training    Training     @relation(fields: [trainingId], references: [id])
   memberTests MemberTest[]
@@ -335,7 +338,7 @@ model Member {
   totalCareers          Int?        @default(0)
   formattedAttendance   String?     @default("0|0|0|0") //?Formated: Alpha|Izin|Sakit|Hadir
   firstAttendanceDate   DateTime?
-  currentCourseId       Int?
+  trainingId            Int?
   courseCategoryId      Int?
   courseLevel           Int         @default(0)
   dataVerified          Boolean     @default(false)
@@ -345,6 +348,7 @@ model Member {
   memberState           memberState @default(DS)
   registrationPaymentId Int?        @unique
 
+  training            Training?   @relation(fields: [trainingId], references: [id])
   identity            MemberIdentity?
   careers             MemberWork[]
   enrollment          TrainingEnrollment[]
@@ -435,6 +439,7 @@ model MemberTest {
   startTime          DateTime
   finishedAt         DateTime?
   status             ExamStatus
+  pdfPath            String?
 
   member Member @relation(fields: [memberId], references: [id])
   exam   Exam   @relation(fields: [examId], references: [id])

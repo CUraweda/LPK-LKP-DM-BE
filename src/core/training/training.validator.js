@@ -10,6 +10,7 @@ export const trainingValidator = {
     totalCourses: Joi.number().integer().min(0).required(),
     totalHours: Joi.number().integer().min(0).required(),
     targetTrainingHours: Joi.number().integer().min(0).required(),
+    level: Joi.number().integer().required(),
     isActive: Joi.boolean().required()
   }),
 };
