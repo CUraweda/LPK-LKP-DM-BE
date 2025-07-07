@@ -34,15 +34,15 @@ r.get(
 r.get(
   "/count",
   auth(["ADMIN"]),
-  validatorMiddleware({ query: baseValidator.browseQuery }),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.count
 )
 
 r.get(
-  "/count",
+  "/count-recap",
   auth(["ADMIN"]),
   validatorMiddleware({ query: baseValidator.browseQuery }),
-  controller.count
+  controller.countRecap
 )
 
 r.get(
