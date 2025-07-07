@@ -1,5 +1,6 @@
 import BaseService from "../../base/service.base.js";
 import memberConstant from "../../config/member.js";
+import prism from "../../config/prisma.db.js";
 import prisma from '../../config/prisma.db.js';
 import { BadRequest } from "../../exceptions/catch.execption.js";
 import paymentService from "../payment/payment.service.js";
@@ -191,9 +192,12 @@ class memberService extends BaseService {
   extendDataTraining = async (payload) => {
     const id = payload.memberId
     return await this.db.$transaction(async (prisma) => {
-      const categoryData = await prisma.trainingCategory.findFirst({ where: { id: payload.trainingId } })
-      if (!categoryData) throw new BadRequest("Data Kategori tidak ditemukan")
-      return await prisma.member.update({ where: { id }, data: { courseCategoryId: payload.courseCategoryId, totalCoursePrice: 2000000, totalCourses: 1, courseLevel: payload.courseLevel, memberState: memberConstant.memberState.Pembayaran } })
+      const trainingData = await prisma.training.findFirst({ where: { id: payload.trainingId } })
+      if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan")
+      // const categoryData = await prisma.trainingCategory.findFirst({ where: { id: payload.trainingId } })
+      // if (!categoryData) throw new BadRequest("Data Kategori tidak ditemukan")
+      // return await prisma.member.update({ where: { id }, data: { courseCategoryId: payload.courseCategoryId, totalCoursePrice: 2000000, totalCourses: 1, courseLevel: payload.courseLevel, memberState: memberConstant.memberState.Pembayaran } })
+      return await prisma.member.update({ where: { id }, data: { trainingId: trainingData.id } })
     })
   }
 
