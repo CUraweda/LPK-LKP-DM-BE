@@ -64,8 +64,9 @@ export const memberValidator = {
     phoneNumber: Joi.string().optional()
   }),
   extend_data_kursus: Joi.object({
-    courseCategoryId: Joi.number().integer(),
-    courseLevel: Joi.number().integer()
+    trainingId: Joi.number().integer()
+    // courseCategoryId: Joi.number().integer(),
+    // courseLevel: Joi.number().integer()
   }),
   extend_data_pembayaran: Joi.object({
     paymentMethod: Joi.string()
