@@ -2,6 +2,7 @@ import { cp } from "fs";
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
 import { BadRequest, NotFound } from "../../exceptions/catch.execption.js";
+import { monthName } from "../../config/constant.js";
 
 class memberattendanceService extends BaseService {
   constructor() {
@@ -64,7 +65,7 @@ class memberattendanceService extends BaseService {
       select: { type: true, member: { select: { name: true } } }
     }).then((attendances) => {
       attendances.map((attendance) => {
-        if(!memberData[attendance.member.name]) memberData[attendance.member.name] = { H: 0, I: 0, S: 0, A: 0 }
+        if (!memberData[attendance.member.name]) memberData[attendance.member.name] = { H: 0, I: 0, S: 0, A: 0 }
         memberData[attendance.member.name][attendance.type]++
         totalData[attendance.type]++
       })
@@ -116,22 +117,49 @@ class memberattendanceService extends BaseService {
     const dataFilter = { H: 0, I: 0, S: 0, A: 0 };
     await this.db.memberAttendance.findMany({
       where: {
-        ...(no_auth && {  memberId: user.member.id }),
+        ...(no_auth && { memberId: user.member.id }),
         rawDate: { gte: start_date, lte: end_date }
       }
     }).then((dt) =>
       dt.forEach((data) => { dataFilter[data.type]++ })
     )
-    
+
     const dataAll = { H: 0, I: 0, S: 0, A: 0 }
     await this.db.memberAttendance.findMany({
       where: {
-        ...(no_auth && {  memberId: user.member.id }),
+        ...(no_auth && { memberId: user.member.id }),
       }
     }).then((dt) =>
       dt.forEach((data) => { dataAll[data.type]++ })
     )
     return { date: { start_date, end_date }, dataFilter, dataAll }
+  }
+
+  showChart = async (user,filter) => {
+    let { no_auth } = filter
+    no_auth = (no_auth == "1")
+    let start_date = new Date()
+    start_date = new Date(start_date.getFullYear(), 0, 1);
+    start_date.setHours(0, 0, 0, 0);
+    let end_date = new Date()
+
+    const dataFilter = { H: 0, I: 0, S: 0, A: 0 };
+    let dataMonth = {}
+    await this.db.memberAttendance.findMany({
+      where: {
+        ...(no_auth && { memberId: user.member.id }),
+        rawDate: { gte: start_date, lte: end_date }
+      }, select: { type: true, date: true }
+    }).then((dt) =>
+      dt.forEach((data) => {
+        // const month = monthName[data.date.split("-")[1]]
+        const month = +data.date.split("-")[1]
+        if (!dataMonth[month]) dataMonth[month] = { ...dataFilter }
+        dataMonth[month][data.type]++
+      })
+    )
+
+    return { date: { start_date, end_date }, dataMonth }
   }
 
   create = async (payload) => {
