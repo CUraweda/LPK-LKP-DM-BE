@@ -31,6 +31,12 @@ r.get(
 );
 
 r.get(
+  "/show-chart",
+  auth(['SISWA', 'ADMIN']),
+  controller.showChart
+);
+
+r.get(
   "/count-all",
   auth(['ADMIN']),
   controller.countAll
