@@ -4,7 +4,6 @@ export const chatValidator = {
   create: Joi.object({
     chatRecapId: Joi.number().integer(),
     message: Joi.string().optional(),
-    sentAt: Joi.date().default(new Date())
   }),
   update: Joi.object({
     senderId: Joi.number().integer().optional(),
@@ -14,7 +13,6 @@ export const chatValidator = {
   }),
   send: Joi.object({
     message: Joi.string().optional(),
-    sentAt: Joi.date().default(new Date())
   })
 };
 
