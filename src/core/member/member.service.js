@@ -1,3 +1,4 @@
+import { memberState } from "@prisma/client";
 import BaseService from "../../base/service.base.js";
 import memberConstant from "../../config/member.js";
 import prism from "../../config/prisma.db.js";
@@ -232,7 +233,15 @@ class memberService extends BaseService {
       // const categoryData = await prisma.trainingCategory.findFirst({ where: { id: payload.trainingId } })
       // if (!categoryData) throw new BadRequest("Data Kategori tidak ditemukan")
       // return await prisma.member.update({ where: { id }, data: { courseCategoryId: payload.courseCategoryId, totalCoursePrice: 2000000, totalCourses: 1, courseLevel: payload.courseLevel, memberState: memberConstant.memberState.Pembayaran } })
-      return await prisma.member.update({ where: { id }, data: { trainingId: trainingData.id } })
+      return await prisma.member.update({
+        where: { id }, data: {
+          trainingId: trainingData.id,
+          ...((trainingData.type == "R") ? { memberState: memberConstant.memberState.Pembayaran } : {
+            memberState: memberConstant.memberState.Selesai,
+            dataVerified: true, verifiedAt: new Date()
+          })
+        }
+      })
     })
   }
 
