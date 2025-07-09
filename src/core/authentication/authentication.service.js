@@ -48,8 +48,7 @@ class AuthenticationService extends BaseService {
     const refresh_token = await generateRefreshToken(user);
 
     // Buat flag akses (untuk admin atau member yang sudah verifikasi)
-    const isAllowedAccess =
-      user.role.code === "ADMIN" || (user.member && user.member.dataVerified);
+    const isAllowedAccess = user.role.code === "ADMIN" || (user.member && user.member.dataVerified);
 
     return {
       user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry']),
@@ -57,20 +56,44 @@ class AuthenticationService extends BaseService {
       token: { access_token, refresh_token }
     };
   };
-
+  
   refreshToken = async (refresh) => {
     const payload = jwt.decode(refresh);
 
-    const user = await this.db.user.findUnique({
-      where: { email: payload.email },
+  const user = await this.db.user.findUnique({
+      where: {
+        email: payload.email,
+        isSuspended: false
+      },
+      include: {
+        role: {
+          select: { code: true }
+        },
+        member: {
+          select: {
+            id: true,
+            name: true,
+            profileImage: true,
+            dataVerified: true,
+            memberState: true,
+            training: true
+          }
+        }
+      }
     });
     if (!user) throw new NotFound('Akun tidak ditemukan');
 
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user)
-    return { user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry', 'role']), token: { access_token, refresh_token } };
+    const isAllowedAccess = user.role.code === "ADMIN" || (user.member && user.member.dataVerified);
+  
+    return {
+      user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry']),
+      access: isAllowedAccess,
+      token: { access_token, refresh_token }
+    };
   };
-
+  
   findUserById = async (id) => {
     const data = await this.db.user.findUnique({
       where: { id }
