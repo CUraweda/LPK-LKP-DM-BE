@@ -61,7 +61,6 @@ class chatrecapService extends BaseService {
     if(args.messageUp) data.totalMessage++
     if(args.unreadUp) data.unreadedMessage++
 
-    console.log(data)
     await this.db.chatRecap.update({ where: { id }, data })
 
     sendOn("message_refresh", { userIds: [data.userId, ...(await this.#userService.getAllAdminIds())] })

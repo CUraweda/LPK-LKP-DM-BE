@@ -56,7 +56,6 @@ class chatController extends BaseController {
     req.body['senderId'] = req.user.id
     req.body['chatRecapId'] = await this.#chatRecapService.checkAndCreate(req.user.id)
     req.body = { ...req.body, ...this.checkType(req) }
-    console.log(req.body)
     const data = await this.#service.send(req.body);
     this.#chatRecapService.newMessage(data.chatRecapId)
     return this.created(res, data, "chat berhasil dibuat");
