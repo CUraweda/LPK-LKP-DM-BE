@@ -12,7 +12,7 @@ class userService extends BaseService {
     const q = this.transformBrowseQuery(query);
     if (query.only_admin == '1') q.where['role'] = { code: "ADMIN" }
     if (query.member_name) q.where['member'] = { name: { contains: query.member_name } }
-    const data = await this.db.user.findMany({ ...q });
+    const data = await this.db.user.findMany({ ...q, include: { member: { select: { name: true, phoneNumber: true, profileImage: true } }} });
 
     if (query.paginate) {
       const countData = await this.db.user.count({ where: q.where });

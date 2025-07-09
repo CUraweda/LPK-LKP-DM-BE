@@ -12,6 +12,7 @@ import router from './routes.js';
 import { initSocket } from './socket/index.js';
 import auth from './middlewares/auth.middleware.js';
 import path from 'path';
+import { BadRequest, NotFound } from './exceptions/catch.execption.js';
 
 const app = express();
 dotenv.config();
@@ -58,6 +59,26 @@ app.use((req, res, next) => {
 });
 //? END Development Request Tracker
 app.use("/public/assets/", express.static('public/assets'));
+
+const allowedMime = ['.png', '.jpg', '.jpeg'];
+app.use("/file/load/", auth(['ADMIN', 'SISWA']), async (req, res, next) => {
+  try {
+    const relPath = decodeURIComponent(req.path);
+    const ext = path.extname(relPath).toLowerCase();
+
+    if (!allowedMime.includes(ext)) throw new BadRequest("Tipe file tidak bisa diambil");
+    
+    const baseDir = path.resolve('uploads');
+    const fullPath = path.join(baseDir, relPath.replace(/^\/?uploads\/?/, ''));
+
+    if (!fullPath.startsWith(baseDir)) throw new BadRequest("Denied")
+    if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) throw new NotFound("File tidak ditemukan")
+
+    return res.sendFile(fullPath);
+  } catch (err) {
+    next(err);
+  }
+});
 app.use('/api/v1', router);
 app.get('/api/download', auth(["ADMIN", "USER"]), (req, res) => {
   const filePath = req.query.path;
