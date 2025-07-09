@@ -60,7 +60,7 @@ app.use((req, res, next) => {
 //? END Development Request Tracker
 app.use("/public/assets/", express.static('public/assets'));
 
-const allowedMime = ['.png', '.jpg', '.jpeg'];
+const allowedMime = ['.png', '.jpg', '.jpeg', '.pdf'];
 app.use("/file/load/", auth(['ADMIN', 'SISWA']), async (req, res, next) => {
   try {
     const relPath = decodeURIComponent(req.path);
