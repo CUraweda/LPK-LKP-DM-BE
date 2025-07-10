@@ -80,9 +80,8 @@ class memberController extends BaseController {
     req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     if (!req.file && !req.params.id) this.BadRequest(res, "Foto siswa harus disertakan")
     if (req.file) req.body["profileImage"] = req.file.path
-    console.log(req.body)
     await this.#service.extendDataSiswa(req.body);
-    return this.created(res, "Data Siswa berhasil ditambahkan");
+    return this.created(res, { memberId: req.body['memberId'] },"Data Siswa berhasil ditambahkan");
   });
 
   extendDataIbu = this.wrapper(async (req, res) => {

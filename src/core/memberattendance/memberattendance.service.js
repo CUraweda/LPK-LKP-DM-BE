@@ -36,9 +36,10 @@ class memberattendanceService extends BaseService {
     return data;
   };
 
-  countAll = async () => {
+  countAll = async (query) => {
+    const { memberId } = query
     const dataFilter = { H: 0, I: 0, S: 0, A: 0 };
-    await this.db.memberAttendance.findMany({ select: { type: true } }).then((dt) =>
+    await this.db.memberAttendance.findMany({ ...(memberId && { where: { id: +memberId } }),  select: { type: true } }).then((dt) =>
       dt.forEach((data) => { dataFilter[data.type]++ })
     )
     return dataFilter;

@@ -22,7 +22,7 @@ class memberattendanceController extends BaseController {
   });
 
   countAll = this.wrapper(async (req, res) => {
-    const data = await this.#service.countAll();
+    const data = await this.#service.countAll(req.query);
     return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
   });
 
