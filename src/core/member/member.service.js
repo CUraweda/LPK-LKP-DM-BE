@@ -178,7 +178,15 @@ class memberService extends BaseService {
   };
 
   extendDataSiswa = async (payload) => {
-    const id = payload.memberId
+    let id = payload.memberId
+    if(payload['createNew']){
+      const data = await this.db.member.create()
+      id = data.id
+      payload['memberId'] = data.id 
+      delete payload['createNew']
+    }else delete payload['createNew']
+    let exist = await this.db.member.findFirst({ where: { id } })
+    if(!exist) exist = await this.db.member.create()
     return await this.db.$transaction(async (prisma) => {
       const { name, profileImage, phoneNumber, ...data } = payload
       await prisma.memberIdentity.upsert({ where: { memberId: id }, create: data, update: data })
