@@ -77,33 +77,34 @@ class memberController extends BaseController {
   });
 
   extendDataSiswa = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
+    req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     if (!req.file && !req.params.id) this.BadRequest(res, "Foto siswa harus disertakan")
     if (req.file) req.body["profileImage"] = req.file.path
+    console.log(req.body)
     await this.#service.extendDataSiswa(req.body);
     return this.created(res, "Data Siswa berhasil ditambahkan");
   });
 
   extendDataIbu = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
+    req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     await this.#service.extendDataIbu(req.body);
     return this.created(res, "Data Ibu berhasil ditambahkan");
   });
 
   extendDataAyah = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
+    req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     await this.#service.extendDataAyah(req.body);
     return this.created(res, "Data Ayah berhasil ditambahkan");
   });
 
   extendDataWali = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
+    req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     await this.#service.extendDataWali(req.body);
     return this.created(res, "Data Wali berhasil ditambahkan");
   });
 
   extendDataTraining = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
+    req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     const data = await this.#service.extendDataTraining(req.body);
     return this.created(res, {
       memberState: data['memberState']
