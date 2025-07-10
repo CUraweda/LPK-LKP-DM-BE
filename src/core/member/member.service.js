@@ -236,7 +236,9 @@ class memberService extends BaseService {
       return await prisma.member.update({
         where: { id }, data: {
           trainingId: trainingData.id,
-          ...((trainingData.type == "R") ? { memberState: memberConstant.memberState.Pembayaran } : {
+          ...((trainingData.type == "R") ? {
+            memberState: memberConstant.memberState.Pembayaran
+          } : {
             memberState: memberConstant.memberState.Selesai,
             dataVerified: true, verifiedAt: new Date()
           })
