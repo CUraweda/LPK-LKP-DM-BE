@@ -150,7 +150,7 @@ class memberService extends BaseService {
   findDetail = async (id) => {
     const data = await this.db.member.findFirst({
       where: { id }, select: {
-        id: true, phoneNumber: true, profileImage: true,
+        id: true, name: true, phoneNumber: true, profileImage: true,
         identity: true, parents: true
       }
     })
