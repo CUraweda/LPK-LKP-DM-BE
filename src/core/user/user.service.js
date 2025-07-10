@@ -10,7 +10,9 @@ class userService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.user.findMany({ ...q });
+    if (query.only_admin == '1') q.where['role'] = { code: "ADMIN" }
+    if (query.member_name) q.where['member'] = { name: { contains: query.member_name } }
+    const data = await this.db.user.findMany({ ...q, include: { member: { select: { name: true, phoneNumber: true, profileImage: true } }} });
 
     if (query.paginate) {
       const countData = await this.db.user.count({ where: q.where });
@@ -19,8 +21,22 @@ class userService extends BaseService {
     return data;
   };
 
+  count = async (query) => {
+    const q = this.transformBrowseQuery(query);
+    if (query.only_admin == '1') q.where['role'] = { code: "ADMIN" }
+    const data = await this.db.user.count({
+      ...q,
+    });
+    return data;
+  };
+
   findById = async (id) => {
     const data = await this.db.user.findUnique({ where: { id } });
+    return data;
+  };
+
+  getAllAdminIds = async () => {
+    const data = (await this.db.user.findMany({ where: { role: { code: "ADMIN" } }, select: { id: true } })).map((user) => user.id)
     return data;
   };
 
@@ -30,19 +46,20 @@ class userService extends BaseService {
   };
 
   createAdmin = async (payload) => {
-    const roleAdmin = await this.db.role.findFirst({ where: { code: "ADMIN" } })
-    payload['roleId'] = roleAdmin.id
+    if(!payload.roleId){
+      const roleAdmin = await this.db.role.findFirst({ where: { code: "ADMIN" } })
+      payload['roleId'] = roleAdmin.id
+    }
 
-    const { name, phoneNumber, ...rest } = payload
+    const { name, phoneNumber, profileImage, ...rest } = payload
     const existing = await prisma.user.findUnique({ where: { email: rest['email'] } });
-    if (existing) throw new Forbidden('Akun dengan email telah digunakan');
+    if (existing) throw new Forbidden('Akun dengan email/nomor telepon telah digunakan');
 
-    console.log(rest)
     rest['password'] = await hash(rest['password'])
+    delete rest['confirm_password']
     const data = await this.db.user.create({ data: rest });
-
-    await this.db.member.update({ where: { id: data.memberId }, data: { name } })
-    data.member.name = name
+    const memberData = await this.db.member.update({ where: { id: data.memberId }, data: { name, phoneNumber, profileImage } })
+    data['member'] = memberData
     return data;
   };
 
@@ -52,9 +69,25 @@ class userService extends BaseService {
   };
 
   updateAdmin = async (id, payload) => {
-    const { name, ...rest } = payload
-    const data = await this.db.user.update({ where: { id }, data: rest });
-    await this.db.member.update({ where: { id: data.id }, data: { name } })
+    const { name, phoneNumber, profileImage, ...rest } = payload
+
+    if (rest['email']) {
+      const existing = await prisma.user.findUnique({ where: { email: rest['email'] } });
+      if (existing) throw new Forbidden('Akun dengan email/nomor telepon telah digunakan');
+    }
+    if (rest['password']){
+      rest['password'] = await hash(rest['password'])
+      delete rest['confirm_password']
+    } 
+    const data = await this.db.user.update({ where: { id }, data: { ...rest } });
+    const memberData = await this.db.member.update({
+      where: { id: data.memberId }, data: {
+        ...(name && { name }),
+        ...(phoneNumber && { phoneNumber }),
+        ...(profileImage && { profileImage })
+      }
+    })
+    data['member'] = memberData
     return data;
   };
 

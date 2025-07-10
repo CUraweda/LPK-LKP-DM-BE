@@ -17,21 +17,35 @@ r.get(
 
 r.get("/show-one/:id", controller.findById);
 
+r.get("/show-by-exam/:id", controller.findByExam);
+
+r.get(
+  "/export-one/:id",
+  auth(['ADMIN']),
+  controller.exportOne
+);
+
+r.get(
+  "/export-exam/:id",
+  auth(['ADMIN']),
+  controller.exportExam
+);
+
 r.post(
   "/create",
-  auth(['ADMIN']),
+  auth(['SISWA']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
+);
+
+r.put(
+  "/update/:id",
+  auth(['SISWA']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
   
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
-r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
+r.delete("/delete/:id", auth(['SISWA', 'ADMIN']), controller.delete);
 
 const membertestRouter = r;
 export default membertestRouter;

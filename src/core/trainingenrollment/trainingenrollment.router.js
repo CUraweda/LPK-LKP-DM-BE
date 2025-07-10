@@ -9,8 +9,6 @@ const r = Router(),
   validator = trainingenrollmentValidator,
   controller = new trainingenrollmentController();
 
-// REGULER 
-
 r.get(
   "/show-all",
   validatorMiddleware({ query: baseValidator.browseQuery }),
@@ -20,25 +18,20 @@ r.get(
 r.get("/show-one/:id", controller.findById);
 
 r.post(
-  "/reguler/create",
-  // auth(['ADMIN']),
+  "/create",
+  auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
+);
   
 r.put(
-  "/reguler/update/:id",
-  // auth(['ADMIN']),
+  "/update/:id",
+  auth(['ADMIN', 'SISWA']),
   validatorMiddleware({ body: validator.update }),
   controller.update
   );
     
-r.delete("/reguler/delete/:id", auth(['ADMIN']), controller.delete);
-
-// PEMERINTAH
-
-
-
+r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const trainingenrollmentRouter = r;
 export default trainingenrollmentRouter;

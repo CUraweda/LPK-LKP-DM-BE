@@ -8,6 +8,11 @@ export const memberattendanceValidator = {
     description: Joi.string(),
     type: Joi.valid("H", "I", "S", "A")
   }),
+  rangeData: Joi.object({
+    trainingId: Joi.number().integer(),
+    fromDate: Joi.string(),
+    toDate: Joi.string()
+  }),
   attend: Joi.object({
     type: Joi.valid("H", "I", "S", "A"),
     location: Joi.string().optional(),

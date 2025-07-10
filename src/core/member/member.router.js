@@ -13,9 +13,44 @@ const r = Router(),
 r.get(
   "/show-all",
   auth(["ADMIN"]),
-  validatorMiddleware({ query: baseValidator.browseQuery }),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.findAll
 );
+
+r.get(
+  "/show-active",
+  auth(["ADMIN"]),
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.findActive
+);
+
+r.get(
+  "/show-inactive",
+  auth(["ADMIN"]),
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.findInactive
+);
+
+r.get(
+  "/count",
+  auth(["ADMIN"]),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
+  controller.count
+)
+
+r.get(
+  "/count-recap",
+  auth(["ADMIN"]),
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.countRecap
+)
+
+r.get(
+  "/show-detail/:id",
+  auth(["ADMIN"]),
+  controller.showDetail
+)
+
 r.get("/show-one/:id", 
   auth(["ADMIN"]),
   controller.findById);
@@ -23,6 +58,10 @@ r.get("/show-one/:id",
 r.get("/show-me", 
   auth(["ADMIN", "SISWA"]),
   controller.findMe);
+
+r.get("/show-pembayaran-registration", 
+  auth(['SISWA']),
+  controller.validateRegistrationPayment);
 
 r.post(
   "/create",

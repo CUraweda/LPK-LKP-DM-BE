@@ -17,17 +17,19 @@ r.get(
 
 r.get("/show-one/:id", controller.findById);
 
+r.get("/show-user/:id", controller.findByUser);
+
 r.post(
   "/create",
-  auth(['ADMIN']),
-  validatorMiddleware({ body: validator.create }),
+  auth(['ADMIN', 'SISWA']),
+  validatorMiddleware({ body: validator.createUpdate }),
   controller.create
 );
 
 r.put(
   "/update/:id",
-  auth(['ADMIN']),
-  validatorMiddleware({ body: validator.update }),
+  auth(['ADMIN', 'SISWA']),
+  validatorMiddleware({ body: validator.createUpdate }),
   controller.update
 );
 

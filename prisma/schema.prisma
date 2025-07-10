@@ -26,7 +26,10 @@ enum ChatType {
 }
 
 enum WorkStatus {
-  Pekerja_Penuh_Waktu
+  Tetap
+  Kontrak
+  Part_Time
+  Freelance
 }
 
 enum ExamStatus {
@@ -84,6 +87,11 @@ enum memberState {
   SEL //Selesai
 }
 
+enum avaliablePage {
+  REGISTER
+  LOGIN
+}
+
 enum dashboardSection {
   HERO_BANNER
   TENTANG_KAMI
@@ -112,11 +120,11 @@ model User {
   forgetExpiry DateTime?
   isSuspended  Boolean   @default(false)
 
-  employee      Employee?
-  member        Member?   @relation(fields: [memberId], references: [id])
-  role          Role      @relation(fields: [roleId], references: [id])
-  chatsSent     Chat[]    @relation("ChatSender")
-  chatsReceived Chat[]    @relation("ChatReceiver")
+  employee  Employee?
+  member    Member?    @relation(fields: [memberId], references: [id])
+  role      Role       @relation(fields: [roleId], references: [id])
+  ChatRecap ChatRecap?
+  Chat      Chat[]
 
   @@map("user")
 }
@@ -176,18 +184,21 @@ model Training {
   description         String
   trainingImage       String
   type                TrainingType
-  categoryId          Int
+  categoryId          Int?
   totalParticipants   Int
   totalCourses        Int
   totalHours          Int
   targetTrainingHours Int
+  level               Int?
+  isActive            Boolean      @default(false)
 
-  trainingCategory TrainingCategory   @relation(fields: [categoryId], references: [id])
+  trainingCategory TrainingCategory?  @relation(fields: [categoryId], references: [id])
   materials        Material[]
   memberCourses    MemberCourse[]
   exams            Exam[]
   trainingSchedule TrainingSchedule[]
   Dashboard        Dashboard[]
+  member           Member[]
 
   @@map("training")
 }
@@ -196,6 +207,8 @@ model TrainingCategory {
   id       Int        @id @default(autoincrement())
   title    String
   image    String?
+  uid      String?    @unique
+  level    Int?
   Training Training[]
   Member   Member[]
 }
@@ -218,13 +231,22 @@ model Dashboard {
   training Training? @relation(fields: [training_id], references: [id])
 }
 
+model Page {
+  id           Int           @id @default(autoincrement())
+  pageID       avaliablePage
+  uid          String        @unique
+  dividerTitle String
+  title        String?
+  description  String?       @db.Text
+  file         String?
+}
+
 model TrainingSchedule {
   id          Int                  @id @default(autoincrement())
   trainingId  Int
   startTime   DateTime
   endTime     DateTime
   type        TrainingType
-  status      ScheduleStatus
   enrollments TrainingEnrollment[]
 
   training Training @relation(fields: [trainingId], references: [id])
@@ -247,13 +269,14 @@ model TrainingEnrollment {
 }
 
 model Exam {
-  id             Int    @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   trainingId     Int
   title          String
   description    String
   totalQuestions Int
   totalHours     Int
   questions      Json
+  date           DateTime?
 
   training    Training     @relation(fields: [trainingId], references: [id])
   memberTests MemberTest[]
@@ -274,83 +297,100 @@ model Material {
   @@map("material")
 }
 
-model Chat {
-  id         Int      @id @default(autoincrement())
-  senderId   Int?
-  receiverId Int
-  message    String?
-  imageLink  String?
-  fileSize   String?
-  fileLink   String?
-  sentAt     DateTime
-  type       ChatType
+model ChatRecap {
+  id              Int      @id @unique
+  userId          Int      @unique
+  totalMessage    Int      @default(0)
+  unreadedMessage Int      @default(0)
+  createdAt       DateTime @default(now())
 
-  sender   User? @relation("ChatSender", fields: [senderId], references: [id])
-  receiver User  @relation("ChatReceiver", fields: [receiverId], references: [id])
+  user User   @relation(fields: [userId], references: [id])
+  Chat Chat[]
+}
+
+model Chat {
+  id          Int      @id @default(autoincrement())
+  senderId    Int?
+  chatRecapId Int?
+  message     String? @db.Text
+  fileSize    Int?
+  fileLink    String?
+  type        ChatType
+  sentAt      DateTime @default(now())
+
+  chatRecap ChatRecap? @relation(fields: [chatRecapId], references: [id])
+  sender    User?      @relation(fields: [senderId], references: [id])
 
   @@map("chats")
 }
 
 // MEMBER SCHEMA
 model Member {
-  id                  Int         @id @default(autoincrement())
-  name                String?
-  profileImage        String?
-  totalCourses        Int?        @default(0)
-  totalCoursePrice    Float?      @default(0)
-  totalCourseHours    Int?        @default(0)
-  totalExamsCompleted Int?        @default(0)
-  totalMaterials      Int?        @default(0)
-  totalCareers        Int?        @default(0)
-  formattedAttendance String?     @default("0|0|0|0") //?Formated: Alpha|Izin|Sakit|Hadir
-  firstAttendanceDate DateTime?
-  currentCourseId     Int?
-  courseCategoryId    Int?
-  courseLevel         Int         @default(0)
-  dataVerified        Boolean     @default(false)
-  verifiedAt          DateTime?
-  createdAt           DateTime?
-  memberState         memberState @default(DS)
+  id                    Int         @id @default(autoincrement())
+  name                  String?
+  phoneNumber           String?     @unique
+  profileImage          String?
+  totalCourses          Int?        @default(0)
+  totalCoursePrice      Float?      @default(0)
+  totalCourseHours      Int?        @default(0)
+  totalExamsCompleted   Int?        @default(0)
+  totalMaterials        Int?        @default(0)
+  totalCareers          Int?        @default(0)
+  formattedAttendance   String?     @default("0|0|0|0") //?Formated: Alpha|Izin|Sakit|Hadir
+  firstAttendanceDate   DateTime?
+  trainingId            Int?
+  courseCategoryId      Int?
+  courseLevel           Int         @default(0)
+  dataVerified          Boolean     @default(false)
+  verifiedAt            DateTime?
+  createdAt             DateTime?   @default(now())
+  isGraduate            Boolean     @default(false)
+  memberState           memberState @default(DS)
+  registrationPaymentId Int?        @unique
 
-  identity       MemberIdentity?
-  careers        MemberWork[]
-  enrollment     TrainingEnrollment[]
-  transaction    Transaction[]
-  parents        MemberParent[]
-  attendances    MemberAttendance[]
-  salarys        MemberSalary[]
-  tests          MemberTest[]
-  transactions   MemberTransaction[]
-  courseCategory TrainingCategory?    @relation(fields: [courseCategoryId], references: [id])
-  courses        MemberCourse[]       @relation(name: "MemberToCourses")
-  User           User?
+  training            Training?            @relation(fields: [trainingId], references: [id])
+  identity            MemberIdentity?
+  careers             MemberWork[]
+  enrollment          TrainingEnrollment[]
+  transaction         Transaction[]
+  parents             MemberParent[]
+  attendances         MemberAttendance[]
+  salarys             MemberSalary[]
+  tests               MemberTest[]
+  transactions        MemberTransaction[]  @relation("AllTransactions")
+  registrationPayment MemberTransaction?   @relation("RegistrationPayment", fields: [registrationPaymentId], references: [id])
+  courseCategory      TrainingCategory?    @relation(fields: [courseCategoryId], references: [id])
+  courses             MemberCourse[]       @relation(name: "MemberToCourses")
+  User                User?
+  MemberCertificate   MemberCertificate[]
 
   @@map("member")
 }
 
 model MemberTransaction {
   id            Int      @id @default(autoincrement())
-  memberId      Int
+  memberId      Int?
   isSuccess     Boolean  @default(false)
   paymentTotal  Float
   transactionId Int
   paymentDate   DateTime
 
-  transaction Transaction @relation(fields: [transactionId], references: [id])
-  member      Member      @relation(fields: [memberId], references: [id])
+  transaction     Transaction @relation(fields: [transactionId], references: [id])
+  member          Member?     @relation("AllTransactions", fields: [memberId], references: [id])
+  registrationFor Member?     @relation("RegistrationPayment")
 
   @@map("member_transaction")
 }
 
 model MemberCertificate {
-  id               Int    @id @default(autoincrement())
-  memberCourseId   Int?
-  certificateImage String
-  link             String
-  title            String
-  size             String
+  id         Int    @id @default(autoincrement())
+  memberId   Int?
+  imageLink  String
+  imageTitle String
+  imageSize  Int
+  createdAt DateTime @default(now())
 
-  course MemberCourse? @relation(fields: [memberCourseId], references: [id])
+  member Member? @relation(fields: [memberId], references: [id])
 
   @@map("member_certificate")
 }
@@ -392,14 +432,15 @@ model MemberSalary {
 
 model MemberTest {
   id                 Int        @id @default(autoincrement())
-  startTime          DateTime
-  questionsCompleted Int
-  hoursCompleted     Int
+  answer             Json?
+  questionsCompleted Int?
+  secondsCompleted   Int?
   memberId           Int
   examId             Int
-  attendedAt         DateTime
-  finishedAt         DateTime
+  startTime          DateTime
+  finishedAt         DateTime?
   status             ExamStatus
+  pdfPath            String?
 
   member Member @relation(fields: [memberId], references: [id])
   exam   Exam   @relation(fields: [examId], references: [id])
@@ -429,9 +470,8 @@ model MemberCourse {
   trainingId Int
   status     CourseStatus
 
-  training    Training            @relation(fields: [trainingId], references: [id])
-  member      Member              @relation(name: "MemberToCourses", fields: [memberId], references: [id])
-  certificate MemberCertificate[] // one-to-many (because in your schema you used array)
+  training Training @relation(fields: [trainingId], references: [id])
+  member   Member   @relation(name: "MemberToCourses", fields: [memberId], references: [id])
 
   @@map("member_course")
 }
@@ -450,7 +490,7 @@ model MemberIdentity {
   village          String
   postalCode       Int
   detailedAddress  String
-  phoneNumber      String   @unique
+  // phoneNumber      String   @unique
   isParentGuardian Boolean  @default(false)
   socialHelp       String //?Example: '|PKH|,|KPS|,|KIP|'
   memberId         Int      @unique
