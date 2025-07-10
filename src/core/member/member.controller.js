@@ -34,7 +34,7 @@ class memberController extends BaseController {
   //   const data = await this.#service.findGraduated(req.query);
   //   return this.ok(res, data, "Banyak member berhasil didapatkan");
   // });
-    
+
   validateRegistrationPayment = this.wrapper(async (req, res) => {
     const data = await this.#service.validateRegistrationPayment(req.user);
     return this.ok(res, data, "Validasi Pembayaran Berhasil Dikirimkan");
@@ -65,7 +65,7 @@ class memberController extends BaseController {
     const data = await this.#service.count(req.query);
     return this.ok(res, data, "Total Member berhasil didapatkan");
   });
-  
+
   countRecap = this.wrapper(async (req, res) => {
     const data = await this.#service.countRecap();
     return this.ok(res, data, "Total Member berhasil didapatkan");
@@ -104,8 +104,10 @@ class memberController extends BaseController {
 
   extendDataTraining = this.wrapper(async (req, res) => {
     req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
-    await this.#service.extendDataTraining(req.body);
-    return this.created(res, "Data Kursus berhasil ditambahkan");
+    const data = await this.#service.extendDataTraining(req.body);
+    return this.created(res, {
+      memberState: data['memberState']
+    }, "Data Kursus berhasil ditambahkan");
   });
 
   extendDataPembayaran = this.wrapper(async (req, res) => {
