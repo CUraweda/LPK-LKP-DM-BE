@@ -13,14 +13,16 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: Install SSH and SSHPass
+    - name: Setup SSH key for GitHub Actions
       run: |
-        sudo apt-get update
-        sudo apt-get install -y sshpass openssh-client rsync
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
     - name: Sync Files to VPS (exclude .env and uploads folder)
       run: |
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete --exclude '.env' --exclude 'uploads/'  -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }}" ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/root/staging/LPK-LKP-DM-BE
+        rsync -avz --delete --exclude '.env' --exclude 'uploads/' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }}" ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/root/staging/LPK-LKP-DM-BE
 
     - name: Install Dependencies and Run Prisma Migrations
       run: |
