@@ -3,7 +3,7 @@ name: Deploy with Prisma to VPS
 on:
   push:
     branches:
-      - main
+      - development
 
 jobs:
   deploy:
