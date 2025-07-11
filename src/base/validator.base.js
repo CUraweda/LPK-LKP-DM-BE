@@ -74,5 +74,10 @@ export const baseValidator = {
     limit: Joi.number().optional().default(10),
     page: Joi.number().optional().default(1),
     order: Joi.string().optional().custom(orderPattern),
+
+    // Addition
+    memberId: Joi.string().optional(),
+    startDate: Joi.string().optional(),
+    endDate: Joi.string().optional(),
   }),
 };

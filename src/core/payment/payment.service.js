@@ -4,6 +4,20 @@ import { BadRequest, ServerError } from '../../exceptions/catch.execption.js';
 import { PaymentHelper } from '../../helpers/payment/payment.helper.js';
 import { sendOn } from '../../socket/index.js';
 import chatService from '../chat/chat.service.js';
+import { startOfDay, endOfDay, addHours, subDays, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
+
+const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+const wibToUtc = (d) => new Date(d.getTime() - WIB_OFFSET_MS);
+
+const makeWibDate = (dateStr, isEnd) => {
+  const suffix = isEnd ? 'T23:59:59.999+07:00' : 'T00:00:00+07:00';
+  return new Date(`${dateStr}${suffix}`);
+};
+
+const JKT_OFFSET_HOURS = 7;
+const toUtc = (d) => addHours(d, -JKT_OFFSET_HOURS);
+const pctChange = (current, previous) =>previous === 0 ? null : +(((current - previous) / previous) * 100).toFixed(2);
 
 class paymentService extends BaseService {
     constructor() {
@@ -11,6 +25,62 @@ class paymentService extends BaseService {
         this.paymentHelper = new PaymentHelper();
         this.chatService = new chatService()
     }
+    
+    getTodayStats = async () => {
+        const now = new Date();
+
+        const [todayCount, yesterdayCount] = await this.db.$transaction([
+        this.db.transaction.count({
+            where: {
+            createdAt: {
+                gte: toUtc(startOfDay(now)),
+                lte: toUtc(endOfDay(now)),
+            },
+            },
+        }),
+        this.db.transaction.count({
+            where: {
+            createdAt: {
+                gte: toUtc(startOfDay(subDays(now, 1))),
+                lte: toUtc(endOfDay(subDays(now, 1))),
+            },
+            },
+        }),
+        ]);
+
+        return {
+        totalToday: todayCount,
+        diffTodayPercent: pctChange(todayCount, yesterdayCount),
+        };
+    };
+    
+    getWeekStats = async () => {
+        const now = new Date();
+
+        const [thisWeekCount, lastWeekCount] = await this.db.$transaction([
+        this.db.transaction.count({
+            where: {
+            createdAt: {
+                gte: toUtc(startOfWeek(now, { weekStartsOn: 1 })),
+                lte: toUtc(endOfWeek(now, { weekStartsOn: 1 })),
+            },
+            },
+        }),
+        this.db.transaction.count({
+            where: {
+            createdAt: {
+                gte: toUtc(startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 })),
+                lte: toUtc(endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 })),
+            },
+            },
+        }),
+        ]);
+
+        return {
+        totalWeek: thisWeekCount,
+        diffWeekPercent: pctChange(thisWeekCount, lastWeekCount),
+        };
+    };
 
     generateTID = (payload) => {
         const chars =
@@ -29,26 +99,61 @@ class paymentService extends BaseService {
         })
         return data
     }
-    // findAll = async (query) => {
-    //     const q = this.transformBrowseQuery(query);
-    //     const data = await this.db.transaction.findMany({
-    //     ...q,
-    //     include: {
-    //         member: { select: { id: true, name: true } },
-    //     },
-    //     });
+    
+    findAll = async (query) => {
+        const { startDate, endDate, ...restQuery } = query;
+        const q = this.transformBrowseQuery(restQuery);
 
-    //     if (query.paginate)au {
-    //     const countData = await this.db.memberTransaction.count({ where: q.where });
-    //     return this.paginate(data, countData, q);
-    //     }
-    //     return data;
-    // };
+        if (startDate || endDate) {
+            const dateRange = {};
+            if (startDate) {
+                const localStart = startOfDay(makeWibDate(startDate, false));
+                dateRange.gte = wibToUtc(localStart);
+            }
+            if (endDate) {
+                const localEnd = endOfDay(makeWibDate(endDate, true));
+                dateRange.lte = wibToUtc(localEnd);
+            }
+            q.where = {
+                ...q.where,
+                createdAt: dateRange,
+            };
+        }
 
-    // findById = async (id) => {
-    //     const data = await this.db.Transaction.findUnique({ where: { id } });
-    //     return data;
-    // };
+        // ───────────────────── main query ───────────────────────
+        const [items, todayStats, weekStats] = await Promise.all([
+            this.db.transaction.findMany({
+            ...q,
+            include: {
+                member: { select: { id: true, name: true } },
+                memberTransactions: {
+                select: {
+                    id: true,
+                    isSuccess: true,
+                    paymentDate: true,
+                    training: { select: { id: true, title: true } },
+                },
+                },
+            },
+            }),
+            this.getTodayStats(),
+            this.getWeekStats(),
+        ]);
+
+        // ───────────────────── pagination (unchanged) ───────────
+        if (restQuery.paginate) {
+            const countData = await this.db.transaction.count({ where: q.where });
+            const paginated = this.paginate(items, countData, q);
+            return { ...todayStats, ...weekStats, ...paginated };
+        }
+
+        return { ...todayStats, ...weekStats, items };
+    };
+
+    findById = async (id) => {
+        const data = await this.db.transaction.findUnique({ where: { id } });
+        return data;
+    };
 
     notifyPayment = async (id, args = {}) => {
         const { status } = args;
