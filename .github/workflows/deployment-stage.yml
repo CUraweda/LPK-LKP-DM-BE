@@ -1,9 +1,9 @@
-name: Deploy App with Prisma to VPS
+name: Deploy with Prisma to VPS
 
 on:
   push:
     branches:
-      - development
+      - main
 
 jobs:
   deploy:
@@ -13,20 +13,24 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: Setup SSH key for GitHub Actions
+    - name: Install SSH and SSHPass
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        sudo apt-get update
+        sudo apt-get install -y sshpass openssh-client rsync
 
-    - name: Sync Files to VPS (exclude .env and uploads folder)
+    - name: Sync Files to VPS (exclude .env and necessary folder)
       run: |
-        rsync -avz --delete --exclude '.env' --exclude 'uploads/' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }}" ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/root/staging/LPK-LKP-DM-BE
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete \
+          --exclude='.env' \
+          --exclude='logs/' \
+          --exclude='public/' \
+          --exclude='uploads/' \
+          -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }}" \
+          ./ ${{ secrets.SSH_USER_PROD }}@${{ secrets.SSH_HOST_PROD }}:/root/staging/LPK-LKP-DM-BE
 
     - name: Install Dependencies and Run Prisma Migrations
       run: |
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST_PROD }} << 'EOF'
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           # Set the Node.js version to 20.x if it's not already set
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # Load NVM
