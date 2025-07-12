@@ -10,6 +10,7 @@ const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
 
 const wibToUtc = (d) => new Date(d.getTime() - WIB_OFFSET_MS);
 
+const sumOrZero = (agg) => Number(agg?._sum?.paymentTotal || 0);
 const makeWibDate = (dateStr, isEnd) => {
   const suffix = isEnd ? 'T23:59:59.999+07:00' : 'T00:00:00+07:00';
   return new Date(`${dateStr}${suffix}`);
@@ -29,59 +30,75 @@ class paymentService extends BaseService {
     getTodayStats = async () => {
         const now = new Date();
 
-        const [todayCount, yesterdayCount] = await this.db.$transaction([
-        this.db.transaction.count({
+        const [todayAgg, yesterdayAgg] = await this.db.$transaction([
+            this.db.transaction.aggregate({
+            _sum: { paymentTotal: true },
             where: {
-            createdAt: {
+                createdAt: {
                 gte: toUtc(startOfDay(now)),
                 lte: toUtc(endOfDay(now)),
+                },
             },
-            },
-        }),
-        this.db.transaction.count({
+            }),
+            this.db.transaction.aggregate({
+            _sum: { paymentTotal: true },
             where: {
-            createdAt: {
+                createdAt: {
                 gte: toUtc(startOfDay(subDays(now, 1))),
                 lte: toUtc(endOfDay(subDays(now, 1))),
+                },
             },
-            },
-        }),
+            }),
         ]);
 
+        const todayTotal = sumOrZero(todayAgg);
+        const yesterdayTotal = sumOrZero(yesterdayAgg);
+
         return {
-        totalToday: todayCount,
-        diffTodayPercent: pctChange(todayCount, yesterdayCount),
+            totalToday: todayTotal,
+            diffTodayPercent:
+            yesterdayTotal === 0
+                ? null
+                : +(((todayTotal - yesterdayTotal) / yesterdayTotal) * 100).toFixed(2),
         };
     };
+    
     
     getWeekStats = async () => {
         const now = new Date();
 
-        const [thisWeekCount, lastWeekCount] = await this.db.$transaction([
-        this.db.transaction.count({
+        const [thisWeekAgg, lastWeekAgg] = await this.db.$transaction([
+            this.db.transaction.aggregate({
+            _sum: { paymentTotal: true },
             where: {
-            createdAt: {
+                createdAt: {
                 gte: toUtc(startOfWeek(now, { weekStartsOn: 1 })),
                 lte: toUtc(endOfWeek(now, { weekStartsOn: 1 })),
+                },
             },
-            },
-        }),
-        this.db.transaction.count({
+            }),
+            this.db.transaction.aggregate({
+            _sum: { paymentTotal: true },
             where: {
-            createdAt: {
+                createdAt: {
                 gte: toUtc(startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 })),
                 lte: toUtc(endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 })),
+                },
             },
-            },
-        }),
+            }),
         ]);
 
+        const thisWeekTotal = sumOrZero(thisWeekAgg);
+        const lastWeekTotal = sumOrZero(lastWeekAgg);
+
         return {
-        totalWeek: thisWeekCount,
-        diffWeekPercent: pctChange(thisWeekCount, lastWeekCount),
+            totalWeek: thisWeekTotal,
+            diffWeekPercent:
+            lastWeekTotal === 0
+                ? null
+                : +(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100).toFixed(2),
         };
     };
-
     generateTID = (payload) => {
         const chars =
             'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
