@@ -90,12 +90,14 @@ r.post(
   validatorMiddleware({ body: validator.extend_data_siswa }),
   controller.extendDataSiswa
 )
+
 r.post(
   "/extend-user-data-ibu/:id?",
   auth(['SISWA', 'ADMIN']),
   validatorMiddleware({ body: validator.extend_data_ibu }),
   controller.extendDataIbu
 )
+
 r.post(
   "/extend-user-data-ayah/:id?",
   auth(['SISWA', 'ADMIN']),

@@ -201,6 +201,7 @@ model Training {
   member           Member[]
 
   @@map("training")
+  MemberTransaction MemberTransaction[]
 }
 
 model TrainingCategory {
@@ -369,12 +370,14 @@ model Member {
 
 model MemberTransaction {
   id            Int      @id @default(autoincrement())
+  trainingId    Int?
   memberId      Int?
   isSuccess     Boolean  @default(false)
   paymentTotal  Float
   transactionId Int
   paymentDate   DateTime
 
+  training        Training?    @relation(fields: [trainingId], references: [id])
   transaction     Transaction @relation(fields: [transactionId], references: [id])
   member          Member?     @relation("AllTransactions", fields: [memberId], references: [id])
   registrationFor Member?     @relation("RegistrationPayment")
