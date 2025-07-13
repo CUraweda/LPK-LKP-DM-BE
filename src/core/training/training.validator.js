@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { type } from "os";
 
 export const trainingValidator = {
   createUpdate: Joi.object({
