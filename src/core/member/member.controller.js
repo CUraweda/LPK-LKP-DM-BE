@@ -112,6 +112,7 @@ class memberController extends BaseController {
 
   extendDataPembayaran = this.wrapper(async (req, res) => {
     req.body['user'] = req.user
+    if(req.params.id) req.body['memberId'] = +req.params.id
     const data = await this.#service.extendDataPembayaran(req.body);
     return this.created(res, data, "Data Pembayaran berhasil ditambahkan");
   });

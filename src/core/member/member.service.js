@@ -256,6 +256,7 @@ class memberService extends BaseService {
   }
 
   extendDataPembayaran = async (payload) => {
+    payload['memberId'] = payload['memberId'] ? payload['memberId'] : payload['user'].member.id
     const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda" })
     const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, ...rest } = createdPayment
     return { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }

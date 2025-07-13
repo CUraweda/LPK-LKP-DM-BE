@@ -102,25 +102,25 @@ class paymentService extends BaseService {
 
     createPayment = async (payload) => {
         try {
-            const { user, ...rest } = payload;
+            const { memberId, user, ...rest } = payload;
             rest['transactionId'] = this.generateTID(payload);
-            const memberData = await this.db.member.findFirst({ where: { id: user.member.id }, select: { registrationPaymentId: true } })
+            const memberData = await this.db.member.findFirst({ where: { id: memberId }, select: { registrationPaymentId: true } })
             let transactionTable
             if (!memberData.registrationPaymentId) {
-                transactionTable = await this.db.transaction.create({ data: { ...rest, memberId: user.member.id } });
+                transactionTable = await this.db.transaction.create({ data: { ...rest, memberId: memberId } });
                 await this.db.memberTransaction.create({
                     data: {
-                        memberId: payload.user.memberId,
+                        memberId: memberId,
                         paymentTotal: payload.paymentTotal,
                         transactionId: transactionTable.id,
                         paymentDate: new Date()
                     }
                 });
-                await this.db.member.update({ where: { id: payload.user.memberId }, data: { registrationPaymentId: transactionTable.id } })
+                await this.db.member.update({ where: { id: memberId }, data: { registrationPaymentId: transactionTable.id } })
             } else transactionTable = await this.db.transaction.findFirst({ where: { id: memberData.registrationPaymentId } })
 
-            payload['username'] = payload.user.member.name
-            payload['email'] = payload.user.email
+            payload['username'] = user.member.name
+            payload['email'] = user.email
             const paymentData = await this.paymentHelper.create({ ...payload, transaction: transactionTable });
             return await this.db.transaction.update({
                 where: { id: transactionTable.id },
