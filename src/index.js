@@ -61,7 +61,9 @@ app.use((req, res, next) => {
 app.use("/public/assets/", express.static('public/assets'));
 
 const allowedMime = ['.png', '.jpg', '.jpeg', '.pdf'];
-app.use("/file/load/", auth(['ADMIN', 'SISWA']), async (req, res, next) => {
+
+//auth di hapus karena untuk get image di LP yang tanpa login
+app.use("/file/load/", async (req, res, next) => {
   try {
     const relPath = decodeURIComponent(req.path);
     const ext = path.extname(relPath).toLowerCase();
