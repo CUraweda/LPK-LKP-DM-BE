@@ -22,6 +22,8 @@ export const memberValidator = {
     isGraduate: Joi.boolean()
   }),
   extend_data_siswa: Joi.object({
+    email: Joi.string().email(),
+    password: Joi.string().max(10),
     createNew: Joi.boolean().default(false),
     name: Joi.string(),
     nationalId: Joi.string(), 
