@@ -16,6 +16,13 @@ r.get(
     controller.findMe
 );
 
+r.get(
+    '/show-all',
+    auth(['ADMIN']),
+    validatorMiddleware({ query: baseValidator.browseQuery }),
+    controller.findAll
+);
+
 //! PAYMENT SECTION
 r.get(
     "/notify/:id",

@@ -150,7 +150,7 @@ class memberService extends BaseService {
   findDetail = async (id) => {
     const data = await this.db.member.findFirst({
       where: { id }, select: {
-        id: true, phoneNumber: true, profileImage: true,
+        id: true, name: true, phoneNumber: true, profileImage: true,
         identity: true, parents: true
       }
     })
@@ -178,7 +178,15 @@ class memberService extends BaseService {
   };
 
   extendDataSiswa = async (payload) => {
-    const id = payload.memberId
+    let id = payload.memberId
+    if(payload['createNew']){
+      const data = await this.db.member.create()
+      id = data.id
+      payload['memberId'] = data.id 
+      delete payload['createNew']
+    }else delete payload['createNew']
+    let exist = await this.db.member.findFirst({ where: { id } })
+    if(!exist) exist = await this.db.member.create()
     return await this.db.$transaction(async (prisma) => {
       const { name, profileImage, phoneNumber, ...data } = payload
       await prisma.memberIdentity.upsert({ where: { memberId: id }, create: data, update: data })
@@ -236,7 +244,9 @@ class memberService extends BaseService {
       return await prisma.member.update({
         where: { id }, data: {
           trainingId: trainingData.id,
-          ...((trainingData.type == "R") ? { memberState: memberConstant.memberState.Pembayaran } : {
+          ...((trainingData.type == "R") ? {
+            memberState: memberConstant.memberState.Pembayaran
+          } : {
             memberState: memberConstant.memberState.Selesai,
             dataVerified: true, verifiedAt: new Date()
           })

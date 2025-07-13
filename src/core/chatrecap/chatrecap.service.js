@@ -14,14 +14,22 @@ class chatrecapService extends BaseService {
   findAll = async (query) => {
     const { name, only_unread } = query
     const q = this.transformBrowseQuery(query);
-    if(name) q.where['user'] = { member: { name: { contains: name } } }
-    if(only_unread == "1") q.where['unreadedMessage'] = { gte: 1 }
+    delete q.take; delete q.skip;
+    if (name) q.where['user'] = { member: { name: { contains: name } } }
+    if (only_unread == "1") q.where['unreadedMessage'] = { gte: 1 }
 
-    const data = await this.db.chatRecap.findMany({ ...q, include: { user: { select: { member: { select: { name: true } } } } } });
-    if (query.paginate) {
-      const countData = await this.db.chatRecap.count({ where: q.where });
-      return this.paginate(data, countData, q);
-    }
+    const data = await this.db.chatRecap.findMany({
+      ...q, include: {
+        user: {
+          select: {
+            member: {
+              select: { name: true,  }
+            }
+          }
+        },
+        Chat: { select: { senderId: true, message: true, type: true, sentAt: true }, orderBy: { sentAt: "desc" }, take: 1 }
+      }
+    });
     return data;
   };
 
@@ -31,7 +39,7 @@ class chatrecapService extends BaseService {
   };
 
   findMessages = async (id) => {
-    const data = await this.db.chatRecap.findFirst({ where: { id }, select: { userId: true, totalMessage: true, unreadedMessage: true, Chat: { include: { sender: { select: { member: { select: { name: true } } } } }, orderBy: { sentAt: 'asc' }} } });
+    const data = await this.db.chatRecap.findFirst({ where: { id }, select: { userId: true, totalMessage: true, unreadedMessage: true, Chat: { include: { sender: { select: { member: { select: { name: true } } } } }, orderBy: { sentAt: 'asc' } } } });
     return data;
   };
 
@@ -58,15 +66,15 @@ class chatrecapService extends BaseService {
     const data = await this.db.chatRecap.findFirst({ where: { id } })
     if (!data) return false
 
-    if(args.messageUp) data.totalMessage++
-    if(args.unreadUp) data.unreadedMessage++
+    if (args.messageUp) data.totalMessage++
+    if (args.unreadUp) data.unreadedMessage++
 
     await this.db.chatRecap.update({ where: { id }, data })
 
     sendOn("message_refresh", { userIds: [data.userId, ...(await this.#userService.getAllAdminIds())] })
-    
+
   }
-  
+
   readMessage = async (id) => {
     const data = await this.db.chatRecap.findFirst({ where: { id } })
     if (!data) throw new BadRequest("Data tidak ditemukan")

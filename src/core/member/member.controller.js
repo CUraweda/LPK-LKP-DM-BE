@@ -34,7 +34,7 @@ class memberController extends BaseController {
   //   const data = await this.#service.findGraduated(req.query);
   //   return this.ok(res, data, "Banyak member berhasil didapatkan");
   // });
-    
+
   validateRegistrationPayment = this.wrapper(async (req, res) => {
     const data = await this.#service.validateRegistrationPayment(req.user);
     return this.ok(res, data, "Validasi Pembayaran Berhasil Dikirimkan");
@@ -65,7 +65,7 @@ class memberController extends BaseController {
     const data = await this.#service.count(req.query);
     return this.ok(res, data, "Total Member berhasil didapatkan");
   });
-  
+
   countRecap = this.wrapper(async (req, res) => {
     const data = await this.#service.countRecap();
     return this.ok(res, data, "Total Member berhasil didapatkan");
@@ -77,35 +77,37 @@ class memberController extends BaseController {
   });
 
   extendDataSiswa = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
-    if (!req.file) this.BadRequest(res, "Foto siswa harus disertakan")
-    req.body["profileImage"] = req.file.path
+    req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
+    if (!req.file && !req.params.id) this.BadRequest(res, "Foto siswa harus disertakan")
+    if (req.file) req.body["profileImage"] = req.file.path
     await this.#service.extendDataSiswa(req.body);
-    return this.created(res, "Data Siswa berhasil ditambahkan");
+    return this.created(res, { memberId: req.body['memberId'] },"Data Siswa berhasil ditambahkan");
   });
 
   extendDataIbu = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
+    req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     await this.#service.extendDataIbu(req.body);
     return this.created(res, "Data Ibu berhasil ditambahkan");
   });
 
   extendDataAyah = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
+    req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     await this.#service.extendDataAyah(req.body);
     return this.created(res, "Data Ayah berhasil ditambahkan");
   });
 
   extendDataWali = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
+    req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     await this.#service.extendDataWali(req.body);
     return this.created(res, "Data Wali berhasil ditambahkan");
   });
 
   extendDataTraining = this.wrapper(async (req, res) => {
-    req.body['memberId'] = (req.user.role.code == "ADMIN") ? req.params.id : req.user.member.id
-    await this.#service.extendDataTraining(req.body);
-    return this.created(res, "Data Kursus berhasil ditambahkan");
+    req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
+    const data = await this.#service.extendDataTraining(req.body);
+    return this.created(res, {
+      memberState: data['memberState']
+    }, "Data Kursus berhasil ditambahkan");
   });
 
   extendDataPembayaran = this.wrapper(async (req, res) => {

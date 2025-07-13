@@ -1,38 +1,55 @@
-name: Staging CD
+name: Deploy with Prisma to VPS
 
 on:
   push:
-    branches: [ development ]
-  pull_request:
-    branches: [ "development" ]
+    branches:
+      - development
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    environment: SECRET
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout Code
+      uses: actions/checkout@v2
 
-      - name: Deploy using SSH
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: 22
-          debug: true
-          script: |
-            cd staging/LPK-LKP-DM-BE
-            git reset --hard
-            git pull origin development
+    - name: Install SSH and SSHPass
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sshpass openssh-client rsync
 
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+    - name: Sync Files to VPS (exclude .env and necessary folder)
+      run: |
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete \
+          --exclude='.env' \
+          --exclude='logs/' \
+          --exclude='public/' \
+          --exclude='uploads/' \
+          -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }}" \
+          ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/root/staging/LPK-LKP-DM-BE
 
-            npm install
-            npm run prisma:migrate
-            npm run prisma:seed:dev
-            pm2 restart 13 || pm2 start npm --name backend -- run start
+    - name: Install Dependencies and Run Prisma Migrations
+      run: |
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          # Set the Node.js version to 20.x if it's not already set
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # Load NVM
+          nvm install 20
+          nvm use 20
+
+          # Verify Node.js version
+          node -v
+
+          # Install PM2 if not already installed
+          npm install -g pm2
+
+          # Go to the app directory
+          cd /root/staging/LPK-LKP-DM-BE
+
+          # Install dependencies
+          npm install
+
+          # Run Prisma Migrations
+          npx prisma migrate deploy
+
+        EOF

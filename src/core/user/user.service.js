@@ -1,6 +1,6 @@
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
-import { Forbidden } from "../../exceptions/catch.execption.js";
+import { Forbidden, NotFound } from "../../exceptions/catch.execption.js";
 import { hash } from "../../helpers/bcrypt.helper.js";
 
 class userService extends BaseService {
@@ -52,8 +52,10 @@ class userService extends BaseService {
     }
 
     const { name, phoneNumber, profileImage, ...rest } = payload
-    const existing = await prisma.user.findUnique({ where: { email: rest['email'] } });
-    if (existing) throw new Forbidden('Akun dengan email/nomor telepon telah digunakan');
+    const emailExist = await prisma.user.findUnique({ where: { email: rest['email'] } });
+    if (emailExist) throw new Forbidden('Email telah digunakan');
+    const phoneExist = await prisma.member.findUnique({ where: { phoneNumber } });
+    if (phoneExist) throw new Forbidden('Nomor Telepon telah digunakan');
 
     rest['password'] = await hash(rest['password'])
     delete rest['confirm_password']
@@ -70,11 +72,19 @@ class userService extends BaseService {
 
   updateAdmin = async (id, payload) => {
     const { name, phoneNumber, profileImage, ...rest } = payload
+    const userData = await prisma.user.findFirst({ where: { id }, include: { member: true } })
+    if(!userData) throw new NotFound("Akun tidak ditemukan")
 
-    if (rest['email']) {
+    if (rest['email'] && (userData.email != rest['email'])) {
       const existing = await prisma.user.findUnique({ where: { email: rest['email'] } });
-      if (existing) throw new Forbidden('Akun dengan email/nomor telepon telah digunakan');
+      if (existing) throw new Forbidden('Email telah digunakan');
     }
+
+    if (rest['phoneNumber'] && (userData.member.phoneNumber != rest['phoneNumber'])) {
+      const existing = await prisma.member.findUnique({ where: { phoneNumber: rest['phoneNumber'] } });
+      if (existing) throw new Forbidden('Nomor telepon telah digunakan');
+    }
+
     if (rest['password']){
       rest['password'] = await hash(rest['password'])
       delete rest['confirm_password']
