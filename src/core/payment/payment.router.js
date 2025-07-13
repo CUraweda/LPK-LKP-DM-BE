@@ -11,7 +11,7 @@ controller = new paymentController();
 
 r.get(
     '/show-me',
-    auth(['SISWA']),
+    auth(['SISWA', 'ADMIN']),
     validatorMiddleware({ query: baseValidator.browseQuery }),
     controller.findMe
 );

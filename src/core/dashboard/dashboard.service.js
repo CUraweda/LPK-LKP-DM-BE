@@ -9,11 +9,6 @@ class dashboardService extends BaseService {
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
     const data = await this.db.dashboard.findMany({ ...q });
-
-    // if (query.paginate) {
-    //   const countData = await this.db.dashboard.count({ where: q.where });
-    //   return this.paginate(data, countData, q);
-    // }
     return data;
   };
 

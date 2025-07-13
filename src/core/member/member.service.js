@@ -5,10 +5,12 @@ import prism from "../../config/prisma.db.js";
 import prisma from '../../config/prisma.db.js';
 import { BadRequest } from "../../exceptions/catch.execption.js";
 import paymentService from "../payment/payment.service.js";
+import AuthenticationService from "../authentication/authentication.service.js";
 
 class memberService extends BaseService {
   constructor() {
     super(prisma);
+    this.authenticationService = new AuthenticationService()
     this.paymentService = new paymentService()
   }
 
@@ -180,11 +182,17 @@ class memberService extends BaseService {
   extendDataSiswa = async (payload) => {
     let id = payload.memberId
     if(payload['createNew']){
-      const data = await this.db.member.create()
-      id = data.id
-      payload['memberId'] = data.id 
-      delete payload['createNew']
-    }else delete payload['createNew']
+      if(payload['email'] && payload['password']){
+        const data = await this.db.member.create()
+        const user = await this.authenticationService.register(payload)
+        id = data.id
+        await this.db.user.update({ where: { id: user.user.id }, data: { memberId: id } })
+        payload['memberId'] = data.id 
+        delete payload['createNew']
+        delete payload['email']
+        delete payload['password']
+      }else throw new BadRequest("Mohon sertakan email dan password")
+    }else delete payload['createNew']; delete payload['email']; delete payload['password']
     let exist = await this.db.member.findFirst({ where: { id } })
     if(!exist) exist = await this.db.member.create()
     return await this.db.$transaction(async (prisma) => {
@@ -256,6 +264,7 @@ class memberService extends BaseService {
   }
 
   extendDataPembayaran = async (payload) => {
+    payload['memberId'] = payload['memberId'] ? payload['memberId'] : payload['user'].member.id
     const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda" })
     const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, ...rest } = createdPayment
     return { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }
