@@ -226,7 +226,7 @@ class paymentService extends BaseService {
         try {
             const { memberId, user, ...rest } = payload;
             rest['transactionId'] = this.generateTID(payload);
-            const memberData = await this.db.member.findFirst({ where: { id: memberId }, select: { registrationPaymentId: true } })
+            const memberData = await this.db.member.findFirst({ where: { id: memberId }, select: { registrationPaymentId: true, name: true, User: { select: { email: true } }  } })
             let transactionTable
             if (!memberData.registrationPaymentId) {
                 transactionTable = await this.db.transaction.create({ data: { ...rest, memberId: memberId } });
@@ -241,8 +241,8 @@ class paymentService extends BaseService {
                 await this.db.member.update({ where: { id: memberId }, data: { registrationPaymentId: transactionTable.id } })
             } else transactionTable = await this.db.transaction.findFirst({ where: { id: memberData.registrationPaymentId } })
 
-            payload['username'] = user.member.name
-            payload['email'] = user.email
+            payload['username'] = memberData.name
+            payload['email'] = memberData.User.email
             const paymentData = await this.paymentHelper.create({ ...payload, transaction: transactionTable });
             return await this.db.transaction.update({
                 where: { id: transactionTable.id },
