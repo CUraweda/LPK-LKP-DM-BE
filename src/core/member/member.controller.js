@@ -55,6 +55,7 @@ class memberController extends BaseController {
   });
 
   showDetail = this.wrapper(async (req, res) => {
+    if (req.user.role.code == "SISWA") req.params.id = req.user.member.id
     const data = await this.#service.findDetail(+req.params.id);
     if (!data) throw new NotFound("member tidak ditemukan");
 
