@@ -46,8 +46,8 @@ r.get(
 )
 
 r.get(
-  "/show-detail/:id",
-  auth(["ADMIN"]),
+  "/show-detail/:id?",
+  auth(["ADMIN", "SISWA"]),
   controller.showDetail
 )
 

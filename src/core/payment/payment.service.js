@@ -241,8 +241,8 @@ class paymentService extends BaseService {
                 await this.db.member.update({ where: { id: memberId }, data: { registrationPaymentId: transactionTable.id } })
             } else transactionTable = await this.db.transaction.findFirst({ where: { id: memberData.registrationPaymentId } })
 
-            payload['username'] = memberData.name
-            payload['email'] = memberData.User.email
+            payload['username'] = memberData.name || ""
+            payload['email'] = memberData.User.email || ""
             const paymentData = await this.paymentHelper.create({ ...payload, transaction: transactionTable });
             return await this.db.transaction.update({
                 where: { id: transactionTable.id },

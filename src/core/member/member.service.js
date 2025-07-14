@@ -152,7 +152,7 @@ class memberService extends BaseService {
   findDetail = async (id) => {
     const data = await this.db.member.findFirst({
       where: { id }, select: {
-        id: true, name: true, phoneNumber: true, profileImage: true,
+        id: true, name: true, phoneNumber: true, profileImage: true, trainingId: true, 
         identity: true, parents: true
       }
     })
@@ -195,6 +195,7 @@ class memberService extends BaseService {
     }else delete payload['createNew']; delete payload['email']; delete payload['password']
     let exist = await this.db.member.findFirst({ where: { id } })
     if(!exist) exist = await this.db.member.create()
+
     return await this.db.$transaction(async (prisma) => {
       const { name, profileImage, phoneNumber, ...data } = payload
       await prisma.memberIdentity.upsert({ where: { memberId: id }, create: data, update: data })
