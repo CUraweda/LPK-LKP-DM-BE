@@ -34,7 +34,6 @@ class memberworkController extends BaseController {
 
   create = this.wrapper(async (req, res) => {
     const logoFile = req.files?.companyLogo?.[0];
-    // if (!logoFile) throw new Error("Logo perusahaan wajib diunggah");
 
     const payload = {
       ...req.body,

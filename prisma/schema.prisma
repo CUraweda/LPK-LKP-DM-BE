@@ -404,7 +404,7 @@ model MemberWork {
   position            String
   status              WorkStatus
   companyName         String
-  companyLogo         String
+  companyLogo         String?
   isCurrentlyEmployed Boolean
   startDate           DateTime?
   endDate             DateTime?

@@ -8,7 +8,20 @@ class trainingService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.training.findMany({ ...q });
+    const data = await this.db.training.findMany({ ...q,
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      trainingImage: true,
+      type: true,
+      totalParticipants: true,
+      totalCourses: true,
+      totalHours: true,
+      targetTrainingHours: true,
+      level: true,
+      isActive: true,
+    }});
     const type_R = data.filter(item => item.type === 'R').length;
     const type_P = data.filter(item => item.type === 'P').length;
     const total = data.length;

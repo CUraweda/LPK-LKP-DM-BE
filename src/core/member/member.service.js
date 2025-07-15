@@ -243,26 +243,32 @@ class memberService extends BaseService {
   }
 
   extendDataTraining = async (payload) => {
-    const id = payload.memberId
+    const { memberId, trainingId } = payload;
+
     return await this.db.$transaction(async (prisma) => {
-      const trainingData = await prisma.training.findFirst({ where: { id: payload.trainingId } })
-      if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan")
-      // const categoryData = await prisma.trainingCategory.findFirst({ where: { id: payload.trainingId } })
-      // if (!categoryData) throw new BadRequest("Data Kategori tidak ditemukan")
-      // return await prisma.member.update({ where: { id }, data: { courseCategoryId: payload.courseCategoryId, totalCoursePrice: 2000000, totalCourses: 1, courseLevel: payload.courseLevel, memberState: memberConstant.memberState.Pembayaran } })
-      return await prisma.member.update({
-        where: { id }, data: {
+      const trainingData = await prisma.training.update({
+        where: { id: trainingId },
+        data: { totalParticipants: { increment: 1 } },
+      });
+
+      if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan");
+
+      return prisma.member.update({
+        where: { id: memberId },
+        data: {
           trainingId: trainingData.id,
-          ...((trainingData.type == "R") ? {
-            memberState: memberConstant.memberState.Pembayaran
-          } : {
-            memberState: memberConstant.memberState.Selesai,
-            dataVerified: true, verifiedAt: new Date()
-          })
-        }
-      })
-    })
-  }
+          ...(trainingData.type === "R"
+            ? { memberState: memberConstant.memberState.Pembayaran }
+            : {
+                memberState: memberConstant.memberState.Selesai,
+                dataVerified: true,
+                verifiedAt: new Date(),
+              }),
+        },
+      });
+    });
+  };
+
 
   extendDataPembayaran = async (payload) => {
     payload['memberId'] = payload['memberId'] ? payload['memberId'] : payload['user'].member.id
