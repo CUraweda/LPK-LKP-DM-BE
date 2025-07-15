@@ -27,7 +27,7 @@ class memberattendanceService extends BaseService {
     const { date } = query
     const q = this.transformBrowseQuery(query);
     if (date) q.where['date'] = date
-    const data = await this.db.memberAttendance.findMany({ ...q, orderBy: { rawDate: "desc" } });
+    const data = await this.db.memberAttendance.findMany({ ...q, include: { member: true }, orderBy: { rawDate: "desc" } });
 
     if (query.paginate) {
       const countData = await this.db.memberAttendance.count({ where: q.where });

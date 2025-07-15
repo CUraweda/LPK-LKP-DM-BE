@@ -24,6 +24,7 @@ import dashboardRouter from './core/dashboard/dashboard.router.js';
 import trainingcategoryRouter from './core/trainingcategory/trainingcategory.router.js'
 import chatrecapRouter from './core/chatrecap/chatrecap.router.js';
 import pageRouter from './core/page/page.router.js';
+import locationRouter from './core/location/location.router.js';
 
 const router = express.Router();
 
@@ -59,6 +60,10 @@ export const routeLists = [
     {
         path: '/ref/role',
         route: roleRouter
+    },
+    {
+        path: '/ref/location',
+        route: locationRouter
     },
     {
         path: '/ref/training',

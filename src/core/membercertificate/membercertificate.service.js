@@ -8,7 +8,7 @@ class membercertificateService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.memberCertificate.findMany({ ...q });
+    const data = await this.db.memberCertificate.findMany({ ...q, include: { member: true } });
 
     if (query.paginate) {
       const countData = await this.db.memberCertificate.count({ where: q.where });
