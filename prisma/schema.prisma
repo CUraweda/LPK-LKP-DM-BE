@@ -153,6 +153,14 @@ model Employee {
   @@map("employee")
 }
 
+model Location {
+  id Int @id @default(autoincrement())
+  name String
+  latitude String
+  longitude String
+  range Int
+}
+
 model Transaction {
   id               Int       @id @default(autoincrement())
   memberId         Int

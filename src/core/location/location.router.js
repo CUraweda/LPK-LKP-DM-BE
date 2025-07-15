@@ -1,13 +1,13 @@
 import { Router } from "express";
 import validatorMiddleware from "../../middlewares/validator.middleware.js";
-import roleController from "./role.controller.js";
-import roleValidator from "./role.validator.js";
+import locationController from "./location.controller.js";
+import locationValidator from "./location.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
 
 const r = Router(),
-  validator = roleValidator,
-  controller = new roleController();
+  validator = locationValidator,
+  controller = new locationController();
 
 r.get(
   "/show-all",
@@ -31,7 +31,7 @@ r.put(
   controller.update
 );
 
-r.delete("/delete/:id", auth(['SISWA']), controller.delete);
+r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
-const roleRouter = r;
-export default roleRouter;
+const locationRouter = r;
+export default locationRouter;
