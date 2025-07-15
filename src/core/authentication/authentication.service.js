@@ -38,6 +38,7 @@ class AuthenticationService extends BaseService {
           select: {
             id: true,
             name: true,
+			isGraduate: true,
             profileImage: true,
             dataVerified: true,
             memberState: true,
@@ -81,6 +82,7 @@ class AuthenticationService extends BaseService {
           select: {
             id: true,
             name: true,
+			isGraduate: true,
             profileImage: true,
             dataVerified: true,
             memberState: true,
