@@ -4,11 +4,15 @@ import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
 import httpStatus from 'http-status-codes';
+import fs from "fs"
 
-import { Server } from 'socket.io';
 // import { startWhatsApp } from './utils/whatsappClient.js';
 import handleError from './exceptions/handler.exception.js';
 import router from './routes.js';
+import { initSocket } from './socket/index.js';
+import auth from './middlewares/auth.middleware.js';
+import path from 'path';
+import { BadRequest, NotFound } from './exceptions/catch.execption.js';
 
 const app = express();
 dotenv.config();
@@ -36,9 +40,7 @@ app.use(
     extended: true,
   })
 );
-app.use(
-  bodyParser.raw({ type: ['application/json', 'application/vnd.api+json'] })
-);
+app.use(bodyParser.raw({ type: ['application/json', 'application/vnd.api+json'] }));
 app.use(bodyParser.text({ type: 'text/html' }));
 
 //? START Development Request Tracker
@@ -56,8 +58,58 @@ app.use((req, res, next) => {
   next();
 });
 //? END Development Request Tracker
+app.use("/public/assets/", express.static('public/assets'));
 
+const allowedMime = ['.png', '.jpg', '.jpeg', '.pdf'];
+
+//auth di hapus karena untuk get image di LP yang tanpa login
+app.use("/file/load/", async (req, res, next) => {
+  try {
+    const relPath = decodeURIComponent(req.path);
+    const ext = path.extname(relPath).toLowerCase();
+
+    if (!allowedMime.includes(ext)) throw new BadRequest("Tipe file tidak bisa diambil");
+    
+    const baseDir = path.resolve('uploads');
+    const fullPath = path.join(baseDir, relPath.replace(/^\/?uploads\/?/, ''));
+
+    if (!fullPath.startsWith(baseDir)) throw new BadRequest("Denied")
+    if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) throw new NotFound("File tidak ditemukan")
+
+    return res.sendFile(fullPath);
+  } catch (err) {
+    next(err);
+  }
+});
 app.use('/api/v1', router);
+app.get('/api/download', auth(["ADMIN", "USER"]), (req, res) => {
+  const filePath = req.query.path;
+  if (!filePath) {
+    return res.status(httpStatus.BAD_REQUEST).send({
+      status: false,
+      code: httpStatus.BAD_REQUEST,
+      message: "File path not provided.",
+    });
+  }
+
+  if (fs.existsSync(filePath)) {
+    const filename = path.basename(filePath);
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename}"`
+    );
+
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } else {
+    res.status(httpStatus.NOT_FOUND).send({
+      status: false,
+      code: httpStatus.NOT_FOUND,
+      message: "File not found.",
+    });
+  }
+});
 
 app.route('/').get((req, res) => {
   return res.json({
@@ -82,18 +134,7 @@ app.use((req, res) => {
 app.use(handleError);
 
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
-});
-
-io.on('connection', (socket) => {
-  socket.on('disconnect', () => {
-    console.log('Client disconnected: ' + socket.id);
-  });
-});
+initSocket(server);
 
 server.listen(port, () => {
   console.log(`Server berjalan pada port ${port}`);

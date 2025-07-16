@@ -8,9 +8,15 @@ export const memberattendanceValidator = {
     description: Joi.string(),
     type: Joi.valid("H", "I", "S", "A")
   }),
+  rangeData: Joi.object({
+    trainingId: Joi.number().integer(),
+    fromDate: Joi.string(),
+    toDate: Joi.string()
+  }),
   attend: Joi.object({
-    location: Joi.string(),
-    description: Joi.string(),
+    type: Joi.valid("H", "I", "S", "A"),
+    location: Joi.string().optional(),
+    description: Joi.string().optional(),
   }),
   update: Joi.object({
     rawDate: Joi.date(),

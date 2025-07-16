@@ -18,9 +18,13 @@ export const memberValidator = {
     totalMaterials: Joi.number().integer(),
     totalCareers: Joi.number().integer(),
     currentCourseId: Joi.number().integer(),
-    dataVerified: Joi.boolean()
+    dataVerified: Joi.boolean(),
+    isGraduate: Joi.boolean()
   }),
   extend_data_siswa: Joi.object({
+    email: Joi.string().email(),
+    password: Joi.string().max(10),
+    createNew: Joi.boolean().default(false),
     name: Joi.string(),
     nationalId: Joi.string(), 
     studentNumber: Joi.string(),
@@ -64,6 +68,8 @@ export const memberValidator = {
   }),
   extend_data_kursus: Joi.object({
     trainingId: Joi.number().integer()
+    // courseCategoryId: Joi.number().integer(),
+    // courseLevel: Joi.number().integer()
   }),
   extend_data_pembayaran: Joi.object({
     paymentMethod: Joi.string()

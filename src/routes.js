@@ -21,6 +21,10 @@ import paymentRouter from './core/payment/payment.router.js';
 import trainingscheduleRouter from './core/trainingschedule/trainingschedule.router.js';
 import trainingenrollmentRouter from './core/trainingenrollment/trainingenrollment.router.js';
 import dashboardRouter from './core/dashboard/dashboard.router.js';
+import trainingcategoryRouter from './core/trainingcategory/trainingcategory.router.js'
+import chatrecapRouter from './core/chatrecap/chatrecap.router.js';
+import pageRouter from './core/page/page.router.js';
+import locationRouter from './core/location/location.router.js';
 
 const router = express.Router();
 
@@ -36,6 +40,10 @@ export const routeLists = [
     {
         path: '/payment',
         route: paymentRouter
+    },
+    {
+        path: '/chat-recap',
+        route: chatrecapRouter
     },
     {
         path: '/chat',
@@ -54,6 +62,10 @@ export const routeLists = [
         route: roleRouter
     },
     {
+        path: '/ref/location',
+        route: locationRouter
+    },
+    {
         path: '/ref/training',
         route: trainingRouter
     },
@@ -62,12 +74,20 @@ export const routeLists = [
         route: dashboardRouter
     },
     {
+        path: '/ref/page',
+        route: pageRouter
+    },
+    {
         path: '/training/schedule',
         route: trainingscheduleRouter
     },
     {
-        path: '/training',
+        path: '/training/enrollment',
         route: trainingenrollmentRouter
+    },
+    {
+        path: '/ref/training-category',
+        route: trainingcategoryRouter
     },
     {
         path: '/ref/transaction',
@@ -86,7 +106,7 @@ export const routeLists = [
         route: memberattendanceRouter
     },
     {
-        path: '/membercertificate',
+        path: '/member-certificate',
         route: membercertificateRouter
     },
     {

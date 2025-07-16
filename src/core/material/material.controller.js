@@ -2,6 +2,7 @@ import BaseController from "../../base/controller.base.js";
 import { NotFound } from "../../exceptions/catch.execption.js";
 import materialService from "./material.service.js";
 
+
 class materialController extends BaseController {
   #service;
 
@@ -22,27 +23,43 @@ class materialController extends BaseController {
     return this.ok(res, data, "material berhasil didapatkan");
   });
 
+  findByTrainingId = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByTrainingId(req.params.id);
+    if (!data) throw new NotFound("material tidak ditemukan");
+
+    return this.ok(res, data, "material berhasil didapatkan");
+  });
+  
+  findByMateri = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByMateri(req.params.q);
+    if (!data) throw new NotFound("material tidak ditemukan");
+
+    return this.ok(res, data, "material berhasil didapatkan");
+  });
+
+  downloadPdf = this.wrapper(async (req, res) => {
+    const id = Number(req.params.id);
+    const { filePath, fileName } = await this.#service.downloadPdf(id);
+    return res.download(filePath, fileName);
+  });
+
   create = this.wrapper(async (req, res) => {
-  console.log('Text fields:', req.body);     // your form text data
-  console.log('File:', req.file);             // your uploaded file info
-
-  if (req.file) {
-    req.body.coverImage = req.file.filename; // store filename in body to save to DB
-  }
-
-  const data = await this.#service.create(req.body);
-  return this.created(res, data, "material berhasil dibuat");
-});
+    const data = await this.#service.create(req.body, req.files);
+    return this.created(res, data, "Material berhasil dibuat");
+  });
 
   update = this.wrapper(async (req, res) => {
-    const data = await this.#service.update(req.params.id, req.body);
-    return this.ok(res, data, "material berhasil diperbarui");
+    const id = Number(req.params.id);
+    const data = await this.#service.update(id, req.body, req.files);
+    return this.ok(res, data, "Material berhasil diperbarui");
   });
 
   delete = this.wrapper(async (req, res) => {
-    const data = await this.#service.delete(req.params.id);
-    return this.noContent(res, "material berhasil dihapus");
+    const id = Number(req.params.id);
+    await this.#service.delete(id);
+    return this.noContent(res, "Material dan file berhasil dihapus");
   });
+
 }
 
 export default materialController;

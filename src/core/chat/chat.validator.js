@@ -2,11 +2,18 @@ import Joi from "joi";
 
 export const chatValidator = {
   create: Joi.object({
-    // no-data
+    chatRecapId: Joi.number().integer(),
+    message: Joi.string().optional(),
   }),
   update: Joi.object({
-    // no-data
+    senderId: Joi.number().integer().optional(),
+    chatRecapId: Joi.number().integer().optional(),
+    message: Joi.string().optional(),
+    sentAt: Joi.date().optional(),
   }),
+  send: Joi.object({
+    message: Joi.string().optional(),
+  })
 };
 
 export default chatValidator;

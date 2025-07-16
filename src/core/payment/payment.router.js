@@ -9,52 +9,30 @@ const r = Router(),
 validator = paymentValidator,
 controller = new paymentController();
 
-// r.get(
-//     '/show-all',
-//     validatorMiddleware({ query: baseValidator.browseQuery }),
-//     controller.findAll
-// );
-
-// r.get(
-//     '/show-recap-status',
-//     auth(['ADMIN']),
-//     controller.findRecapStatus
-// );
-
-// r.get('/show-one/:id', controller.findById);
-
-// r.post(
-//     '/create',
-//     // auth(['ADMIN']),
-//     validatorMiddleware({ body: validator.create }),
-//     controller.create
-// );
-
-
-r.put(
-    '/update/:id',
-    // auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
+r.get(
+    '/show-me',
+    auth(['SISWA', 'ADMIN']),
+    validatorMiddleware({ query: baseValidator.browseQuery }),
+    controller.findMe
 );
 
-r.delete('/delete/:id', auth(['ADMIN']), controller.delete);
-
+r.get(
+    '/show-all',
+    auth(['ADMIN']),
+    validatorMiddleware({ query: baseValidator.browseQuery }),
+    controller.findAll
+);
 
 //! PAYMENT SECTION
 r.get(
     "/notify/:id",
     controller.notify
 )
-r.get(
-    "/inquiry/:id",
-    // auth(['USER', 'ADMIN']),
-    controller.notify
-)
+
 r.post(
     "/create",
-    // auth(['USER']),
-    validatorMiddleware({ body: validator.create }),
+    auth(['SISWA']),
+    validatorMiddleware({ body: validator.createPayment }),
     controller.createPayment
 )
 
