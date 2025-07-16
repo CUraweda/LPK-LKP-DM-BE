@@ -152,7 +152,7 @@ class memberService extends BaseService {
   findDetail = async (id) => {
     const data = await this.db.member.findFirst({
       where: { id }, select: {
-        id: true, name: true, phoneNumber: true, profileImage: true, trainingId: true, 
+        id: true, name: true, phoneNumber: true, profileImage: true, trainingId: true,
         identity: true, parents: true
       }
     })
@@ -164,9 +164,16 @@ class memberService extends BaseService {
     return data;
   };
 
-  patchVerified = async (id, payload) => {
-    const data = await this.db.member.update({ where: { id }, data: { dataVerified: payload.verified } });
-    return data;
+  patchVerified = async (id) => {
+    const memberData = await this.db.member.findFirst({ where: { id }, select: { dataVerified: true } })
+    if (!memberData) throw new BadRequest("Akun member tidak ditemukan")
+
+    return await this.db.member.update({
+      where: { id }, data: {
+        dataVerified: !memberData.dataVerified,
+        ...(memberData.dataVerified ? { verifiedAt: null } :  { verifiedAt: new Date() } )
+      }
+    });
   };
 
   update = async (id, payload) => {
@@ -181,20 +188,20 @@ class memberService extends BaseService {
 
   extendDataSiswa = async (payload) => {
     let id = payload.memberId
-    if(payload['createNew']){
-      if(payload['email'] && payload['password']){
+    if (payload['createNew']) {
+      if (payload['email'] && payload['password']) {
         const data = await this.db.member.create()
         const user = await this.authenticationService.register(payload)
         id = data.id
         await this.db.user.update({ where: { id: user.user.id }, data: { memberId: id } })
-        payload['memberId'] = data.id 
+        payload['memberId'] = data.id
         delete payload['createNew']
         delete payload['email']
         delete payload['password']
-      }else throw new BadRequest("Mohon sertakan email dan password")
-    }else delete payload['createNew']; delete payload['email']; delete payload['password']
+      } else throw new BadRequest("Mohon sertakan email dan password")
+    } else delete payload['createNew']; delete payload['email']; delete payload['password']
     let exist = await this.db.member.findFirst({ where: { id } })
-    if(!exist) exist = await this.db.member.create()
+    if (!exist) exist = await this.db.member.create()
 
     return await this.db.$transaction(async (prisma) => {
       const { name, profileImage, phoneNumber, ...data } = payload
@@ -260,10 +267,8 @@ class memberService extends BaseService {
           ...(trainingData.type === "R"
             ? { memberState: memberConstant.memberState.Pembayaran }
             : {
-                memberState: memberConstant.memberState.Selesai,
-                dataVerified: true,
-                verifiedAt: new Date(),
-              }),
+              memberState: memberConstant.memberState.Selesai
+            }),
         },
       });
     });

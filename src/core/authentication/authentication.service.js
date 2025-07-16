@@ -56,7 +56,6 @@ class AuthenticationService extends BaseService {
     const access_token = await generateAccessToken(user);
     const refresh_token = await generateRefreshToken(user);
 
-    // Buat flag akses (untuk admin atau member yang sudah verifikasi)
     const isAllowedAccess = user.role.code === "ADMIN" || (user.member && user.member.dataVerified);
 
     return {

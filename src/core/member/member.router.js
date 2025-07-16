@@ -70,10 +70,9 @@ r.post(
   controller.create
 );
 r.patch(
-  "/change/verified",
+  "/change-verified/:id",
   auth(['ADMIN']),
-  validatorMiddleware({ body: validator.patchVerified }),
-  controller.create
+  controller.patchVerified
 )
 r.put(
   "/update/:id",

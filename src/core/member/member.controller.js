@@ -119,7 +119,7 @@ class memberController extends BaseController {
   });
 
   patchVerified = this.wrapper(async (req, res) => {
-    const data = await this.#service.patchVerified(+req.params.id, req.body);
+    const data = await this.#service.patchVerified(+req.params.id);
     return this.ok(res, data, "perubahan berhasil diterapkan");
   });
 

@@ -12,11 +12,14 @@ const r = Router(),
 
 r.get(
   "/show-all",
+  auth(['ADMIN']),
   validatorMiddleware({ query: baseValidator.browseQuery }),
   controller.findAll
 );
 
-r.get("/show-one/:id", controller.findById);
+r.get("/show-one/:id",
+  auth(['ADMIN']),
+  controller.findById);
 
 r.get(
   "/show-me",
@@ -26,6 +29,7 @@ r.get(
 
 r.get(
   "/count",
+  auth(['ADMIN']),
   validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.count
 );
