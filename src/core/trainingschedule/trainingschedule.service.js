@@ -47,7 +47,7 @@ class trainingscheduleService extends BaseService {
         data: {
           memberId: memberId,
           scheduleId: newSchedule.id,
-          status: 'IN_PROGRESS',
+          status: 'BOOKED',
         },
       });
   
