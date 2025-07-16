@@ -1,6 +1,7 @@
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
 import { verifyToken } from "../../helpers/jwt.helper.js";
+import { addDays, addHours, startOfDay } from "date-fns";
 
 class trainingscheduleService extends BaseService {
   constructor() {
@@ -179,6 +180,65 @@ class trainingscheduleService extends BaseService {
       console.error("Error creating schedule and enrollment:", error);
       throw Error(error);
     }
+  };
+
+  createBulk = async (payload) => {
+    const { trainingId, memberId, startWeek, weeks = 1 } = payload;
+    const templates = await this.db.refSchedule.findMany({
+      where: { trainingId },
+      select: { dayOfWeek: true, startHour: true, endHour: true, type: true },
+    });
+    if (templates.length === 0)
+      throw new Error("RefSchedule not found");
+    return this.db.$transaction(async (tx) => {
+      const training = await tx.training.findUnique({ where: { id: trainingId } });
+      if (!training) throw new BadRequest("Training not found");
+
+      const startSunday = startOfDay(new Date(startWeek));
+      const sessions = [];
+      for (let w = 0; w < weeks; w++) {
+        for (const t of templates) {
+          const dayDate = addDays(startSunday, w * 7 + t.dayOfWeek);
+          const startTime = addHours(dayDate, t.startHour);
+          const endTime =
+            t.endHour > t.startHour
+              ? addHours(dayDate, t.endHour)
+              : addHours(dayDate, t.startHour + training.targetTrainingHours);
+
+          sessions.push({
+            trainingId,
+            startTime,
+            endTime,
+            type: t.type,
+          });
+        }
+      }
+
+      await tx.trainingSchedule.createMany({
+        data: sessions,
+        skipDuplicates: true,
+      });
+      const scheduleIds = await tx.trainingSchedule.findMany({
+        where: {
+          trainingId,
+          startTime: { in: sessions.map((s) => s.startTime) },
+        },
+        select: { id: true },
+      });
+      await tx.trainingEnrollment.createMany({
+        data: scheduleIds.map((s) => ({
+          memberId,
+          scheduleId: s.id,
+          status: "BOOKED",
+        })),
+        skipDuplicates: true,
+      });
+
+      return {
+        createdSchedules: sessions.length,
+        createdEnrollments: scheduleIds.length,
+      };
+    });
   };
 
   update = async (id, payload) => {

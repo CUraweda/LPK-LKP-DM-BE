@@ -210,6 +210,7 @@ model Training {
 
   @@map("training")
   MemberTransaction MemberTransaction[]
+  RefSchedule RefSchedule[]
 }
 
 model TrainingCategory {
@@ -250,6 +251,22 @@ model Page {
   file         String?
 }
 
+
+model RefSchedule {
+  id          Int          @id @default(autoincrement())
+  trainingId  Int
+  description String?
+  dayOfWeek   Int          // 0 = Minggu … 6 = Sabtu
+  startHour   Int          // 0 – 23
+  endHour     Int          // 0 – 23 ("wrap" ke hari berikut bila < startHour)
+  type        TrainingType
+
+  training    Training     @relation(fields: [trainingId], references: [id])
+
+  @@unique([trainingId, dayOfWeek, startHour, type])
+  @@map("ref_schedule")
+}
+
 model TrainingSchedule {
   id          Int                  @id @default(autoincrement())
   trainingId  Int
@@ -260,6 +277,8 @@ model TrainingSchedule {
 
   training Training @relation(fields: [trainingId], references: [id])
 
+  @@unique([trainingId, startTime])
+  @@index([startTime])
   @@map("training_schedule")
 }
 
@@ -274,6 +293,7 @@ model TrainingEnrollment {
   member   Member           @relation(fields: [memberId], references: [id])
 
   @@unique([memberId, scheduleId])
+  @@index([scheduleId])
   @@map("training_enrollment")
 }
 

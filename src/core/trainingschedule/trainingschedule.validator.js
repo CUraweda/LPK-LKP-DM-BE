@@ -7,6 +7,12 @@ export const trainingscheduleValidator = {
     startTime: Joi.date().required(),
     type: Joi.string().valid('R', 'P').required(),
   }),
+  createBulk: Joi.object({
+    memberId: Joi.number().required(),
+    trainingId: Joi.number().required(),
+    startWeek: Joi.date().required(),
+    weeks: Joi.number().required(),
+  }),
   update: Joi.object({
     memberId: Joi.number().optional(),
     trainingId: Joi.number().optional(),

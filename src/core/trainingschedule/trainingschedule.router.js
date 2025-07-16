@@ -24,14 +24,21 @@ r.post(
   auth(['ADMIN','SISWA']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
+);
+
+r.post(
+  "/create-bulk",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.createBulk }),
+  controller.createBulk
+);
   
-  r.put(
-    "/update/:id",
-    auth(['ADMIN', 'SISWA']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
+r.put(
+  "/update/:id",
+  auth(['ADMIN', 'SISWA']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
     
 r.delete(
   "/delete/:id", 
