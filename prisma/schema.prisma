@@ -186,8 +186,33 @@ model Transaction {
   @@map("transaction")
 }
 
+model CuriculumStructure {
+  id               Int                      @id @default(autoincrement())
+  type             String
+  code             String
+  competencyUnit   String
+  timePerHour      Int
+  hours            Int
+
+  curiculums       Curiculum[]
+  trainings        TrainingCuriculumStructure[]
+
+  @@map("curiculum_structure")
+}
+
+model Curiculum {
+  id                  Int     @id @default(autoincrement())
+  structureId         Int
+  competencyElement   String
+  graduationIndicator String
+
+  curiculumStructure  CuriculumStructure @relation(fields: [structureId], references: [id])
+
+  @@map("curiculum")
+}
+
 model Training {
-  id                  Int          @id @default(autoincrement())
+  id                  Int                      @id @default(autoincrement())
   title               String
   description         String
   trainingImage       String
@@ -196,31 +221,32 @@ model Training {
   totalParticipants   Int
   totalCourses        Int
   totalHours          Int
-  targetTrainingHours Int
   level               Int?
-  isActive            Boolean      @default(false)
+  isActive            Boolean                  @default(false)
 
-  trainingCategory TrainingCategory?  @relation(fields: [categoryId], references: [id])
-  materials        Material[]
-  memberCourses    MemberCourse[]
-  exams            Exam[]
-  trainingSchedule TrainingSchedule[]
-  Dashboard        Dashboard[]
-  member           Member[]
+  materials           Material[]
+  memberCourses       MemberCourse[]
+  exams               Exam[]
+  trainingSchedule    TrainingSchedule[]
+  Dashboard           Dashboard[]
+  member              Member[]
+  MemberTransaction   MemberTransaction[]
+  RefSchedule         RefSchedule[]
+
+  curiculumStructures TrainingCuriculumStructure[]
 
   @@map("training")
-  MemberTransaction MemberTransaction[]
-  RefSchedule RefSchedule[]
 }
 
-model TrainingCategory {
-  id       Int        @id @default(autoincrement())
-  title    String
-  image    String?
-  uid      String?    @unique
-  level    Int?
-  Training Training[]
-  Member   Member[]
+model TrainingCuriculumStructure {
+  trainingId           Int
+  curiculumStructureId Int
+
+  training             Training           @relation(fields: [trainingId], references: [id])
+  curiculumStructure   CuriculumStructure @relation(fields: [curiculumStructureId], references: [id])
+
+  @@id([trainingId, curiculumStructureId])
+  @@map("training_curiculum_structure")
 }
 
 model Dashboard {
@@ -388,7 +414,6 @@ model Member {
   tests               MemberTest[]
   transactions        MemberTransaction[]  @relation("AllTransactions")
   registrationPayment MemberTransaction?   @relation("RegistrationPayment", fields: [registrationPaymentId], references: [id])
-  courseCategory      TrainingCategory?    @relation(fields: [courseCategoryId], references: [id])
   courses             MemberCourse[]       @relation(name: "MemberToCourses")
   User                User?
   MemberCertificate   MemberCertificate[]

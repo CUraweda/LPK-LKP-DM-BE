@@ -6,6 +6,20 @@ import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
 import { uploadMany } from "../../middlewares/upload.middleware.js";
 
+const parseNestedJson = (req, res, next) => {
+  try {
+    if (typeof req.body.curiculumStructures === "string") {
+      req.body.curiculumStructures = JSON.parse(req.body.curiculumStructures);
+    }
+  } catch (err) {
+    return res.status(400).json({
+      status: false,
+      message: "Format curiculumStructures tidak valid (bukan JSON)",
+    });
+  }
+  next();
+};
+
 const r = Router(),
   validator = trainingValidator,
   controller = new trainingController();
@@ -29,10 +43,11 @@ r.post(
       limitSize: 10 * 1024 * 1024,
     },
   ]),
+  parseNestedJson,
   validatorMiddleware({ body: validator.createUpdate }),
   controller.create
-  );
-  
+);
+
 r.put(
   "/update/:id",
   auth(['ADMIN']),
@@ -44,9 +59,10 @@ r.put(
       limitSize: 10 * 1024 * 1024,
     },
   ]),
+  parseNestedJson,
   validatorMiddleware({ body: validator.update }),
   controller.update
-  );
+);
 
 r.put("/update-status/:id", auth(['ADMIN']),controller.updateStatus);
     

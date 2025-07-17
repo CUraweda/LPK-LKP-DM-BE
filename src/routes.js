@@ -26,6 +26,8 @@ import chatrecapRouter from './core/chatrecap/chatrecap.router.js';
 import pageRouter from './core/page/page.router.js';
 import locationRouter from './core/location/location.router.js';
 import refscheduleRouter from './core/refschedule/refschedule.router.js';
+import curiculumstructureRouter from './core/curiculumstructure/curiculumstructure.router.js';
+import curiculumRouter from './core/curiculum/curiculum.router.js';
 
 const router = express.Router();
 
@@ -65,6 +67,14 @@ export const routeLists = [
     {
         path: '/ref/location',
         route: locationRouter
+    },
+    {
+        path: '/ref/curiculum-structure',
+        route: curiculumstructureRouter
+    },
+    {
+        path: '/ref/curiculum',
+        route: curiculumRouter
     },
     {
         path: '/ref/training',

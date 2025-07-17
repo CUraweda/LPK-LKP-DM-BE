@@ -6,14 +6,43 @@ export const trainingValidator = {
     title: Joi.string().required(),
     description: Joi.string().required(),
     type: Joi.string().valid('R', 'P').required(),
-    categoryId: Joi.number().integer().optional(),
-    totalParticipants: Joi.number().integer().min(0).required(),
-    totalCourses: Joi.number().integer().min(0).required(),
-    totalHours: Joi.number().integer().min(0).required(),
-    targetTrainingHours: Joi.number().integer().min(0).required(),
     level: Joi.number().integer().required(),
-    isActive: Joi.boolean().required()
+    isActive: Joi.boolean().required(),
+    
+    curiculumStructures: Joi.object({
+      create: Joi.array().items(
+        Joi.object({
+          curiculumStructure: Joi.object({
+            connect: Joi.object({
+              id: Joi.number().integer().required()
+            }).required()
+          }).required()
+        })
+      ).required()
+    }).required()
   }),
+  update: Joi.object({
+    title: Joi.string().optional(),
+    description: Joi.string().optional(),
+    type: Joi.string().valid('R', 'P').optional(),
+    level: Joi.number().integer().optional(),
+    isActive: Joi.boolean().optional(),
+    trainingImage: Joi.any(),
+    targetTrainingHours: Joi.number(),
+    totalParticipants: Joi.number(),
+    curiculumStructures: Joi.object({
+      create: Joi.array().items(
+        Joi.object({
+          curiculumStructure: Joi.object({
+            connect: Joi.object({
+              id: Joi.number().integer().optional(),
+            }).optional(),
+          }).optional(),
+        })
+      ).optional(),
+    }).optional(),
+  }),
+
 };
 
 export default trainingValidator;

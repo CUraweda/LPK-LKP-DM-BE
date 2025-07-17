@@ -38,29 +38,26 @@ class trainingController extends BaseController {
   });
 
   update = this.wrapper(async (req, res) => {
-      const id = Number(req.params.id);
-      const imageFile = req.files?.trainingImage?.[0];
-  
-      const oldData = await this.#service.findById(id);
-      if (!oldData) throw new Error("Pelatihan tidak ditemukan");
-  
-      const payload = {
-        ...req.body,
-      };
-  
-      if (imageFile) {
-        if (oldData.trainingImage) {
-          const oldPath = path.join(process.cwd(), oldData.trainingImage);
-          if (fs.existsSync(oldPath)) {
-            fs.unlinkSync(oldPath);
-          }
-        }
-        payload.trainingImage = `/uploads/company-logos/${imageFile.filename}`;
+    const id = Number(req.params.id);
+    const imageFile = req.files?.trainingImage?.[0];
+
+    const oldData = await this.#service.findById(id);
+    if (!oldData) throw new Error("Pelatihan tidak ditemukan");
+
+    const payload = { ...req.body };
+
+    if (imageFile) {
+      if (oldData.trainingImage) {
+        const oldPath = path.join(process.cwd(), oldData.trainingImage);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
-  
+      payload.trainingImage = `/uploads/company-logos/${imageFile.filename}`;
+    }
+
     const data = await this.#service.update(id, payload);
-    return this.ok(res, data, "training berhasil diperbarui");
+    return this.ok(res, data, "Pelatihan berhasil diperbarui");
   });
+
 
   updateStatus = this.wrapper(async (req, res) => {
     const data = await this.#service.updateStatus(req.params.id, req.body.isActive);
