@@ -23,7 +23,7 @@ class chatrecapService extends BaseService {
         user: {
           select: {
             member: {
-              select: { name: true,  }
+              select: { name: true, profileImage: true }
             }
           }
         },
