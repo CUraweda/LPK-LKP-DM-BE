@@ -25,6 +25,7 @@ import trainingcategoryRouter from './core/trainingcategory/trainingcategory.rou
 import chatrecapRouter from './core/chatrecap/chatrecap.router.js';
 import pageRouter from './core/page/page.router.js';
 import locationRouter from './core/location/location.router.js';
+import refscheduleRouter from './core/refschedule/refschedule.router.js';
 
 const router = express.Router();
 
@@ -80,6 +81,10 @@ export const routeLists = [
     {
         path: '/training/schedule',
         route: trainingscheduleRouter
+    },
+    {
+        path: '/ref/schedule',
+        route: refscheduleRouter
     },
     {
         path: '/training/enrollment',

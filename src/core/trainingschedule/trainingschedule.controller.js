@@ -34,6 +34,11 @@ class trainingscheduleController extends BaseController {
     return this.created(res, data, "trainingschedule berhasil dibuat");
   });
 
+  createBulk = this.wrapper(async (req, res) => {
+    const data = await this.#service.createBulk(req.body);
+    return this.created(res, data, "trainingschedule berhasil dibuat");
+  });
+
   update = this.wrapper(async (req, res) => {
     const data = await this.#service.update(req.params.id, req.body);
     return this.ok(res, data, "trainingschedule berhasil diperbarui");
