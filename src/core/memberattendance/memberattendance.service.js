@@ -24,9 +24,17 @@ class memberattendanceService extends BaseService {
   }
 
   findAll = async (query) => {
-    const { date } = query
+    let { date, startDate, endDate } = query
     const q = this.transformBrowseQuery(query);
     if (date) q.where['date'] = date
+    if (startDate && endDate){
+      endDate = new Date(endDate)
+      endDate.setHours(23, 59, 59, 999)
+      q.where['rawDate'] = {
+        gte: new Date(startDate),
+        lte: endDate,
+      }
+    }
     const data = await this.db.memberAttendance.findMany({ ...q, include: { member: true }, orderBy: { rawDate: "desc" } });
 
     if (query.paginate) {
@@ -164,7 +172,7 @@ class memberattendanceService extends BaseService {
   }
 
   create = async (payload) => {
-    payload.rawDate = new Date().toISOString()
+    payload.rawDate = new Date(payload.rawDate).toISOString()
     payload.date = payload.rawDate.split("T")[0]
     payload.time = payload.rawDate.split("T")[1]
     const member = await this.db.member.findFirst({ where: { id: payload.memberId } })
