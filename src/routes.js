@@ -28,6 +28,8 @@ import locationRouter from './core/location/location.router.js';
 import refscheduleRouter from './core/refschedule/refschedule.router.js';
 import curiculumstructureRouter from './core/curiculumstructure/curiculumstructure.router.js';
 import curiculumRouter from './core/curiculum/curiculum.router.js';
+import curiculumStructureDetailRouter from './core/curiculumstructuredetail/curiculumstructuredetail.router.js'
+import curiculumDetail from './core/curiculumdetail/curiculumdetail.router.js'
 
 const router = express.Router();
 
@@ -73,8 +75,16 @@ export const routeLists = [
         route: curiculumstructureRouter
     },
     {
+        path: '/ref/detail-structure',
+        route: curiculumStructureDetailRouter
+    },
+    {
         path: '/ref/curiculum',
         route: curiculumRouter
+    },
+    {
+        path: '/ref/curiculum-detail',
+        route: curiculumDetail
     },
     {
         path: '/ref/training',
