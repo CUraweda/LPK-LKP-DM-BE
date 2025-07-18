@@ -81,6 +81,7 @@ app.use("/file/load/", async (req, res, next) => {
     next(err);
   }
 });
+
 app.use('/api/v1', router);
 app.get('/api/download', auth(["ADMIN", "USER"]), (req, res) => {
   const filePath = req.query.path;

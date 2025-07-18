@@ -154,11 +154,11 @@ model Employee {
 }
 
 model Location {
-  id Int @id @default(autoincrement())
-  name String
-  latitude String
+  id        Int    @id @default(autoincrement())
+  name      String
+  latitude  String
   longitude String
-  range Int
+  range     Int
 }
 
 model Transaction {
@@ -186,41 +186,80 @@ model Transaction {
   @@map("transaction")
 }
 
-model Training {
-  id                  Int          @id @default(autoincrement())
-  title               String
-  description         String
-  trainingImage       String
-  type                TrainingType
-  categoryId          Int?
-  totalParticipants   Int
-  totalCourses        Int
-  totalHours          Int
-  targetTrainingHours Int
-  level               Int?
-  isActive            Boolean      @default(false)
+model CuriculumStructure {
+  id   Int    @id @default(autoincrement())
+  name String
 
-  trainingCategory TrainingCategory?  @relation(fields: [categoryId], references: [id])
-  materials        Material[]
-  memberCourses    MemberCourse[]
-  exams            Exam[]
-  trainingSchedule TrainingSchedule[]
-  Dashboard        Dashboard[]
-  member           Member[]
+  CuriculumStructureDetail CuriculumStructureDetail[]
+  curiculum                Curiculum[]
+  training                 Training[]
 
-  @@map("training")
-  MemberTransaction MemberTransaction[]
-  RefSchedule RefSchedule[]
+  @@map("training_curiculum_structure")
 }
 
-model TrainingCategory {
-  id       Int        @id @default(autoincrement())
-  title    String
-  image    String?
-  uid      String?    @unique
-  level    Int?
-  Training Training[]
-  Member   Member[]
+model CuriculumStructureDetail {
+  id                 Int                @id @default(autoincrement())
+  structureId        Int
+  type               String
+  code               String
+  competencyUnit     String
+  timePerHour        Int
+  hours              Int
+  curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id])
+
+  @@map("curiculum_structure_detail")
+}
+
+model Curiculum {
+  id                 Int                @id @default(autoincrement())
+  name               String
+  structureId        Int
+  curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id])
+
+  curiculumDetail CuriculumDetail[]
+
+  @@map("curiculum")
+}
+
+model CuriculumDetail {
+  id          Int    @id @default(autoincrement())
+  curiculumId Int
+  type        String
+  code        String
+  competency  String
+  indikator   String
+
+  curiculum Curiculum @relation(fields: [curiculumId], references: [id])
+
+  @@map("curiculum_detail")
+}
+
+model Training {
+  id            Int          @id @default(autoincrement())
+  title         String
+  description   String
+  trainingImage String
+  type          TrainingType
+
+  totalParticipants Int
+  totalCourses      Int
+  totalHours        Int
+  level             Int?
+  isActive          Boolean @default(false)
+
+  materials         Material[]
+  memberCourses     MemberCourse[]
+  exams             Exam[]
+  trainingSchedule  TrainingSchedule[]
+  Dashboard         Dashboard[]
+  member            Member[]
+  MemberTransaction MemberTransaction[]
+  RefSchedule       RefSchedule[]
+
+  structureId Int
+  curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id])
+
+  @@map("training")
 }
 
 model Dashboard {
@@ -251,17 +290,16 @@ model Page {
   file         String?
 }
 
-
 model RefSchedule {
   id          Int          @id @default(autoincrement())
   trainingId  Int
   description String?
-  dayOfWeek   Int          // 0 = Minggu … 6 = Sabtu
-  startHour   Int          // 0 – 23
-  endHour     Int          // 0 – 23 ("wrap" ke hari berikut bila < startHour)
+  dayOfWeek   Int // 0 = Minggu … 6 = Sabtu
+  startHour   Int // 0 – 23
+  endHour     Int // 0 – 23 ("wrap" ke hari berikut bila < startHour)
   type        TrainingType
 
-  training    Training     @relation(fields: [trainingId], references: [id])
+  training Training @relation(fields: [trainingId], references: [id])
 
   @@unique([trainingId, dayOfWeek, startHour, type])
   @@map("ref_schedule")
@@ -341,7 +379,7 @@ model Chat {
   id          Int      @id @default(autoincrement())
   senderId    Int?
   chatRecapId Int?
-  message     String? @db.Text
+  message     String?  @db.Text
   fileSize    Int?
   fileLink    String?
   type        ChatType
@@ -388,7 +426,6 @@ model Member {
   tests               MemberTest[]
   transactions        MemberTransaction[]  @relation("AllTransactions")
   registrationPayment MemberTransaction?   @relation("RegistrationPayment", fields: [registrationPaymentId], references: [id])
-  courseCategory      TrainingCategory?    @relation(fields: [courseCategoryId], references: [id])
   courses             MemberCourse[]       @relation(name: "MemberToCourses")
   User                User?
   MemberCertificate   MemberCertificate[]
@@ -405,7 +442,7 @@ model MemberTransaction {
   transactionId Int
   paymentDate   DateTime
 
-  training        Training?    @relation(fields: [trainingId], references: [id])
+  training        Training?   @relation(fields: [trainingId], references: [id])
   transaction     Transaction @relation(fields: [transactionId], references: [id])
   member          Member?     @relation("AllTransactions", fields: [memberId], references: [id])
   registrationFor Member?     @relation("RegistrationPayment")
@@ -414,12 +451,12 @@ model MemberTransaction {
 }
 
 model MemberCertificate {
-  id         Int    @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   memberId   Int?
   imageLink  String
   imageTitle String
   imageSize  Int
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 
   member Member? @relation(fields: [memberId], references: [id])
 

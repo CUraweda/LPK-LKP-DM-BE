@@ -8,20 +8,7 @@ class trainingService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.training.findMany({ ...q,
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      trainingImage: true,
-      type: true,
-      totalParticipants: true,
-      totalCourses: true,
-      totalHours: true,
-      targetTrainingHours: true,
-      level: true,
-      isActive: true,
-    }});
+    const data = await this.db.training.findMany({ ...q });
     const type_R = data.filter(item => item.type === 'R').length;
     const type_P = data.filter(item => item.type === 'P').length;
     const total = data.length;
@@ -48,42 +35,116 @@ class trainingService extends BaseService {
   };
 
   create = async (payload) => {
-    const data = await this.db.training.create({ data: payload });
+    const {
+      title,
+      description,
+      trainingImage,
+      type,
+      level,
+      isActive,
+      structureId
+    } = payload;
+
+    const structureDetails = await this.db.curiculumStructureDetail.findMany({
+      where: {
+        structureId: Number(structureId),
+      },
+      select: {
+        id: true,
+        hours: true,
+      },
+    });
+
+    const totalCourses = structureDetails.length;
+    const totalHours = structureDetails.reduce((sum, d) => sum + d.hours, 0);
+
+    const data = await this.db.training.create({
+      data: {
+        title,
+        description,
+        trainingImage,
+        type,
+        level,
+        isActive,
+        structureId,
+        totalCourses,
+        totalHours,
+        totalParticipants: 0,
+      },
+    });
+
     return data;
   };
   
   update = async (id, payload) => {
-    const existing = await this.db.training.findFirst({ where: { id } })
-    const sanitizedPayload = {
-      ...payload,
-      isActive: typeof payload.isActive === 'string'
-        ? payload.isActive === 'true'
-        : payload.isActive,
+    const {
+      title,
+      description,
+      trainingImage,
+      type,
+      level,
+      isActive,
+      totalParticipants,
+      targetTrainingHours,
+      curiculumStructures
+    } = payload;
 
-      ...(payload.categoryId !== undefined && payload.categoryId !== null && {
-        categoryId: parseInt(payload.categoryId),
-      }),
+    const existing = await this.db.training.findFirst({ where: { id } });
+    if (!existing) throw new Error("Training tidak ditemukan");
 
-      totalParticipants: payload.totalParticipants !== undefined
-        ? Number(payload.totalParticipants)
-        : existing.totalParticipants,
+    let totalCourses = existing.totalCourses;
+    let totalHours = existing.totalHours;
 
-      totalCourses: payload.totalCourses !== undefined
-        ? Number(payload.totalCourses)
-        : existing.totalCourses,
+    let structureIds = [];
+    if (curiculumStructures?.create) {
+      structureIds = curiculumStructures.create.map(item => item.curiculumStructure.connect.id);
+      const structures = await this.db.curiculumStructure.findMany({
+        where: { id: { in: structureIds } },
+        select: { id: true, hours: true }
+      });
 
-      totalHours: payload.totalHours !== undefined
-        ? Number(payload.totalHours)
-        : existing.totalHours,
+      if (structures.length !== structureIds.length) {
+        throw new Error("Beberapa curiculumStructure tidak ditemukan");
+      }
 
-      targetTrainingHours: payload.targetTrainingHours !== undefined
-        ? Number(payload.targetTrainingHours)
-        : existing.targetTrainingHours,
-    };
+      totalCourses = structures.length;
+      totalHours = structures.reduce((sum, s) => sum + s.hours, 0);
+
+      await this.db.trainingCuriculumStructure.deleteMany({
+        where: { trainingId: id },
+      });
+    }
 
     const data = await this.db.training.update({
       where: { id },
-      data: sanitizedPayload,
+      data: {
+        title,
+        description,
+        trainingImage,
+        type,
+        level,
+        isActive: typeof isActive === 'string' ? isActive === 'true' : isActive,
+        totalCourses,
+        totalHours,
+        totalParticipants: totalParticipants !== undefined
+          ? Number(totalParticipants)
+          : existing.totalParticipants,
+        targetTrainingHours: targetTrainingHours !== undefined
+          ? Number(targetTrainingHours)
+          : existing.targetTrainingHours,
+        ...(structureIds.length > 0 && {
+          curiculumStructures: {
+            create: structureIds.map(id => ({
+              curiculumStructure: {
+                connect: { id },
+              },
+            })),
+          }
+        })
+      },
+      include: {
+        curiculumStructures: true,
+      },
     });
 
     return data;
