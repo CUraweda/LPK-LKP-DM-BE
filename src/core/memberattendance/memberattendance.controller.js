@@ -56,7 +56,7 @@ class memberattendanceController extends BaseController {
   });
 
   create = this.wrapper(async (req, res) => {
-    if (!req.file) req.body['attendanceImage'] = req.file.path
+    if (req.file) req.body['attendanceImage'] = req.file.path
     const data = await this.#service.create(req.body);
     return this.created(res, data, "memberattendance berhasil dibuat");
   });
