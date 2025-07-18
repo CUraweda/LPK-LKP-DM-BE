@@ -24,7 +24,8 @@ export const memberValidator = {
     district: Joi.string(),
     village: Joi.string(),
     postalCode: Joi.number().integer(),
-    detailedAddress: Joi.string()
+    detailedAddress: Joi.string(),
+    fromUpdateMe: Joi.boolean().default(true)
   }),
   update: Joi.object({
     name: Joi.string(),
