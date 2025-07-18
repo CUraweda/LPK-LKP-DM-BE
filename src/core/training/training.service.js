@@ -34,7 +34,10 @@ class trainingService extends BaseService {
 
   findById = async (id) => {
     const intId = Number(id)
-    const data = await this.db.training.findUnique({ where: { id: intId } });
+    const data = await this.db.training.findUnique({ where: { id: intId },
+    include: {
+      curiculumStructure: true
+    } });
     return data;
   };
 
