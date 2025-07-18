@@ -25,7 +25,6 @@ import trainingcategoryRouter from './core/trainingcategory/trainingcategory.rou
 import chatrecapRouter from './core/chatrecap/chatrecap.router.js';
 import pageRouter from './core/page/page.router.js';
 import locationRouter from './core/location/location.router.js';
-import refscheduleRouter from './core/refschedule/refschedule.router.js';
 import curiculumstructureRouter from './core/curiculumstructure/curiculumstructure.router.js';
 import curiculumRouter from './core/curiculum/curiculum.router.js';
 import curiculumStructureDetailRouter from './core/curiculumstructuredetail/curiculumstructuredetail.router.js'
@@ -101,10 +100,6 @@ export const routeLists = [
     {
         path: '/training/schedule',
         route: trainingscheduleRouter
-    },
-    {
-        path: '/ref/schedule',
-        route: refscheduleRouter
     },
     {
         path: '/training/enrollment',

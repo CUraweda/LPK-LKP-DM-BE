@@ -8,7 +8,11 @@ class trainingService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.training.findMany({ ...q });
+    const data = await this.db.training.findMany({ ...q,
+      include: {
+        curiculumStructure: { select: { name: true }}
+      }
+     });
     const type_R = data.filter(item => item.type === 'R').length;
     const type_P = data.filter(item => item.type === 'P').length;
     const total = data.length;
@@ -42,7 +46,8 @@ class trainingService extends BaseService {
       type,
       level,
       isActive,
-      structureId
+      structureId,
+      targetTrainingHours
     } = payload;
 
     const structureDetails = await this.db.curiculumStructureDetail.findMany({
@@ -70,6 +75,7 @@ class trainingService extends BaseService {
         totalCourses,
         totalHours,
         totalParticipants: 0,
+        targetTrainingHours
       },
     });
 

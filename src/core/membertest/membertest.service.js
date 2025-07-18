@@ -12,7 +12,19 @@ class membertestService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.memberTest.findMany({ ...q });
+    const data = await this.db.memberTest.findMany({ ...q,
+      include: {
+        member: { 
+          select: {
+            id: true, name: true, profileImage: true
+        } },
+        exam: {
+          select: {
+            id: true, totalHours: true, totalQuestions: true, title: true
+          }
+        }
+      }
+     });
 
     if (query.paginate) {
       const countData = await this.db.memberTest.count({ where: q.where });

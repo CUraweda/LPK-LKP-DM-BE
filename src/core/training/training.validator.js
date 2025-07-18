@@ -1,11 +1,11 @@
 import Joi from "joi";
-import { type } from "os";
 
 export const trainingValidator = {
   createUpdate: Joi.object({
     title: Joi.string().required(),
     structureId: Joi.number().required(),
     description: Joi.string().required(),
+    targetTrainingHours: Joi.number().optional(),
     type: Joi.string().valid('R', 'P').required(),
     level: Joi.number().integer().required(),
     isActive: Joi.boolean().required(),
