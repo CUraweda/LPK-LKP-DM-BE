@@ -252,6 +252,23 @@ class memberService extends BaseService {
       });
 
       if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan");
+      
+      const schedules = await prisma.trainingSchedule.findMany({
+        where: { trainingId: trainingId },
+        select: { id: true },
+      });
+      
+      if (trainingData.type !== "R") {
+        for (const schedule of schedules) {
+          await prisma.trainingEnrollment.create({
+            data: {
+              memberId,
+              scheduleId: schedule.id,
+              status: "BOOKED",
+            },
+          });
+        }
+      }
 
       return prisma.member.update({
         where: { id: memberId },

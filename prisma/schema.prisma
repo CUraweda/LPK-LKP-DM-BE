@@ -244,6 +244,7 @@ model Training {
   totalParticipants Int
   totalCourses      Int
   totalHours        Int
+  targetTrainingHours Int?
   level             Int?
   isActive          Boolean @default(false)
 
@@ -254,7 +255,6 @@ model Training {
   Dashboard         Dashboard[]
   member            Member[]
   MemberTransaction MemberTransaction[]
-  RefSchedule       RefSchedule[]
 
   structureId Int
   curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id])
@@ -290,26 +290,12 @@ model Page {
   file         String?
 }
 
-model RefSchedule {
-  id          Int          @id @default(autoincrement())
-  trainingId  Int
-  description String?
-  dayOfWeek   Int // 0 = Minggu … 6 = Sabtu
-  startHour   Int // 0 – 23
-  endHour     Int // 0 – 23 ("wrap" ke hari berikut bila < startHour)
-  type        TrainingType
-
-  training Training @relation(fields: [trainingId], references: [id])
-
-  @@unique([trainingId, dayOfWeek, startHour, type])
-  @@map("ref_schedule")
-}
-
 model TrainingSchedule {
   id          Int                  @id @default(autoincrement())
   trainingId  Int
   startTime   DateTime
   endTime     DateTime
+  description String?
   type        TrainingType
   enrollments TrainingEnrollment[]
 

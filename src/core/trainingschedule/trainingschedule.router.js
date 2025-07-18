@@ -21,16 +21,16 @@ r.get("/show-by-member", controller.findByMember);
 
 r.post(
   "/create",
-  auth(['ADMIN','SISWA']),
+  auth(['SISWA']),
   validatorMiddleware({ body: validator.create }),
   controller.create
 );
 
 r.post(
-  "/create-bulk",
+  "/pcreate",
   auth(['ADMIN']),
-  validatorMiddleware({ body: validator.createBulk }),
-  controller.createBulk
+  validatorMiddleware({ body: validator.pCreate }),
+  controller.pCreate
 );
   
 r.put(

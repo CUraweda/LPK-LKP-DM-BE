@@ -111,49 +111,62 @@ class trainingscheduleService extends BaseService {
     return { schedules, remainingSchedule };
   };
 
-
   create = async (payload) => {
     try {
-      const { trainingId, memberId, startTime, type } = payload;
-      const training = await this.db.training.findFirst({ where: { id: trainingId }})
-      const endTime = new Date(startTime);
-      endTime.setUTCHours(endTime.getUTCHours() + training.targetTrainingHours);
-      
+      const { trainingId, memberId, startTime, endTime, type } = payload;
+
+      const training = await this.db.training.findFirst({
+        where: { id: trainingId }
+      });
+
+      if (!training) {
+        throw new Error("Training tidak ditemukan");
+      }
+
+      const resolvedEndTime = endTime
+        ? new Date(endTime)
+        : (() => {
+            const calculated = new Date(startTime);
+            const duration = training.targetTrainingHours ?? 1;
+            calculated.setUTCHours(calculated.getUTCHours() + duration);
+            return calculated;
+          })();
+
       const booked = await this.db.trainingEnrollment.findFirst({
         where: {
           memberId,
           schedule: {
             trainingId,
-            startTime,
+            startTime: new Date(startTime),
             type
           }
         }
       });
+
       if (booked) {
         throw new Error("You already booked this schedule.");
       }
 
-      const existing = await this.db.trainingSchedule.findFirst({
+      const existingSchedule = await this.db.trainingSchedule.findFirst({
         where: {
           trainingId,
-          startTime,
+          startTime: new Date(startTime),
           type
         },
-        include: {
-          enrollments: true
-        }
+        include: { enrollments: true }
       });
 
-      if (existing) {
+      if (existingSchedule) {
         const enrollment = await this.db.trainingEnrollment.create({
           data: {
             memberId,
-            scheduleId: existing.id,
+            scheduleId: existingSchedule.id,
             status: "BOOKED"
           }
         });
+
         return {
-          schedule: existing,
+          schedule: existingSchedule,
           enrollment
         };
       }
@@ -161,84 +174,58 @@ class trainingscheduleService extends BaseService {
       const newSchedule = await this.db.trainingSchedule.create({
         data: {
           trainingId,
-          startTime,
-          endTime: endTime.toISOString(),
+          startTime: new Date(startTime),
+          endTime: resolvedEndTime,
           type,
           enrollments: {
             create: {
               memberId,
-              status: 'BOOKED'
+              status: "BOOKED"
             }
           }
         },
         include: { enrollments: true }
       });
-      
+
       return newSchedule;
 
     } catch (error) {
       console.error("Error creating schedule and enrollment:", error);
-      throw Error(error);
+      throw new Error(error.message || "Failed to create schedule");
     }
   };
 
-  createBulk = async (payload) => {
-    const { trainingId, memberId, startWeek, weeks = 1 } = payload;
-    const templates = await this.db.refSchedule.findMany({
-      where: { trainingId },
-      select: { dayOfWeek: true, startHour: true, endHour: true, type: true },
+  pCreate = async (payload) => {
+    const { trainingId, startTime, endTime } = payload;
+
+    const training = await this.db.training.findFirst({
+      where: { id: trainingId },
     });
-    if (templates.length === 0)
-      throw new Error("RefSchedule not found");
-    return this.db.$transaction(async (tx) => {
-      const training = await tx.training.findUnique({ where: { id: trainingId } });
-      if (!training) throw new BadRequest("Training not found");
 
-      const startSunday = startOfDay(new Date(startWeek));
-      const sessions = [];
-      for (let w = 0; w < weeks; w++) {
-        for (const t of templates) {
-          const dayDate = addDays(startSunday, w * 7 + t.dayOfWeek);
-          const startTime = addHours(dayDate, t.startHour);
-          const endTime =
-            t.endHour > t.startHour
-              ? addHours(dayDate, t.endHour)
-              : addHours(dayDate, t.startHour + training.targetTrainingHours);
+    if (!training) {
+      throw new Error("Training tidak ditemukan");
+    }
 
-          sessions.push({
-            trainingId,
-            startTime,
-            endTime,
-            type: t.type,
-          });
-        }
-      }
+    const resolvedEndTime = endTime
+      ? new Date(endTime)
+      : (() => {
+          const calculated = new Date(startTime);
+          const duration = training.targetTrainingHours ?? 1;
+          calculated.setUTCHours(calculated.getUTCHours() + duration);
+          return calculated;
+        })();
 
-      await tx.trainingSchedule.createMany({
-        data: sessions,
-        skipDuplicates: true,
-      });
-      const scheduleIds = await tx.trainingSchedule.findMany({
-        where: {
-          trainingId,
-          startTime: { in: sessions.map((s) => s.startTime) },
-        },
-        select: { id: true },
-      });
-      await tx.trainingEnrollment.createMany({
-        data: scheduleIds.map((s) => ({
-          memberId,
-          scheduleId: s.id,
-          status: "BOOKED",
-        })),
-        skipDuplicates: true,
-      });
-
-      return {
-        createdSchedules: sessions.length,
-        createdEnrollments: scheduleIds.length,
-      };
+    const data = await this.db.trainingSchedule.create({
+      data: {
+        trainingId,
+        startTime: new Date(startTime),
+        endTime: resolvedEndTime,
+        description: payload.description ?? null,
+        type: 'P',
+      },
     });
+
+    return data;
   };
 
   update = async (id, payload) => {
