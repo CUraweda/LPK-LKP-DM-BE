@@ -42,18 +42,12 @@ class trainingService extends BaseService {
       type,
       level,
       isActive,
-      curiculumStructures
+      structureId
     } = payload;
 
-    const structureIds = curiculumStructures.create.map(
-      (item) => item.curiculumStructure.connect.id
-    );
-
-    const structures = await this.db.curiculumStructure.findMany({
+    const structureDetails = await this.db.curiculumStructureDetail.findMany({
       where: {
-        id: {
-          in: structureIds,
-        },
+        structureId: Number(structureId),
       },
       select: {
         id: true,
@@ -61,8 +55,8 @@ class trainingService extends BaseService {
       },
     });
 
-    const totalCourses = structures.length;
-    const totalHours = structures.reduce((sum, s) => sum + s.hours, 0);
+    const totalCourses = structureDetails.length;
+    const totalHours = structureDetails.reduce((sum, d) => sum + d.hours, 0);
 
     const data = await this.db.training.create({
       data: {
@@ -72,19 +66,10 @@ class trainingService extends BaseService {
         type,
         level,
         isActive,
+        structureId,
         totalCourses,
         totalHours,
         totalParticipants: 0,
-        curiculumStructures: {
-          create: structureIds.map((id) => ({
-            curiculumStructure: {
-              connect: { id },
-            },
-          })),
-        },
-      },
-      include: {
-        curiculumStructures: true,
       },
     });
 

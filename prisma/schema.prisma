@@ -241,7 +241,6 @@ model Training {
   trainingImage String
   type          TrainingType
 
-  categoryId        Int?
   totalParticipants Int
   totalCourses      Int
   totalHours        Int

@@ -4,22 +4,11 @@ import { type } from "os";
 export const trainingValidator = {
   createUpdate: Joi.object({
     title: Joi.string().required(),
+    structureId: Joi.number().required(),
     description: Joi.string().required(),
     type: Joi.string().valid('R', 'P').required(),
     level: Joi.number().integer().required(),
     isActive: Joi.boolean().required(),
-    
-    curiculumStructures: Joi.object({
-      create: Joi.array().items(
-        Joi.object({
-          curiculumStructure: Joi.object({
-            connect: Joi.object({
-              id: Joi.number().integer().required()
-            }).required()
-          }).required()
-        })
-      ).required()
-    }).required()
   }),
   update: Joi.object({
     title: Joi.string().optional(),
@@ -30,17 +19,7 @@ export const trainingValidator = {
     trainingImage: Joi.any(),
     targetTrainingHours: Joi.number(),
     totalParticipants: Joi.number(),
-    curiculumStructures: Joi.object({
-      create: Joi.array().items(
-        Joi.object({
-          curiculumStructure: Joi.object({
-            connect: Joi.object({
-              id: Joi.number().integer().optional(),
-            }).optional(),
-          }).optional(),
-        })
-      ).optional(),
-    }).optional(),
+    structureId: Joi.number().optional(),
   }),
 
 };
