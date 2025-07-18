@@ -171,7 +171,7 @@ class memberService extends BaseService {
     return await this.db.member.update({
       where: { id }, data: {
         dataVerified: !memberData.dataVerified,
-        ...(memberData.dataVerified ? { verifiedAt: null } :  { verifiedAt: new Date() } )
+        ...(memberData.dataVerified ? { verifiedAt: null } : { verifiedAt: new Date() })
       }
     });
   };
@@ -206,7 +206,13 @@ class memberService extends BaseService {
     return await this.db.$transaction(async (prisma) => {
       const { name, profileImage, phoneNumber, ...data } = payload
       await prisma.memberIdentity.upsert({ where: { memberId: id }, create: data, update: data })
-      await prisma.member.update({ where: { id }, data: { name, memberState: memberConstant.memberState.Data_Ibu, profileImage, phoneNumber } })
+      await prisma.member.update({
+        where: { id }, data: {
+          name,
+          ...(payload['fromUpdateMe'] ? { memberState: memberConstant.memberState.Data_Ibu } : {}),
+          profileImage, phoneNumber
+        }
+      })
     })
   }
 
@@ -259,12 +265,12 @@ class memberService extends BaseService {
       });
 
       if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan");
-      
+
       const schedules = await prisma.trainingSchedule.findMany({
         where: { trainingId: trainingId },
         select: { id: true },
       });
-      
+
       if (trainingData.type !== "R") {
         for (const schedule of schedules) {
           await prisma.trainingEnrollment.create({
