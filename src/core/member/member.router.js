@@ -74,12 +74,22 @@ r.patch(
   auth(['ADMIN']),
   controller.patchVerified
 )
+
+r.put(
+  "/update-me",
+  auth(['SISWA']),
+  uploader("/member", "image", "PP").single("profilePict"),
+  validatorMiddleware({ body: validator.updateMe }),
+  controller.extendDataSiswa
+);
+
 r.put(
   "/update/:id",
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.update }),
   controller.update
 );
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 r.post(

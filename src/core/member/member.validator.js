@@ -9,6 +9,23 @@ export const memberValidator = {
   patchVerified: Joi.object({
     verified: Joi.boolean(),
   }),
+  updateMe: Joi.object({
+    name: Joi.string(),
+    phoneNumber: Joi.string(),
+    nationalId: Joi.string(), 
+    studentNumber: Joi.string(),
+    religion: Joi.string(),
+    gender: Joi.valid("L", "P"),
+    placeOfBirth: Joi.string(),
+    dateOfBirth: Joi.date(),
+    socialHelp: Joi.string(),
+    province: Joi.string(),
+    city: Joi.string(), 
+    district: Joi.string(),
+    village: Joi.string(),
+    postalCode: Joi.number().integer(),
+    detailedAddress: Joi.string()
+  }),
   update: Joi.object({
     name: Joi.string(),
     totalCourses: Joi.number().integer(),
