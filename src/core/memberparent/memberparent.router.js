@@ -11,6 +11,7 @@ const r = Router(),
 
 r.get(
   "/show-all",
+  auth(['ADMIN', 'SISWA']),
   validatorMiddleware({ query: baseValidator.browseQuery }),
   controller.findAll
 );
@@ -22,15 +23,23 @@ r.post(
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
-  
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
+);
+
+r.put(
+  "/update-me",
+  auth(['SISWA']),
+  validatorMiddleware({ body: validator.update }),
+  controller.updateMe
+);
+
+r.put(
+  "/update/:id",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
+
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const memberparentRouter = r;

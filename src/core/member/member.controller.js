@@ -48,7 +48,7 @@ class memberController extends BaseController {
   });
 
   findMe = this.wrapper(async (req, res) => {
-    const data = await this.#service.findById(req.user.member.id);
+    const data = await this.#service.findDetail(req.user.member.id);
     if (!data) throw new NotFound("member tidak ditemukan");
 
     return this.ok(res, data, "member berhasil didapatkan");
