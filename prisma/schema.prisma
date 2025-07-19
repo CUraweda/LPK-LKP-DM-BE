@@ -227,6 +227,7 @@ model CuriculumDetail {
   type        String
   code        String
   competency  String
+  elementCompetency  String?
   indikator   String
 
   curiculum Curiculum @relation(fields: [curiculumId], references: [id])

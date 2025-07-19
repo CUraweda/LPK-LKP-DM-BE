@@ -13,7 +13,8 @@
     "prisma:seed:prod": "node ./prisma/seeder/prod-seed.js",
     "prisma:reset": "npx prisma migrate reset --force",
     "gen:core": "node generator/core.js --name curiculumDetail --model-name curiculumDetail",
-    "prisma:interface": "npx @kalissaac/prisma-typegen ./prisma/interfaces/types.d.ts ./prisma/schema.prisma"
+    "prisma:interface": "npx @kalissaac/prisma-typegen ./prisma/interfaces/types.d.ts ./prisma/schema.prisma",
+    "git:server:push": "git remote set-url origin git@github.com:CUraweda/LPK-LKP-DM-BE.git && git pull origin development && git push origin development"
   },
   "author": "Curaweda Palagan Innotech",
   "license": "ISC",
