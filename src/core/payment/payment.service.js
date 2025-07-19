@@ -167,6 +167,59 @@ class paymentService extends BaseService {
         return { ...todayStats, ...weekStats, items };
     };
 
+    showChart = async (query) => {
+        const { startDate, endDate, filterBy } = query;
+
+        const today = new Date();
+        let rangeStart = null;
+
+        if (!startDate && !endDate && filterBy === "month") {
+            rangeStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        } else if (!startDate && !endDate && filterBy === "year") {
+            rangeStart = new Date(today.getFullYear(), 0, 1);
+        } else if (!startDate && !endDate && filterBy === "week") {
+            rangeStart = new Date(today);
+            rangeStart.setDate(today.getDate() - 7);
+        }
+
+        const where = {
+            ...(startDate && endDate && {
+            paymentDate: {
+                gte: new Date(startDate),
+                lte: new Date(endDate),
+            },
+            }),
+            ...(rangeStart && {
+            paymentDate: {
+                gte: rangeStart,
+                lte: today,
+            },
+            }),
+        };
+
+        const transactions = await this.db.transaction.findMany({
+            where,
+            select: {
+            paymentDate: true,
+            paymentTotal: true,
+            },
+        });
+
+        const grouped = {};
+
+        transactions.forEach(({ paymentDate, paymentTotal }) => {
+            const date = paymentDate.toISOString().split("T")[0];
+
+            if (!grouped[date]) {
+            grouped[date] = { date, total: 0 };
+            }
+
+            grouped[date].total += Number(paymentTotal);
+        });
+
+        return Object.values(grouped).sort((a, b) => new Date(a.date) - new Date(b.date));
+    };
+    
     findById = async (id) => {
         const data = await this.db.transaction.findUnique({ where: { id } });
         return data;

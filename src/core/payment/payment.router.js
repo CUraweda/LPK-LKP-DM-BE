@@ -23,6 +23,12 @@ r.get(
     controller.findAll
 );
 
+r.get(
+    '/show-chart',
+    auth(['ADMIN']),
+    controller.showChart
+);
+
 //! PAYMENT SECTION
 r.get(
     "/notify/:id",

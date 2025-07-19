@@ -72,7 +72,6 @@ class memberattendanceService extends BaseService {
   };
 
   chart = async (query) => {
-    console.log("HIT")
     const { memberId, startDate, endDate } = query;
 
     const where = {

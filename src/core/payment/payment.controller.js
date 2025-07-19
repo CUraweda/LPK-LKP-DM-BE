@@ -22,6 +22,11 @@ class paymentController extends BaseController {
         return this.ok(res, data, "Banyak pendapatan berhasil didapatkan");
     });
 
+    showChart = this.wrapper(async (req, res) => {
+        const data = await this.#service.showChart(req.query);
+        return this.ok(res, data, "Banyak pendapatan berhasil didapatkan");
+    });
+
     notify = this.wrapper(async (req, res) => {
         const data = await this.#service.notifyPayment(req.params.id, { 
         status: req.headers['x-status']

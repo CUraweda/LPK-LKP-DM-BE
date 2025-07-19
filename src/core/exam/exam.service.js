@@ -8,7 +8,6 @@ class examService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    console.log("QUERY",query)
 
     const where = {
       ...q.where,
