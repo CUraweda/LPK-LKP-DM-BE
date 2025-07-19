@@ -36,28 +36,16 @@ class trainingController extends BaseController {
     const data = await this.#service.create(payload);
     return this.created(res, data, "training berhasil dibuat");
   });
-
+  
   update = this.wrapper(async (req, res) => {
     const id = Number(req.params.id);
     const imageFile = req.files?.trainingImage?.[0];
 
-    const oldData = await this.#service.findById(id);
-    if (!oldData) throw new Error("Pelatihan tidak ditemukan");
-
     const payload = { ...req.body };
 
-    if (imageFile) {
-      if (oldData.trainingImage) {
-        const oldPath = path.join(process.cwd(), oldData.trainingImage);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      }
-      payload.trainingImage = `/uploads/company-logos/${imageFile.filename}`;
-    }
-
-    const data = await this.#service.update(id, payload);
+    const data = await this.#service.update(id, payload, imageFile);
     return this.ok(res, data, "Pelatihan berhasil diperbarui");
   });
-
 
   updateStatus = this.wrapper(async (req, res) => {
     const data = await this.#service.updateStatus(req.params.id, req.body.isActive);

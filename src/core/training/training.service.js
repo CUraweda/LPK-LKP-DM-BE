@@ -1,5 +1,7 @@
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
+import fs from 'fs'
+import path from 'path'
 
 class trainingService extends BaseService {
   constructor() {
@@ -85,74 +87,60 @@ class trainingService extends BaseService {
     return data;
   };
   
-  update = async (id, payload) => {
-    const {
-      title,
-      description,
-      trainingImage,
-      type,
-      level,
-      isActive,
-      totalParticipants,
-      targetTrainingHours,
-      curiculumStructures
-    } = payload;
-
+  update = async (id, payload, imageFile) => {
     const existing = await this.db.training.findFirst({ where: { id } });
-    if (!existing) throw new Error("Training tidak ditemukan");
+    if (!existing) throw new Error("Pelatihan tidak ditemukan");
+
+    if (imageFile) {
+      if (existing.trainingImage) {
+        const oldPath = path.join(process.cwd(), existing.trainingImage);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+      payload.trainingImage = `/uploads/company-logos/${imageFile.filename}`;
+    }
 
     let totalCourses = existing.totalCourses;
     let totalHours = existing.totalHours;
 
-    let structureIds = [];
-    if (curiculumStructures?.create) {
-      structureIds = curiculumStructures.create.map(item => item.curiculumStructure.connect.id);
-      const structures = await this.db.curiculumStructure.findMany({
-        where: { id: { in: structureIds } },
-        select: { id: true, hours: true }
+    if (payload.structureId) {
+      const structureDetails = await this.db.curiculumStructureDetail.findMany({
+        where: {
+          structureId: Number(payload.structureId),
+        },
+        select: {
+          id: true,
+          hours: true,
+        },
       });
 
-      if (structures.length !== structureIds.length) {
-        throw new Error("Beberapa curiculumStructure tidak ditemukan");
-      }
-
-      totalCourses = structures.length;
-      totalHours = structures.reduce((sum, s) => sum + s.hours, 0);
-
-      await this.db.trainingCuriculumStructure.deleteMany({
-        where: { trainingId: id },
-      });
+      totalCourses = structureDetails.length;
+      totalHours = structureDetails.reduce((sum, d) => sum + d.hours, 0);
     }
 
     const data = await this.db.training.update({
       where: { id },
       data: {
-        title,
-        description,
-        trainingImage,
-        type,
-        level,
-        isActive: typeof isActive === 'string' ? isActive === 'true' : isActive,
-        totalCourses,
-        totalHours,
-        totalParticipants: totalParticipants !== undefined
-          ? Number(totalParticipants)
+        title: payload.title,
+        description: payload.description,
+        trainingImage: payload.trainingImage,
+        type: payload.type,
+        level: payload.level,
+        isActive: typeof payload.isActive === 'string'
+          ? payload.isActive === 'true'
+          : payload.isActive,
+        structureId: payload.structureId,
+        totalCourses: payload.totalCourses !== undefined
+          ? Number(payload.totalCourses)
+          : existing.totalCourses,
+        totalHours: payload.totalHours !== undefined
+          ? Number(payload.totalHours)
+          : existing.totalHours,
+        totalParticipants: payload.totalParticipants !== undefined
+          ? Number(payload.totalParticipants)
           : existing.totalParticipants,
-        targetTrainingHours: targetTrainingHours !== undefined
-          ? Number(targetTrainingHours)
-          : existing.targetTrainingHours,
-        ...(structureIds.length > 0 && {
-          curiculumStructures: {
-            create: structureIds.map(id => ({
-              curiculumStructure: {
-                connect: { id },
-              },
-            })),
-          }
-        })
-      },
-      include: {
-        curiculumStructures: true,
+        targetTrainingHours: payload.targetTrainingHours !== undefined
+          ? Number(payload.targetTrainingHours)
+          : existing.targetTrainingHours
       },
     });
 

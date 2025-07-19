@@ -17,8 +17,10 @@ export const trainingValidator = {
     level: Joi.number().integer().optional(),
     isActive: Joi.boolean().optional(),
     trainingImage: Joi.any(),
-    targetTrainingHours: Joi.number(),
-    totalParticipants: Joi.number(),
+    targetTrainingHours: Joi.number().optional(),
+    totalCourses: Joi.number().optional(),
+    totalHours: Joi.number().optional(),
+    totalParticipants: Joi.number().optional(),
     structureId: Joi.number().optional(),
   }),
 
