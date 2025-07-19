@@ -26,6 +26,11 @@ class memberattendanceController extends BaseController {
     return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
   });
 
+  chart = this.wrapper(async (req, res) => {
+    const data = await this.#service.chart(req.query);
+    return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
+  });
+
   findById = this.wrapper(async (req, res) => {
     const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("memberattendance tidak ditemukan");

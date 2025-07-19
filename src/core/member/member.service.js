@@ -204,12 +204,12 @@ class memberService extends BaseService {
     if (!exist) exist = await this.db.member.create()
 
     return await this.db.$transaction(async (prisma) => {
-      const { name, profileImage, phoneNumber, ...data } = payload
+      const { name, profileImage, phoneNumber, fromUpdateMe, ...data } = payload
       await prisma.memberIdentity.upsert({ where: { memberId: id }, create: data, update: data })
       await prisma.member.update({
         where: { id }, data: {
           name,
-          ...(payload['fromUpdateMe'] ? { memberState: memberConstant.memberState.Data_Ibu } : {}),
+          ...(fromUpdateMe ? { memberState: memberConstant.memberState.Data_Ibu } : {}),
           profileImage, phoneNumber
         }
       })

@@ -71,6 +71,48 @@ class memberattendanceService extends BaseService {
     return dataFilter;
   };
 
+  chart = async (query) => {
+    console.log("HIT")
+    const { memberId, startDate, endDate } = query;
+
+    const where = {
+      ...(memberId && { memberId: +memberId }),
+      ...(startDate && endDate && {
+        rawDate: {
+          gte: new Date(startDate),
+          lte: new Date(endDate),
+        },
+      }),
+    };
+
+    const attendances = await this.db.memberAttendance.findMany({
+      where,
+      select: {
+        rawDate: true,
+        type: true,
+      },
+    });
+
+    const grouped = {};
+
+    attendances.forEach(({ rawDate, type }) => {
+      const date = rawDate.toISOString().split('T')[0];
+
+      if (!grouped[date]) {
+        grouped[date] = { date, Hadir: 0, Izin: 0, Sakit: 0, Alpha: 0 };
+      }
+
+      switch (type) {
+        case 'H': grouped[date].Hadir++; break;
+        case 'I': grouped[date].Izin++; break;
+        case 'S': grouped[date].Sakit++; break;
+        case 'A': grouped[date].Alpha++; break;
+      }
+    });
+
+    return Object.values(grouped).sort((a, b) => new Date(a.date) - new Date(b.date));
+  };
+
   findById = async (id) => {
     const data = await this.db.memberAttendance.findUnique({ where: { id } });
     return data;

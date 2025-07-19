@@ -42,6 +42,12 @@ r.get(
   controller.countAll
 )
 
+r.get(
+  "/chart-admin",
+  auth(['ADMIN']),
+  controller.chart
+)
+
 r.post(
   "/attend",
   auth(['SISWA', 'ADMIN']),
