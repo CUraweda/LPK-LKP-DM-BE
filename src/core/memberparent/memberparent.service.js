@@ -34,10 +34,28 @@ class memberParentService extends BaseService {
   };
 
   updateMe = async (memberId, payload) => {
-    const data = await this.db.memberParent.findFirst({ where: { memberId, relation: payload.relation } })
-    if(!data) throw new NotFound("Data relasi tidak ditemukan")
-    return await this.db.memberParent.update({ where: { id: data.id }, data: payload })
-  };
+    const existing = await this.db.memberParent.findFirst({
+      where: {
+        memberId,
+        relation: payload.relation,
+      },
+    });
+
+    if (!existing) {
+      return await this.db.memberParent.create({
+        data: {
+          ...payload,
+  uid: `${memberId}|${payload.relation}`,
+          memberId,
+        },
+      });
+    }
+
+    return await this.db.memberParent.update({
+      where: { id: existing.id },
+      data: payload,
+    });
+  }; 
 
   delete = async (id) => {
     const data = await this.db.memberParent.delete({ where: { id } });

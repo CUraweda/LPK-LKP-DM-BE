@@ -271,7 +271,7 @@ class memberService extends BaseService {
         select: { id: true },
       });
 
-      if (trainingData.type !== "R") {
+      if (trainingData.type !== "P") {
         for (const schedule of schedules) {
           await prisma.trainingEnrollment.create({
             data: {
@@ -301,8 +301,8 @@ class memberService extends BaseService {
   extendDataPembayaran = async (payload) => {
     payload['memberId'] = payload['memberId'] ? payload['memberId'] : payload['user'].member.id
     const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda" })
-    const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, ...rest } = createdPayment
-    return { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }
+    const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate,merchantTradeNo, ...rest } = createdPayment
+    return { merchantTradeNo, paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }
   }
 }
 

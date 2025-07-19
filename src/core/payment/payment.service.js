@@ -176,7 +176,7 @@ class paymentService extends BaseService {
         const { status } = args;
         id = this.paymentHelper._decryptTID(id);
         const data = await this.db.transaction.findFirst({
-            where: { transactionId: id, isPaid: false },
+            where: { transactionId: id },
             include: { member: { include: { User: true } } },
         });
         if (!data) throw new BadRequest('Transaksi tidak ditemukan');
@@ -206,13 +206,15 @@ class paymentService extends BaseService {
             message: `Pembayaran ${data.purpose} Total ${data.paymentTotal} ${status}`,
             type: "T"
         };
-        await this.chatService.sendToAdmin(messagePayload);
+        await this.chatService.sendAdmin(messagePayload);
 
         const memberTrx = await this.db.memberTransaction.findFirst({ where: { transactionId: data.id } });
         if (!memberTrx) throw new Error("MemberTransaction not found!")
 
-        if (updateData.memberData) await this.db.member.update({ where: { id: data.memberId }, data: updateData.memberData, });
-        if (memberTrx) await this.db.memberTransaction.update({ where: { id: memberTrx.id }, data: updateData.memberTransaction, });
+        let member, mtransaction;
+        if (updateData.memberData) member = await this.db.member.update({ where: { id: data.memberId }, data: updateData.memberData, });
+        if (memberTrx) mtransaction = await this.db.memberTransaction.update({ where: { id: memberTrx.id }, data: updateData.memberTransaction, });
+        console.log(mtransaction)
         const updatedData = await this.db.transaction.update({ where: { id: data.id }, data: updateData.Transaction, });
         if (!updatedData) throw new BadRequest('Error occured while updating');
 
@@ -235,12 +237,13 @@ class paymentService extends BaseService {
                         memberId: memberId,
                         paymentTotal: payload.paymentTotal,
                         transactionId: transactionTable.id,
-                        paymentDate: new Date()
+                        paymentDate: new Date(),
+                        trainingId: payload.user.member.trainingId
                     }
                 });
                 await this.db.member.update({ where: { id: memberId }, data: { registrationPaymentId: transactionTable.id } })
             } else transactionTable = await this.db.transaction.findFirst({ where: { id: memberData.registrationPaymentId } })
-
+            
             payload['username'] = memberData.name || ""
             payload['email'] = memberData.User.email || ""
             const paymentData = await this.paymentHelper.create({ ...payload, transaction: transactionTable });
