@@ -31,7 +31,7 @@ class BaseController {
   BadRequest = (res, message = '') => {
     return res.status(httpStatus.BAD_REQUEST).json({
       status: false,
-      message: message || 'Data berhasil dihapus',
+      message: message || 'Permintaan tidak dapat diproses',
     });
   };
 
