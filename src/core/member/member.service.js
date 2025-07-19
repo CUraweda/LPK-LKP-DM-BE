@@ -171,7 +171,7 @@ class memberService extends BaseService {
     return await this.db.member.update({
       where: { id }, data: {
         dataVerified: !memberData.dataVerified,
-        ...(memberData.dataVerified ? { verifiedAt: null } : { verifiedAt: new Date() })
+        ...(memberData.dataVerified ? { verifiedAt: null, memberState: memberConstant.memberState.Approval } : { verifiedAt: new Date(), memberState: memberConstant.memberState.Selesai })
       }
     });
   };
@@ -290,7 +290,7 @@ class memberService extends BaseService {
           ...(trainingData.type === "R"
             ? { memberState: memberConstant.memberState.Pembayaran }
             : {
-              memberState: memberConstant.memberState.Selesai
+              memberState: memberConstant.memberState.Approval
             }),
         },
       });

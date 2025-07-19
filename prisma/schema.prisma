@@ -85,6 +85,7 @@ enum memberState {
   PK //Pilih Kursus
   PEM //Pembayaran
   SEL //Selesai
+  APR //Approval
 }
 
 enum avaliablePage {
