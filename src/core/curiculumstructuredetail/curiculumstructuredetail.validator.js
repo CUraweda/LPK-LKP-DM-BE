@@ -6,7 +6,6 @@ export const curiculumStructureDetailValidator = {
     type: Joi.string().required(),
     code: Joi.string().required(),
     competencyUnit: Joi.string().required(),
-    timePerHour: Joi.number().required(),
     hours: Joi.number().required(),
   }),
   update: Joi.object({
@@ -14,7 +13,6 @@ export const curiculumStructureDetailValidator = {
     type: Joi.string().optional(),
     code: Joi.string().optional(),
     competencyUnit: Joi.string().optional(),
-    timePerHour: Joi.number().optional(),
     hours: Joi.number().optional(),
   }),
 };

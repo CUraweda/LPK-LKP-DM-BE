@@ -189,12 +189,13 @@ model Transaction {
 model CuriculumStructure {
   id   Int    @id @default(autoincrement())
   name String
+  timePerHour Int
 
   CuriculumStructureDetail CuriculumStructureDetail[]
   curiculum                Curiculum[]
   training                 Training[]
 
-  @@map("training_curiculum_structure")
+  @@map("curiculum_structure")
 }
 
 model CuriculumStructureDetail {
@@ -203,7 +204,6 @@ model CuriculumStructureDetail {
   type               String
   code               String
   competencyUnit     String
-  timePerHour        Int
   hours              Int
   curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id])
 
