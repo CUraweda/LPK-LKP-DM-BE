@@ -45,11 +45,29 @@ class memberattendanceService extends BaseService {
   };
 
   countAll = async (query) => {
-    const { memberId } = query
+    const { memberId, startDate, endDate } = query;
+
+    const where = {
+      ...(memberId && { memberId: +memberId }),
+      ...(startDate && endDate && {
+        rawDate: {
+          gte: new Date(startDate),
+          lte: new Date(endDate),
+        },
+      }),
+    };
+
     const dataFilter = { H: 0, I: 0, S: 0, A: 0 };
-    await this.db.memberAttendance.findMany({ ...(memberId && { where: { id: +memberId } }),  select: { type: true } }).then((dt) =>
-      dt.forEach((data) => { dataFilter[data.type]++ })
-    )
+
+    const attendances = await this.db.memberAttendance.findMany({
+      where,
+      select: { type: true },
+    });
+
+    attendances.forEach((data) => {
+      dataFilter[data.type]++;
+    });
+
     return dataFilter;
   };
 

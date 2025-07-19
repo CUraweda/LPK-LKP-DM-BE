@@ -203,7 +203,7 @@ model CuriculumStructureDetail {
   structureId        Int
   type               String
   code               String
-  competencyUnit     String
+  competencyUnit     String @db.Text
   hours              Int
   curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id])
 
@@ -226,9 +226,9 @@ model CuriculumDetail {
   curiculumId Int
   type        String
   code        String
-  competency  String
-  elementCompetency  String?
-  indikator   String
+  competency  String @db.Text
+  elementCompetency  String @db.Text
+  indikator   String @db.Text
 
   curiculum Curiculum @relation(fields: [curiculumId], references: [id])
 

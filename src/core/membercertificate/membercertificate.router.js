@@ -29,7 +29,7 @@ r.get(
 
 r.get(
   "/count",
-  auth(['ADMIN']),
+  auth(['ADMIN', 'SISWA']),
   validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.count
 );

@@ -18,7 +18,8 @@ class curiculumDetailService extends BaseService {
   };
 
   findById = async (id) => {
-    const data = await this.db.curiculumDetail.findUnique({ where: { id } });
+    const convertId = Number(id)
+    const data = await this.db.curiculumDetail.findUnique({ where: { id: convertId } });
     return data;
   };
 
