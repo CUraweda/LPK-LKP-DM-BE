@@ -54,6 +54,13 @@ class memberController extends BaseController {
     return this.ok(res, data, "member berhasil didapatkan");
   });
 
+  findState = this.wrapper(async (req, res) => {
+    const data = await this.#service.findState(req.user.member.id);
+    if (!data) throw new NotFound("member tidak ditemukan");
+
+    return this.ok(res, data, "member berhasil didapatkan");
+  });
+
   showDetail = this.wrapper(async (req, res) => {
     if (req.user.role.code == "SISWA") req.params.id = req.user.member.id
     const data = await this.#service.findDetail(+req.params.id);
