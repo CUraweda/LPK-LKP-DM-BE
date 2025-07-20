@@ -149,6 +149,11 @@ class memberService extends BaseService {
     return data;
   };
 
+  findState = async (id) => {
+    const data = await this.db.member.findFirst({ where: { id }, select: { memberState: true } });
+    return data;
+  };
+
   findDetail = async (id) => {
     const data = await this.db.member.findFirst({
       where: { id }, select: {
