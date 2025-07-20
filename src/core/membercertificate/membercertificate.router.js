@@ -37,7 +37,7 @@ r.get(
 r.post(
   "/create",
   auth(['ADMIN']),
-  uploader("/member/certificate", "file", "CERTIFICATE", 10 * 1024 * 1024).single("file"),
+  uploader("/member/certificate", "file", "CERTIFICATE", 10 * 1024 * 1024).single("image"),
   validatorMiddleware({ body: validator.create }),
   controller.create
 );
@@ -45,7 +45,7 @@ r.post(
 r.put(
   "/update/:id",
   auth(['ADMIN']),
-  uploader("/member/certificate", "file", "CERTIFICATE").single("file"),
+  uploader("/member/certificate", "file", "CERTIFICATE").single("image"),
   validatorMiddleware({ body: validator.update }),
   controller.update
 );
