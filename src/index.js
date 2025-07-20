@@ -5,14 +5,15 @@ import express from 'express';
 import http from 'http';
 import httpStatus from 'http-status-codes';
 import fs from "fs"
+import { Server as IOServer } from 'socket.io';
 
-// import { startWhatsApp } from './utils/whatsappClient.js';
 import handleError from './exceptions/handler.exception.js';
 import router from './routes.js';
 import { initSocket } from './socket/index.js';
 import auth from './middlewares/auth.middleware.js';
 import path from 'path';
 import { BadRequest, NotFound } from './exceptions/catch.execption.js';
+import { startAllService } from './whatsapp/startWhatsapp.js';
 
 const app = express();
 dotenv.config();
@@ -27,6 +28,24 @@ app.use(
 );
 
 const port = process.env.PORT || 8000;
+
+const Server = http.createServer(app);
+const io     = new IOServer(Server, { cors: { origin: '*' } });
+
+// Make io accessible in routes
+app.set('io', io);
+startAllService(io)
+io.on('connection', socket => {
+  socket.on('join-room', room => {
+    socket.join(room);
+  });
+  socket.on('leave-room', room => {
+    socket.leave(room);
+  });
+  socket.on('disconnect', () => {
+  });
+});
+
 app.use(
   bodyParser.json({
     limit: '50mb',

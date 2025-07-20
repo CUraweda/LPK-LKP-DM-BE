@@ -188,8 +188,8 @@ model Transaction {
 }
 
 model CuriculumStructure {
-  id   Int    @id @default(autoincrement())
-  name String
+  id          Int    @id @default(autoincrement())
+  name        String
   timePerHour Int
 
   CuriculumStructureDetail CuriculumStructureDetail[]
@@ -204,7 +204,7 @@ model CuriculumStructureDetail {
   structureId        Int
   type               String
   code               String
-  competencyUnit     String @db.Text
+  competencyUnit     String             @db.Text
   hours              Int
   curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id])
 
@@ -223,13 +223,13 @@ model Curiculum {
 }
 
 model CuriculumDetail {
-  id          Int    @id @default(autoincrement())
-  curiculumId Int
-  type        String
-  code        String
-  competency  String @db.Text
-  elementCompetency  String @db.Text
-  indikator   String @db.Text
+  id                Int    @id @default(autoincrement())
+  curiculumId       Int
+  type              String
+  code              String
+  competency        String @db.Text
+  elementCompetency String @db.Text
+  indikator         String @db.Text
 
   curiculum Curiculum @relation(fields: [curiculumId], references: [id])
 
@@ -243,12 +243,12 @@ model Training {
   trainingImage String
   type          TrainingType
 
-  totalParticipants Int
-  totalCourses      Int
-  totalHours        Int
+  totalParticipants   Int
+  totalCourses        Int
+  totalHours          Int
   targetTrainingHours Int?
-  level             Int?
-  isActive          Boolean @default(false)
+  level               Int?
+  isActive            Boolean @default(false)
 
   materials         Material[]
   memberCourses     MemberCourse[]
@@ -258,7 +258,7 @@ model Training {
   member            Member[]
   MemberTransaction MemberTransaction[]
 
-  structureId Int
+  structureId        Int
   curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id])
 
   @@map("training")
@@ -571,4 +571,12 @@ model MemberParent {
   member Member @relation(fields: [memberId], references: [id])
 
   @@map("member_parent")
+}
+
+model WhatsappService {
+  id       Int     @id @default(autoincrement())
+  session  String
+  isActive Boolean
+
+  @@map("whatsapp_service")
 }

@@ -1,4 +1,4 @@
-name: Deploy with Prisma to VPS
+name: Deploy Staging
 
 on:
   push:
