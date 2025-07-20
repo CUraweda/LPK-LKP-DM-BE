@@ -6,7 +6,8 @@ const memberConstant = {
         Data_Wali: "DW",
         Pilih_Kursus: "PK",
         Pembayaran: "PEM",
-        Selesai: "SEL"
+        Selesai: "SEL",
+        Approval: "APR",
     }
 }
 

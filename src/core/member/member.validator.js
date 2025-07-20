@@ -9,6 +9,24 @@ export const memberValidator = {
   patchVerified: Joi.object({
     verified: Joi.boolean(),
   }),
+  updateMe: Joi.object({
+    name: Joi.string(),
+    phoneNumber: Joi.string(),
+    nationalId: Joi.string(), 
+    studentNumber: Joi.string(),
+    religion: Joi.string(),
+    gender: Joi.valid("L", "P"),
+    placeOfBirth: Joi.string(),
+    dateOfBirth: Joi.date(),
+    socialHelp: Joi.string(),
+    province: Joi.string(),
+    city: Joi.string(), 
+    district: Joi.string(),
+    village: Joi.string(),
+    postalCode: Joi.number().integer(),
+    detailedAddress: Joi.string(),
+    fromUpdateMe: Joi.boolean().default(true)
+  }),
   update: Joi.object({
     name: Joi.string(),
     totalCourses: Joi.number().integer(),
@@ -22,6 +40,9 @@ export const memberValidator = {
     isGraduate: Joi.boolean()
   }),
   extend_data_siswa: Joi.object({
+    email: Joi.string().email(),
+    password: Joi.string().max(10),
+    createNew: Joi.boolean().default(false),
     name: Joi.string(),
     nationalId: Joi.string(), 
     studentNumber: Joi.string(),
@@ -64,8 +85,9 @@ export const memberValidator = {
     phoneNumber: Joi.string().optional()
   }),
   extend_data_kursus: Joi.object({
-    courseCategoryId: Joi.number().integer(),
-    courseLevel: Joi.number().integer()
+    trainingId: Joi.number().integer()
+    // courseCategoryId: Joi.number().integer(),
+    // courseLevel: Joi.number().integer()
   }),
   extend_data_pembayaran: Joi.object({
     paymentMethod: Joi.string()

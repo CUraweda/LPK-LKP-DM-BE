@@ -8,14 +8,40 @@ class examService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.exam.findMany({ ...q });
+
+    const where = {
+      ...q.where,
+      ...(query.memberId && {
+        memberTests: {
+          some: {
+            memberId: Number(query.memberId),
+          },
+        },
+      }),
+    };
+
+    const data = await this.db.exam.findMany({
+      ...q,
+      where,
+      include: {
+        memberTests: query.memberId
+          ? {
+              where: {
+                memberId: Number(query.memberId),
+              },
+            }
+          : true,
+      },
+    });
 
     if (query.paginate) {
-      const countData = await this.db.exam.count({ where: q.where });
+      const countData = await this.db.exam.count({ where });
       return this.paginate(data, countData, q);
     }
+
     return data;
   };
+
 
   findById = async (id) => {
     const convertId = Number(id);

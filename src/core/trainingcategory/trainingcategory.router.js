@@ -4,6 +4,7 @@ import trainingCategoryController from "./trainingcategory.controller.js";
 import trainingCategoryValidator from "./trainingcategory.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
+import uploader from "../../middlewares/multer.middleware.js";
 
 const r = Router(),
   validator = trainingCategoryValidator,
@@ -20,17 +21,19 @@ r.get("/show-one/:id", controller.findById);
 r.post(
   "/create",
   auth(['ADMIN']),
+  uploader("/training-category", "image", "PP").single("image"),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
-  
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
+);
+
+r.put(
+  "/update/:id",
+  auth(['ADMIN']),
+  uploader("/training-category", "image", "PP").single("image"),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const trainingcategoryRouter = r;

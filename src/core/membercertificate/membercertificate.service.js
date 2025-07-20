@@ -8,7 +8,7 @@ class membercertificateService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.memberCertificate.findMany({ ...q });
+    const data = await this.db.memberCertificate.findMany({ ...q, include: { member: true } });
 
     if (query.paginate) {
       const countData = await this.db.memberCertificate.count({ where: q.where });
@@ -18,7 +18,20 @@ class membercertificateService extends BaseService {
   };
 
   count = async (query) => {
+    const { date } = query
     const q = this.transformBrowseQuery(query);
+
+    if (date) {
+      let start_date = new Date(date)
+      let end_date = new Date(date)
+      start_date.setHours(0, 0, 0, 0);
+      end_date.setHours(23, 59, 59, 999);
+
+      console.log(start_date, end_date)
+
+      q.where.createdAt = { gte: start_date, lte: end_date }
+    }
+
     return await this.db.memberCertificate.count({ where: q.where });
   };
 

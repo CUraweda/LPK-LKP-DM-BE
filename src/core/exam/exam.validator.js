@@ -8,6 +8,7 @@ const questionSchema = Joi.object({
 
 export const examValidator = {
   create: Joi.object({
+    date: Joi.date().optional(),
     trainingId: Joi.number().integer().required(),
     title: Joi.string().min(3).required(),
     description: Joi.string().allow('').required(),

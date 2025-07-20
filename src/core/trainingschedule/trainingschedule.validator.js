@@ -5,7 +5,15 @@ export const trainingscheduleValidator = {
     memberId: Joi.number().required(),
     trainingId: Joi.number().required(),
     startTime: Joi.date().required(),
+    endTime: Joi.date().optional(),
     type: Joi.string().valid('R', 'P').required(),
+    description: Joi.string().optional()
+  }),
+  pCreate: Joi.object({
+    trainingId: Joi.number().required(),
+    startTime: Joi.date().required(),
+    endTime: Joi.date().optional(),
+    description: Joi.string().optional()
   }),
   update: Joi.object({
     memberId: Joi.number().optional(),

@@ -26,6 +26,11 @@ class chatController extends BaseController {
     return this.ok(res, data, "Banyak chat berhasil didapatkan");
   });
 
+  countRecap = this.wrapper(async (req, res) => {
+    const data = await this.#service.countRecap();
+    return this.ok(res, data, "Banyak chat berhasil didapatkan");
+  });
+
   findById = this.wrapper(async (req, res) => {
     const data = await this.#service.findById(req.params.id);
     if (!data) throw new NotFound("chat tidak ditemukan");
@@ -51,7 +56,6 @@ class chatController extends BaseController {
     req.body['senderId'] = req.user.id
     req.body['chatRecapId'] = await this.#chatRecapService.checkAndCreate(req.user.id)
     req.body = { ...req.body, ...this.checkType(req) }
-    console.log(req.body)
     const data = await this.#service.send(req.body);
     this.#chatRecapService.newMessage(data.chatRecapId)
     return this.created(res, data, "chat berhasil dibuat");

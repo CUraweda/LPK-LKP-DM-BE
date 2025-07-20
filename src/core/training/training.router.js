@@ -31,8 +31,8 @@ r.post(
   ]),
   validatorMiddleware({ body: validator.createUpdate }),
   controller.create
-  );
-  
+);
+
 r.put(
   "/update/:id",
   auth(['ADMIN']),
@@ -46,7 +46,7 @@ r.put(
   ]),
   validatorMiddleware({ body: validator.update }),
   controller.update
-  );
+);
 
 r.put("/update-status/:id", auth(['ADMIN']),controller.updateStatus);
     

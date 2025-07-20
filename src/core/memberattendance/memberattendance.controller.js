@@ -15,8 +15,19 @@ class memberattendanceController extends BaseController {
     return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
   });
 
+  findMe = this.wrapper(async (req, res) => {
+    req.query['where'] = `memberId:${req.user.memberId}`
+    const data = await this.#service.findAll(req.query);
+    return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
+  });
+
   countAll = this.wrapper(async (req, res) => {
-    const data = await this.#service.countAll();
+    const data = await this.#service.countAll(req.query);
+    return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
+  });
+
+  chart = this.wrapper(async (req, res) => {
+    const data = await this.#service.chart(req.query);
     return this.ok(res, data, "Banyak memberattendance berhasil didapatkan");
   });
 
@@ -33,6 +44,14 @@ class memberattendanceController extends BaseController {
 
     return this.ok(res, data, "memberattendance berhasil didapatkan");
   });
+  
+  showChart = this.wrapper(async (req, res) => {
+    const data = await this.#service.showChart(req.user, req.query);
+    if (!data) throw new NotFound("memberattendance tidak ditemukan");
+
+    return this.ok(res, data, "memberattendance berhasil didapatkan");
+  });
+
 
   myRecap = this.wrapper(async (req, res) => {
     const data = await this.#service.myRecap(req.user, req.query);
@@ -42,6 +61,7 @@ class memberattendanceController extends BaseController {
   });
 
   create = this.wrapper(async (req, res) => {
+    if (req.file) req.body['attendanceImage'] = req.file.path
     const data = await this.#service.create(req.body);
     return this.created(res, data, "memberattendance berhasil dibuat");
   });

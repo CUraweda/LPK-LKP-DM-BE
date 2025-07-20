@@ -1,5 +1,7 @@
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
+import fs from 'fs'
+import path from 'path'
 
 class trainingService extends BaseService {
   constructor() {
@@ -8,7 +10,11 @@ class trainingService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.training.findMany({ ...q });
+    const data = await this.db.training.findMany({ ...q,
+      include: {
+        curiculumStructure: { select: { name: true }}
+      }
+     });
     const type_R = data.filter(item => item.type === 'R').length;
     const type_P = data.filter(item => item.type === 'P').length;
     const total = data.length;
@@ -30,47 +36,112 @@ class trainingService extends BaseService {
 
   findById = async (id) => {
     const intId = Number(id)
-    const data = await this.db.training.findUnique({ where: { id: intId } });
+    const data = await this.db.training.findUnique({ where: { id: intId },
+    include: {
+      curiculumStructure: true
+    } });
     return data;
   };
 
   create = async (payload) => {
-    const data = await this.db.training.create({ data: payload });
+    const {
+      title,
+      description,
+      trainingImage,
+      type,
+      level,
+      isActive,
+      structureId,
+      targetTrainingHours
+    } = payload;
+
+    const structureDetails = await this.db.curiculumStructureDetail.findMany({
+      where: {
+        structureId: Number(structureId),
+      },
+      select: {
+        id: true,
+        hours: true,
+      },
+    });
+
+    const totalCourses = structureDetails.length;
+    const totalHours = structureDetails.reduce((sum, d) => sum + d.hours, 0);
+
+    const data = await this.db.training.create({
+      data: {
+        title,
+        description,
+        trainingImage,
+        type,
+        level,
+        isActive,
+        structureId,
+        totalCourses,
+        totalHours,
+        totalParticipants: 0,
+        targetTrainingHours
+      },
+    });
+
     return data;
   };
   
-  update = async (id, payload) => {
-    const existing = await this.db.training.findFirst({ where: { id } })
-    const sanitizedPayload = {
-      ...payload,
-      isActive: typeof payload.isActive === 'string'
-        ? payload.isActive === 'true'
-        : payload.isActive,
+  update = async (id, payload, imageFile) => {
+    const existing = await this.db.training.findFirst({ where: { id } });
+    if (!existing) throw new Error("Pelatihan tidak ditemukan");
 
-      ...(payload.categoryId !== undefined && payload.categoryId !== null && {
-        categoryId: parseInt(payload.categoryId),
-      }),
+    if (imageFile) {
+      if (existing.trainingImage) {
+        const oldPath = path.join(process.cwd(), existing.trainingImage);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+      payload.trainingImage = `/uploads/company-logos/${imageFile.filename}`;
+    }
 
-      totalParticipants: payload.totalParticipants !== undefined
-        ? Number(payload.totalParticipants)
-        : existing.totalParticipants,
+    let totalCourses = existing.totalCourses;
+    let totalHours = existing.totalHours;
 
-      totalCourses: payload.totalCourses !== undefined
-        ? Number(payload.totalCourses)
-        : existing.totalCourses,
+    if (payload.structureId) {
+      const structureDetails = await this.db.curiculumStructureDetail.findMany({
+        where: {
+          structureId: Number(payload.structureId),
+        },
+        select: {
+          id: true,
+          hours: true,
+        },
+      });
 
-      totalHours: payload.totalHours !== undefined
-        ? Number(payload.totalHours)
-        : existing.totalHours,
-
-      targetTrainingHours: payload.targetTrainingHours !== undefined
-        ? Number(payload.targetTrainingHours)
-        : existing.targetTrainingHours,
-    };
+      totalCourses = structureDetails.length;
+      totalHours = structureDetails.reduce((sum, d) => sum + d.hours, 0);
+    }
 
     const data = await this.db.training.update({
       where: { id },
-      data: sanitizedPayload,
+      data: {
+        title: payload.title,
+        description: payload.description,
+        trainingImage: payload.trainingImage,
+        type: payload.type,
+        level: payload.level,
+        isActive: typeof payload.isActive === 'string'
+          ? payload.isActive === 'true'
+          : payload.isActive,
+        structureId: payload.structureId,
+        totalCourses: payload.totalCourses !== undefined
+          ? Number(payload.totalCourses)
+          : existing.totalCourses,
+        totalHours: payload.totalHours !== undefined
+          ? Number(payload.totalHours)
+          : existing.totalHours,
+        totalParticipants: payload.totalParticipants !== undefined
+          ? Number(payload.totalParticipants)
+          : existing.totalParticipants,
+        targetTrainingHours: payload.targetTrainingHours !== undefined
+          ? Number(payload.targetTrainingHours)
+          : existing.targetTrainingHours
+      },
     });
 
     return data;

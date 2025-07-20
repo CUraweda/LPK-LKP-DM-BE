@@ -26,7 +26,7 @@ r.post(
 
 r.put(
   "/update/:id",
-  auth(['SISWA']),
+  auth(['ADMIN']),
   validatorMiddleware({ body: validator.update }),
   controller.update
 );

@@ -17,6 +17,7 @@ r.get(
 );
 
 r.get("/show-one/:id", controller.findById);
+r.get("/count-recap", auth(['ADMIN']), controller.countRecap);
 r.get("/show-me", auth(['ADMIN', 'SISWA']), controller.findByUser)
 
 r.post(

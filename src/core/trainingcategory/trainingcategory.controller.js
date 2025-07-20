@@ -23,11 +23,13 @@ class trainingCategoryController extends BaseController {
   });
 
   create = this.wrapper(async (req, res) => {
+    if(req.file) req.body['image'] = req.file.path
     const data = await this.#service.create(req.body);
     return this.created(res, data, "Kategori Training berhasil dibuat");
   });
-
+  
   update = this.wrapper(async (req, res) => {
+    if(req.file) req.body['image'] = req.file.path
     const data = await this.#service.update(+req.params.id, req.body);
     return this.ok(res, data, "Kategori Training berhasil diperbarui");
   });

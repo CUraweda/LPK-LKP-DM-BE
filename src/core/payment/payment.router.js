@@ -11,9 +11,22 @@ controller = new paymentController();
 
 r.get(
     '/show-me',
-    auth(['SISWA']),
+    auth(['SISWA', 'ADMIN']),
     validatorMiddleware({ query: baseValidator.browseQuery }),
     controller.findMe
+);
+
+r.get(
+    '/show-all',
+    auth(['ADMIN']),
+    validatorMiddleware({ query: baseValidator.browseQuery }),
+    controller.findAll
+);
+
+r.get(
+    '/show-chart',
+    auth(['ADMIN']),
+    controller.showChart
 );
 
 //! PAYMENT SECTION

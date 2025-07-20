@@ -29,10 +29,39 @@ class trainingenrollmentService extends BaseService {
   };
 
   update = async (id, payload) => {
-    const convertId = Number(id)
-    const data = await this.db.trainingEnrollment.update({ where: { id: convertId }, data: payload });
-    return data;
+    const convertId = Number(id);
+    const enrollment = await this.db.trainingEnrollment.findUnique({
+      where: { id: convertId },
+      include: {
+        schedule: true,
+        member: true,
+      },
+    });
+
+    if (!enrollment) throw new Error("Enrollment not found");
+    const updated = await this.db.trainingEnrollment.update({
+      where: { id: convertId },
+      data: payload,
+    });
+
+    if (payload.status === "COMPLETED") {
+      const { startTime, endTime } = enrollment.schedule;
+      const durationMs = new Date(endTime) - new Date(startTime);
+      const durationHours = durationMs / (1000 * 60 * 60);
+
+      await this.db.member.update({
+        where: { id: enrollment.memberId },
+        data: {
+          totalCourseHours: {
+            increment: durationHours,
+          },
+        },
+      });
+    }
+
+    return updated;
   };
+
   
   delete = async (id) => {
     const convertId = Number(id)

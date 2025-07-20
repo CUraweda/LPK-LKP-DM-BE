@@ -17,21 +17,28 @@ r.get(
 
 r.get("/show-one/:id", controller.findById);
 
-r.get("/show-by-member/:id", controller.findByMember);
+r.get("/show-by-member", controller.findByMember);
 
 r.post(
   "/create",
-  auth(['ADMIN','SISWA']),
+  auth(['SISWA']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
+);
+
+r.post(
+  "/pcreate",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.pCreate }),
+  controller.pCreate
+);
   
-  r.put(
-    "/update/:id",
-    auth(['ADMIN', 'SISWA']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
+r.put(
+  "/update/:id",
+  auth(['ADMIN', 'SISWA']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
     
 r.delete(
   "/delete/:id", 
