@@ -9,6 +9,7 @@ async function main() {
   await seedDashboard();
   await seedPage();
   await seedTrainingCategory()
+  await seedWhatsapp()
 }
 
 main()

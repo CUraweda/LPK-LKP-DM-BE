@@ -29,6 +29,7 @@ import curiculumstructureRouter from './core/curiculumstructure/curiculumstructu
 import curiculumRouter from './core/curiculum/curiculum.router.js';
 import curiculumStructureDetailRouter from './core/curiculumstructuredetail/curiculumstructuredetail.router.js'
 import curiculumDetail from './core/curiculumdetail/curiculumdetail.router.js'
+import whatsappRouter from './core/whatsapp/whatsapp.router.js';
 
 const router = express.Router();
 
@@ -152,6 +153,10 @@ export const routeLists = [
     {
         path: '/memberwork',
         route: memberworkRouter
+    },
+    {
+        path: '/whatsapp',
+        route: whatsappRouter
     },
 ];
 
