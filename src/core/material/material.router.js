@@ -45,7 +45,7 @@ r.post(
       name: 'filePdf',
       mimeTypes: ['application/pdf'],
       maxCount: 1,
-      limitSize: 10 * 1024 * 1024
+      limitSize: 20 * 1024 * 1024
     }
   ]),
   validatorMiddleware({ body: validator.createUpdate }),
