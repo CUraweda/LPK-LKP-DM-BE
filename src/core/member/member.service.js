@@ -21,11 +21,14 @@ class memberService extends BaseService {
     if (status) {
       switch (status) {
         case "Sedang Pelatihan":
+          q.where.dataVerified = true
           q.where.isGraduate = false
           break;
         case "Selesai Pelatihan":
           q.where.isGraduate = true
           break;
+        case "Belum Pelatihan":
+          q.where.dataVerified = false
         default:
           break;
       }
@@ -56,6 +59,7 @@ class memberService extends BaseService {
   count = async (query) => {
     const q = this.transformBrowseQuery(query);
     const { date } = query
+    delete q.skip; delete q.take;
 
     if (date) {
       let start_date = new Date(date)
@@ -270,13 +274,13 @@ class memberService extends BaseService {
       });
 
       if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan");
+      await prisma.memberCourse.upsert({ where: { uid: `${memberId}|${trainingId}` }, create: { memberId, trainingId, uid: `${memberId}|${trainingId}` }, update: { memberId, trainingId, uid: `${memberId}|${trainingId}` } })
 
-      const schedules = await prisma.trainingSchedule.findMany({
-        where: { trainingId: trainingId },
-        select: { id: true },
-      });
-
-      if (trainingData.type !== "P") {
+      if (trainingData.type == "P") {
+        const schedules = await prisma.trainingSchedule.findMany({
+          where: { trainingId },
+          select: { id: true },
+        });
         for (const schedule of schedules) {
           await prisma.trainingEnrollment.create({
             data: {
@@ -306,7 +310,7 @@ class memberService extends BaseService {
   extendDataPembayaran = async (payload) => {
     payload['memberId'] = payload['memberId'] ? payload['memberId'] : payload['user'].member.id
     const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda" })
-    const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate,merchantTradeNo, ...rest } = createdPayment
+    const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, merchantTradeNo, ...rest } = createdPayment
     return { merchantTradeNo, paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }
   }
 }
