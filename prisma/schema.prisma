@@ -115,7 +115,7 @@ model User {
   id           Int       @id @default(autoincrement())
   email        String    @unique
   password     String
-  memberId     Int       @unique
+  memberId     Int      @unique
   roleId       Int
   forgetToken  String?   @db.Text
   forgetExpiry DateTime?
@@ -521,10 +521,10 @@ model MemberAttendance {
 }
 
 model MemberCourse {
-  id         Int          @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
+  uid        String? @unique
   memberId   Int
   trainingId Int
-  status     CourseStatus
 
   training Training @relation(fields: [trainingId], references: [id])
   member   Member   @relation(name: "MemberToCourses", fields: [memberId], references: [id])
