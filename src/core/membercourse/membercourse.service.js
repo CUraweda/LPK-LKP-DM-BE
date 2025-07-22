@@ -13,7 +13,7 @@ class memberCourseService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.memberCourse.findMany({ ...q });
+    const data = await this.db.memberCourse.findMany({ ...q, include: { training: true } });
 
     if (query.paginate) {
       const countData = await this.db.memberCourse.count({ where: q.where });
