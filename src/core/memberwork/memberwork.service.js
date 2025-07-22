@@ -1,5 +1,6 @@
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
+import { BadRequest } from "../../exceptions/catch.execption.js";
 
 class memberworkService extends BaseService {
   constructor() {
@@ -30,7 +31,8 @@ class memberworkService extends BaseService {
   };
 
   create = async (payload) => {
-    const member = await this.db.member.findUnique({where: { id: payload.memberId }})
+    const member = await this.db.member.findFirst({where: { id: payload.memberId }})
+    if(!member) throw new BadRequest("Data member tidak ditemukan")
     if(member.isGraduate != true){
       throw new Error("Anda tidak bisa menambahkan pekerjaan jika belum lulus!")
     }
