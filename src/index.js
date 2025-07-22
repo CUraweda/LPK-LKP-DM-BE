@@ -5,13 +5,15 @@ import express from 'express';
 import http from 'http';
 import httpStatus from 'http-status-codes';
 import fs from "fs"
+import { Server as IOServer } from 'socket.io';
 
-// import { startWhatsApp } from './utils/whatsappClient.js';
 import handleError from './exceptions/handler.exception.js';
 import router from './routes.js';
 import { initSocket } from './socket/index.js';
 import auth from './middlewares/auth.middleware.js';
 import path from 'path';
+import { BadRequest, NotFound } from './exceptions/catch.execption.js';
+import { startAllService } from './whatsapp/startWhatsapp.js';
 
 const app = express();
 dotenv.config();
@@ -26,6 +28,24 @@ app.use(
 );
 
 const port = process.env.PORT || 8000;
+
+const Server = http.createServer(app);
+const io     = new IOServer(Server, { cors: { origin: '*' } });
+
+// Make io accessible in routes
+app.set('io', io);
+startAllService(io)
+io.on('connection', socket => {
+  socket.on('join-room', room => {
+    socket.join(room);
+  });
+  socket.on('leave-room', room => {
+    socket.leave(room);
+  });
+  socket.on('disconnect', () => {
+  });
+});
+
 app.use(
   bodyParser.json({
     limit: '50mb',
@@ -58,6 +78,29 @@ app.use((req, res, next) => {
 });
 //? END Development Request Tracker
 app.use("/public/assets/", express.static('public/assets'));
+
+const allowedMime = ['.png', '.jpg', '.jpeg', '.pdf'];
+
+//auth di hapus karena untuk get image di LP yang tanpa login
+app.use("/file/load/", async (req, res, next) => {
+  try {
+    const relPath = decodeURIComponent(req.path);
+    const ext = path.extname(relPath).toLowerCase();
+
+    if (!allowedMime.includes(ext)) throw new BadRequest("Tipe file tidak bisa diambil");
+    
+    const baseDir = path.resolve('uploads');
+    const fullPath = path.join(baseDir, relPath.replace(/^\/?uploads\/?/, ''));
+
+    if (!fullPath.startsWith(baseDir)) throw new BadRequest("Denied")
+    if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) throw new NotFound("File tidak ditemukan")
+
+    return res.sendFile(fullPath);
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.use('/api/v1', router);
 app.get('/api/download', auth(["ADMIN", "USER"]), (req, res) => {
   const filePath = req.query.path;

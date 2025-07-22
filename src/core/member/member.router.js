@@ -13,7 +13,7 @@ const r = Router(),
 r.get(
   "/show-all",
   auth(["ADMIN"]),
-  validatorMiddleware({ query: baseValidator.browseQuery }),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.findAll
 );
 
@@ -32,23 +32,24 @@ r.get(
 );
 
 r.get(
-  "/show-period",
+  "/count",
   auth(["ADMIN"]),
-  controller.findByPeriod
-);
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
+  controller.count
+)
 
 r.get(
-  "/search-name",
+  "/count-recap",
   auth(["ADMIN"]),
-  controller.searchName
-);
+  validatorMiddleware({ query: baseValidator.browseQuery }),
+  controller.countRecap
+)
 
 r.get(
-  "/show-graduated",
-  validatorMiddleware({ body: validator.create }),
-  auth(["ADMIN"]),
-  controller.searchName
-);
+  "/show-detail/:id?",
+  auth(["ADMIN", "SISWA"]),
+  controller.showDetail
+)
 
 r.get("/show-one/:id", 
   auth(["ADMIN"]),
@@ -57,6 +58,10 @@ r.get("/show-one/:id",
 r.get("/show-me", 
   auth(["ADMIN", "SISWA"]),
   controller.findMe);
+
+r.get("/show-state", 
+  auth(["ADMIN", "SISWA"]),
+  controller.findState);
 
 r.get("/show-pembayaran-registration", 
   auth(['SISWA']),
@@ -69,17 +74,26 @@ r.post(
   controller.create
 );
 r.patch(
-  "/change/verified",
+  "/change-verified/:id",
   auth(['ADMIN']),
-  validatorMiddleware({ body: validator.patchVerified }),
-  controller.create
+  controller.patchVerified
 )
+
+r.put(
+  "/update-me",
+  auth(['SISWA']),
+  uploader("/member", "image", "PP").single("profilePict"),
+  validatorMiddleware({ body: validator.updateMe }),
+  controller.extendDataSiswa
+);
+
 r.put(
   "/update/:id",
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.update }),
   controller.update
 );
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 r.post(
@@ -89,12 +103,14 @@ r.post(
   validatorMiddleware({ body: validator.extend_data_siswa }),
   controller.extendDataSiswa
 )
+
 r.post(
   "/extend-user-data-ibu/:id?",
   auth(['SISWA', 'ADMIN']),
   validatorMiddleware({ body: validator.extend_data_ibu }),
   controller.extendDataIbu
 )
+
 r.post(
   "/extend-user-data-ayah/:id?",
   auth(['SISWA', 'ADMIN']),

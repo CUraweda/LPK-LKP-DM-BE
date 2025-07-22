@@ -1,6 +1,8 @@
 import BaseController from "../../base/controller.base.js";
 import { NotFound } from "../../exceptions/catch.execption.js";
 import trainingService from "./training.service.js";
+import fs from 'fs';
+import path from 'path';
 
 class trainingController extends BaseController {
   #service;
@@ -21,15 +23,33 @@ class trainingController extends BaseController {
 
     return this.ok(res, data, "training berhasil didapatkan");
   });
-
+  
   create = this.wrapper(async (req, res) => {
-    const data = await this.#service.create(req.body);
+    const logoFile = req.files?.trainingImage?.[0];
+    if (!logoFile) {
+      throw new Error("Logo pelatihan wajib diunggah");
+    }
+    const payload = {
+      ...req.body,
+      trainingImage: `/uploads/training-images/${logoFile.filename}`,
+    };
+    const data = await this.#service.create(payload);
     return this.created(res, data, "training berhasil dibuat");
   });
-
+  
   update = this.wrapper(async (req, res) => {
-    const data = await this.#service.update(req.params.id, req.body);
-    return this.ok(res, data, "training berhasil diperbarui");
+    const id = Number(req.params.id);
+    const imageFile = req.files?.trainingImage?.[0];
+
+    const payload = { ...req.body };
+
+    const data = await this.#service.update(id, payload, imageFile);
+    return this.ok(res, data, "Pelatihan berhasil diperbarui");
+  });
+
+  updateStatus = this.wrapper(async (req, res) => {
+    const data = await this.#service.updateStatus(req.params.id, req.body.isActive);
+    return this.ok(res, data,"training berhasil diperbarui");
   });
 
   delete = this.wrapper(async (req, res) => {

@@ -7,6 +7,8 @@ export const trainingenrollmentValidator = {
     status: Joi.string().valid('BOOKED', 'IN_PROGRESS', 'COMPLETED').required()
   }),
   update: Joi.object({
+    memberId: Joi.number().optional(),
+    scheduleId: Joi.number().optional(),
     status: Joi.string().valid('BOOKED', 'IN_PROGRESS', 'COMPLETED').required()
   }),
 };

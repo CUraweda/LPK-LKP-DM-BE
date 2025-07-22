@@ -19,6 +19,18 @@ r.get("/show-one/:id", controller.findById);
 
 r.get("/show-by-exam/:id", controller.findByExam);
 
+r.get(
+  "/export-one/:id",
+  auth(['ADMIN']),
+  controller.exportOne
+);
+
+r.get(
+  "/export-exam/:id",
+  auth(['ADMIN']),
+  controller.exportExam
+);
+
 r.post(
   "/create",
   auth(['SISWA']),

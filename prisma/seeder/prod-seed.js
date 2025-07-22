@@ -1,8 +1,15 @@
 import prism from "../../src/config/prisma.db.js";
+import { seedDashboard } from "./dashboard.seeder.js";
+import { seedPage } from "./page.seed.js";
 import { seedRole } from "./role.seeder";
+import { seedTrainingCategory } from "./trainingcategory.seeder.js";
 
 async function main() {
-    await seedRole();
+  await seedRole();
+  await seedDashboard();
+  await seedPage();
+  await seedTrainingCategory()
+  await seedWhatsapp()
 }
 
 main()

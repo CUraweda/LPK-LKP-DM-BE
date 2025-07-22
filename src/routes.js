@@ -22,6 +22,15 @@ import trainingscheduleRouter from './core/trainingschedule/trainingschedule.rou
 import trainingenrollmentRouter from './core/trainingenrollment/trainingenrollment.router.js';
 import dashboardRouter from './core/dashboard/dashboard.router.js';
 import trainingcategoryRouter from './core/trainingcategory/trainingcategory.router.js'
+import chatrecapRouter from './core/chatrecap/chatrecap.router.js';
+import pageRouter from './core/page/page.router.js';
+import locationRouter from './core/location/location.router.js';
+import curiculumstructureRouter from './core/curiculumstructure/curiculumstructure.router.js';
+import curiculumRouter from './core/curiculum/curiculum.router.js';
+import curiculumStructureDetailRouter from './core/curiculumstructuredetail/curiculumstructuredetail.router.js'
+import curiculumDetail from './core/curiculumdetail/curiculumdetail.router.js'
+import whatsappRouter from './core/whatsapp/whatsapp.router.js';
+import membercourseRouter from './core/membercourse/membercourse.router.js';
 
 const router = express.Router();
 
@@ -37,6 +46,10 @@ export const routeLists = [
     {
         path: '/payment',
         route: paymentRouter
+    },
+    {
+        path: '/chat-recap',
+        route: chatrecapRouter
     },
     {
         path: '/chat',
@@ -55,6 +68,26 @@ export const routeLists = [
         route: roleRouter
     },
     {
+        path: '/ref/location',
+        route: locationRouter
+    },
+    {
+        path: '/ref/curiculum-structure',
+        route: curiculumstructureRouter
+    },
+    {
+        path: '/ref/detail-structure',
+        route: curiculumStructureDetailRouter
+    },
+    {
+        path: '/ref/curiculum',
+        route: curiculumRouter
+    },
+    {
+        path: '/ref/curiculum-detail',
+        route: curiculumDetail
+    },
+    {
         path: '/ref/training',
         route: trainingRouter
     },
@@ -63,11 +96,15 @@ export const routeLists = [
         route: dashboardRouter
     },
     {
+        path: '/ref/page',
+        route: pageRouter
+    },
+    {
         path: '/training/schedule',
         route: trainingscheduleRouter
     },
     {
-        path: '/training',
+        path: '/training/enrollment',
         route: trainingenrollmentRouter
     },
     {
@@ -85,6 +122,10 @@ export const routeLists = [
     {
         path: '/member',
         route: memberRouter
+    },
+    {
+        path: '/membercourse',
+        route: membercourseRouter
     },
     {
         path: '/memberattendance',
@@ -117,6 +158,10 @@ export const routeLists = [
     {
         path: '/memberwork',
         route: memberworkRouter
+    },
+    {
+        path: '/whatsapp',
+        route: whatsappRouter
     },
 ];
 

@@ -17,9 +17,11 @@ class membersalaryService extends BaseService {
     return data;
   };
 
-  findById = async (id) => {
+  findByUser = async (id) => {
     const convertId = Number(id)
-    const data = await this.db.memberSalary.findUnique({ where: { id: convertId } });
+    const data = await this.db.memberSalary.findMany({ 
+      where: { memberId: convertId },
+      include: { work: true } });
     return data;
   };
 

@@ -1,24 +1,33 @@
 import BaseController from "../../base/controller.base.js";
 import { NotFound } from "../../exceptions/catch.execption.js";
-import { sendOn } from "../../socket/index.js";
+import chatrecapService from "../chatrecap/chatrecap.service.js";
 import chatService from "./chat.service.js";
-
 class chatController extends BaseController {
-  #service;
+  #service; #chatRecapService;
 
   constructor() {
     super();
     this.#service = new chatService();
+    this.#chatRecapService = new chatrecapService()
   }
 
-  checkType(body){
-    if(body.fileLink) return "F"
-    if(body.imageLink) return "I"
-    if(body.message) return "T"
+  checkType(req) {
+    if (!req.file) return { type: "T" }
+    switch (req.file.mimetype) {
+      case 'application/pdf' || 'application/msword' || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        return { fileLink: req.file.path, fileSize: req.file.size, type: "F" }
+      case 'image/jpeg' || 'image/jpg' || 'image/png':
+        return { fileLink: req.file.path, fileSize: req.file.size, type: "I" }
+    }
   }
 
   findAll = this.wrapper(async (req, res) => {
     const data = await this.#service.findAll(req.query);
+    return this.ok(res, data, "Banyak chat berhasil didapatkan");
+  });
+
+  countRecap = this.wrapper(async (req, res) => {
+    const data = await this.#service.countRecap();
     return this.ok(res, data, "Banyak chat berhasil didapatkan");
   });
 
@@ -34,17 +43,21 @@ class chatController extends BaseController {
     return this.ok(res, data, "chat berhasil didapatkan");
   });
 
-  create = this.wrapper(async (req, res) => {
-    req.body['type'] = this.checkType(req.body)
-    const data = await this.#service.create(req.body);
+  sendAdmin = this.wrapper(async (req, res) => {
+    req.body['senderId'] = req.user.id
+    req.body['chatRecapId'] = await this.#chatRecapService.checkAndCreate(req.body['chatRecapId'])
+    req.body = { ...req.body, ...this.checkType(req) }
+    const data = await this.#service.sendAdmin(req.body);
+    this.#chatRecapService.newMessage(data.chatRecapId, { unreadUp: false, messageUp: true} )
     return this.created(res, data, "chat berhasil dibuat");
-});
+  });
 
   send = this.wrapper(async (req, res) => {
     req.body['senderId'] = req.user.id
-    req.body['type'] = this.checkType(req.body)
+    req.body['chatRecapId'] = await this.#chatRecapService.checkAndCreate(req.user.id)
+    req.body = { ...req.body, ...this.checkType(req) }
     const data = await this.#service.send(req.body);
-    sendOn("message_refresh", { userIds: [req.body.senderId, req.body.receiverId] })
+    this.#chatRecapService.newMessage(data.chatRecapId)
     return this.created(res, data, "chat berhasil dibuat");
   });
 

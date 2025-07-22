@@ -23,16 +23,21 @@ class memberworkController extends BaseController {
 
     return this.ok(res, data, "memberwork berhasil didapatkan");
   });
+  
+  findByUser = this.wrapper(async (req, res) => {
+    const data = await this.#service.findByUser(req.params.id);
+    if (!data) throw new NotFound("training tidak ditemukan");
+
+    return this.ok(res, data, "training berhasil didapatkan");
+  });
+
 
   create = this.wrapper(async (req, res) => {
     const logoFile = req.files?.companyLogo?.[0];
-    if (!logoFile) {
-      throw new Error("Logo perusahaan wajib diunggah");
-    }
 
     const payload = {
       ...req.body,
-      companyLogo: `/uploads/company-logos/${logoFile.filename}`,
+      ...(logoFile && { companyLogo: `/uploads/company-logos/${logoFile.filename}` }),
     };
 
     const data = await this.#service.create(payload);
@@ -63,7 +68,6 @@ class memberworkController extends BaseController {
     const data = await this.#service.update(id, payload);
     return this.ok(res, data, "MemberWork berhasil diperbarui");
   });
-
 
   delete = this.wrapper(async (req, res) => {
     const data = await this.#service.delete(req.params.id);

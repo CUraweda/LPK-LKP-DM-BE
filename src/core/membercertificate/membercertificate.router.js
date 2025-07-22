@@ -12,16 +12,32 @@ const r = Router(),
 
 r.get(
   "/show-all",
+  auth(['ADMIN']),
   validatorMiddleware({ query: baseValidator.browseQuery }),
   controller.findAll
 );
 
-r.get("/show-one/:id", controller.findById);
+r.get("/show-one/:id",
+  auth(['ADMIN']),
+  controller.findById);
+
+r.get(
+  "/show-me",
+  auth(['SISWA', 'ADMIN']),
+  controller.findMe
+)
+
+r.get(
+  "/count",
+  auth(['ADMIN', 'SISWA']),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
+  controller.count
+);
 
 r.post(
   "/create",
   auth(['ADMIN']),
-  uploader("/member/certificate", "file", "CERTIFICATE").single("image"),
+  uploader("/member/certificate", "file", "CERTIFICATE", 10 * 1024 * 1024).single("file"),
   validatorMiddleware({ body: validator.create }),
   controller.create
 );
@@ -29,7 +45,7 @@ r.post(
 r.put(
   "/update/:id",
   auth(['ADMIN']),
-  uploader("/member/certificate", "file", "CERTIFICATE").single("image"),
+  uploader("/member/certificate", "file", "CERTIFICATE").single("file"),
   validatorMiddleware({ body: validator.update }),
   controller.update
 );
