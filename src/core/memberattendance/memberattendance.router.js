@@ -48,6 +48,12 @@ r.get(
   controller.chart
 )
 
+r.patch(
+  "/approve/:id",
+  auth(['ADMIN']),
+  controller.patchApprove
+);
+
 r.post(
   "/attend",
   auth(['SISWA', 'ADMIN']),
