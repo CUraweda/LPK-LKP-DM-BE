@@ -265,6 +265,12 @@ class memberattendanceService extends BaseService {
     return data;
   };
 
+  patchApprove = async (id) => {
+    const exist = await this.db.memberAttendance.findFirst({ where: { id } })
+    if(!exist) throw new BadRequest("Data tidak ditemukan")
+    return await this.db.memberAttendance.update({ where: { id }, data: { isApproved: !exist.isApproved } });
+  };
+
   delete = async (id) => {
     const data = await this.db.memberAttendance.delete({ where: { id } });
     return data;

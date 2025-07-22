@@ -513,6 +513,7 @@ model MemberAttendance {
   attendanceImage String?
   location        String?
   description     String?
+  isApproved Boolean @default(false)
   type            AttendanceType
 
   member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
