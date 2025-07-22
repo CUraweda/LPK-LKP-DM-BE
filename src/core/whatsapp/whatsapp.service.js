@@ -14,10 +14,10 @@ class WhatsappService extends BaseService {
 		return qr;
 	};
 
-  startWhatsappClient = async (io) => {
-    const server = await startWhatsApp(io);
-    return server;
-  }
+	startWhatsappClient = async (io) => {
+		const server = await startWhatsApp(io);
+		return server;
+	}
 
 	sendMessage = async (payload) => {
 		const sesi = this.db.whatsappService.findFirst({
