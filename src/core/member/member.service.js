@@ -15,7 +15,7 @@ class memberService extends BaseService {
   }
 
   findAll = async (query) => {
-    const { startDate, endDate, status } = query;
+    const { startDate, endDate, status, hideAdmin } = query;
     const q = this.transformBrowseQuery(query);
 
     if (status) {
@@ -39,11 +39,12 @@ class memberService extends BaseService {
         lte: new Date(endDate),
       };
     }
+    if (hideAdmin == "1") q.where['User'] = { role: { code: "SISWA" } }
 
     const data = await this.db.member.findMany({
       ...q,
       include: {
-        User: true,
+        User: { select: { email: true, role: { select: { code: true } } } },
         identity: true,
       },
     });
