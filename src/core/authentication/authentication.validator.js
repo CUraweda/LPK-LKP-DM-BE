@@ -5,7 +5,7 @@ import constant from '../../config/constant.js';
 const AuthenticationValidator = {
   login: Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().max(constant.MAX_LEN_PW).required(),
+    password: Joi.string().required(),
   }),
 
   refresh: Joi.object({

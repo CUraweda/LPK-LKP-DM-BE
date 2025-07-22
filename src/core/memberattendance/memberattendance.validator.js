@@ -6,7 +6,8 @@ export const memberattendanceValidator = {
     rawDate: Joi.date(),
     location: Joi.string(),
     description: Joi.string(),
-    type: Joi.valid("H", "I", "S", "A")
+    type: Joi.valid("H", "I", "S", "A"),
+    isApproved: Joi.boolean().default(true)
   }),
   rangeData: Joi.object({
     trainingId: Joi.number().integer(),

@@ -11,6 +11,7 @@ class memberController extends BaseController {
   }
 
   findAll = this.wrapper(async (req, res) => {
+    req.query['hideAdmin'] = req.query['hideAdmin'] ? req.query['hideAdmin'] : "1"
     const data = await this.#service.findAll(req.query);
     return this.ok(res, data, "Banyak member berhasil didapatkan");
   });
