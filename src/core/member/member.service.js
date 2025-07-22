@@ -6,12 +6,14 @@ import prisma from '../../config/prisma.db.js';
 import { BadRequest } from "../../exceptions/catch.execption.js";
 import paymentService from "../payment/payment.service.js";
 import AuthenticationService from "../authentication/authentication.service.js";
+import EmailHelper from "../../helpers/email.helper.js";
 
 class memberService extends BaseService {
   constructor() {
     super(prisma);
     this.authenticationService = new AuthenticationService()
     this.paymentService = new paymentService()
+    this.mailHelper = new EmailHelper()
   }
 
   findAll = async (query) => {
@@ -177,8 +179,18 @@ class memberService extends BaseService {
   };
 
   patchVerified = async (id) => {
-    const memberData = await this.db.member.findFirst({ where: { id }, select: { dataVerified: true } })
+    const memberData = await this.db.member.findFirst({ where: { id }, select: { dataVerified: true, name: true, User: { select: { email: true } } } })
     if (!memberData) throw new BadRequest("Akun member tidak ditemukan")
+
+    if (!memberData.dataVerified) {
+      this.mailHelper.sendEmail(
+        { USER_NAME: memberData.name },
+        memberData.User.email,
+        'LPK | Konfirmasi Verifikasi Akun',
+        './src/email/views/verified.html',
+        ['public/private/logo_lpk.png']
+      );
+    }
 
     return await this.db.member.update({
       where: { id }, data: {
