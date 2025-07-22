@@ -45,6 +45,7 @@ class memberService extends BaseService {
       ...q,
       include: {
         User: { select: { email: true, role: { select: { code: true } } } },
+        training: true,
         identity: true,
       },
     });
