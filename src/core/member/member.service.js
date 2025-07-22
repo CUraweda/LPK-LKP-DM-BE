@@ -48,6 +48,7 @@ class memberService extends BaseService {
         training: true,
         identity: true,
       },
+      orderBy: { createdAt: "desc" }
     });
 
     if (query.paginate) {
