@@ -63,20 +63,33 @@ class memberService extends BaseService {
 
   count = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const { date } = query
+    const { startDate, endDate, status, hideAdmin } = query;
     delete q.skip; delete q.take;
-
-    if (date) {
-      let start_date = new Date(date)
-      let end_date = new Date(date)
-      start_date.setHours(0, 0, 0, 0);
-      end_date.setHours(23, 59, 59, 999);
-
-      q.where.createdAt = { gte: start_date, lte: end_date }
+    if (status) {
+      switch (status) {
+        case "Sedang Pelatihan":
+          q.where.dataVerified = true
+          q.where.isGraduate = false
+          break;
+        case "Selesai Pelatihan":
+          q.where.isGraduate = true
+          break;
+        case "Belum Pelatihan":
+          q.where.dataVerified = false
+        default:
+          break;
+      }
     }
+    if (startDate && endDate) {
+      q.where.createdAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
+      };
+    }
+    if (hideAdmin == "1") q.where['User'] = { role: { code: "SISWA" } }
 
     const data = await this.db.member.count({
-      ...q,
+      ...q
     });
 
     return data;
