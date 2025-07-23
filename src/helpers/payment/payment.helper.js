@@ -109,7 +109,7 @@ export class PaymentHelper {
             case "va-create":
                 body['username'] = body.username
                 body['email'] = body.email
-                body['payer'] = body.username
+                body['payer'] = `VA LPKDM ${body.username}`
                 body['amount'] = body.transaction.paymentTotal.toString()
                 body['paymentType'] = body.paymentMethod
                 body['productType'] = body.paymentMethod
