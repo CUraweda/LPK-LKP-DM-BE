@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atur Ulang Kata Sandi - LPK Dress Making</title>
+    <style>
+        /* Reset styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header */
+        .email-header {
+            background-color: #ffffff;
+            padding: 40px 40px 20px 40px;
+            text-align: center;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .logo {
+            width: 80px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        /* Content */
+        .email-content {
+            padding: 40px;
+            background-color: #ffffff;
+        }
+
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            font-size: 16px;
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .instruction {
+            font-size: 16px;
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        /* Button */
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .reset-button {
+            display: inline-block;
+            background-color: #1e40af;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .reset-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Security notice */
+        .security-notice {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 30px 0;
+        }
+
+        .security-notice p {
+            font-size: 14px;
+            color: #92400e;
+            margin: 0;
+        }
+
+        /* Expiry notice */
+        .expiry-notice {
+            font-size: 14px;
+            color: #666666;
+            text-align: center;
+            margin: 20px 0;
+            font-style: italic;
+        }
+
+        /* Footer */
+        .email-footer {
+            background-color: #f8f9fa;
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .footer-text {
+            font-size: 16px;
+            color: #666666;
+            margin-bottom: 10px;
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333333;
+        }
+
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .email-header,
+            .email-content,
+            .email-footer {
+                padding: 20px;
+            }
+            
+            .greeting {
+                font-size: 16px;
+            }
+            
+            .message,
+            .instruction {
+                font-size: 14px;
+            }
+            
+            .reset-button {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .email-container {
+                background-color: #1f2937;
+            }
+            
+            .email-header,
+            .email-content {
+                background-color: #1f2937;
+            }
+            
+            .greeting,
+            .company-name {
+                color: #f9fafb;
+            }
+            
+            .message,
+            .instruction,
+            .footer-text,
+            .expiry-notice {
+                color: #d1d5db;
+            }
+            
+            .email-header,
+            .email-footer {
+                border-color: #374151;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header with Logo -->
+        <div class="email-header">
+            <img src="cid:logo0" alt="LPK Dress Making" class="logo">
+        </div>
+
+        <!-- Main Content -->
+        <div class="email-content">
+            <div class="greeting">
+                Hello {{USER_NAME}},
+            </div>
+
+            <div class="message">
+               Terima kasih telah mendaftar di Dress Making. Akun Anda telah berhasil dikonfirmasi. Kami menantikan kontribusi dan partisipasi aktif Anda bersama kami.
+            </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+            <div class="footer-text">
+                Best regards,
+            </div>
+            <div class="company-name">
+                Dress Making
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -6,26 +6,31 @@ import prisma from '../../config/prisma.db.js';
 import { BadRequest } from "../../exceptions/catch.execption.js";
 import paymentService from "../payment/payment.service.js";
 import AuthenticationService from "../authentication/authentication.service.js";
+import EmailHelper from "../../helpers/email.helper.js";
 
 class memberService extends BaseService {
   constructor() {
     super(prisma);
     this.authenticationService = new AuthenticationService()
     this.paymentService = new paymentService()
+    this.mailHelper = new EmailHelper()
   }
 
   findAll = async (query) => {
-    const { startDate, endDate, status } = query;
+    const { startDate, endDate, status, hideAdmin } = query;
     const q = this.transformBrowseQuery(query);
 
     if (status) {
       switch (status) {
         case "Sedang Pelatihan":
+          q.where.dataVerified = true
           q.where.isGraduate = false
           break;
         case "Selesai Pelatihan":
           q.where.isGraduate = true
           break;
+        case "Belum Pelatihan":
+          q.where.dataVerified = false
         default:
           break;
       }
@@ -36,13 +41,16 @@ class memberService extends BaseService {
         lte: new Date(endDate),
       };
     }
+    if (hideAdmin == "1") q.where['User'] = { role: { code: "SISWA" } }
 
     const data = await this.db.member.findMany({
       ...q,
       include: {
-        User: true,
+        User: { select: { email: true, role: { select: { code: true } } } },
+        training: true,
         identity: true,
       },
+      orderBy: { createdAt: "desc" }
     });
 
     if (query.paginate) {
@@ -56,6 +64,7 @@ class memberService extends BaseService {
   count = async (query) => {
     const q = this.transformBrowseQuery(query);
     const { date } = query
+    delete q.skip; delete q.take;
 
     if (date) {
       let start_date = new Date(date)
@@ -170,8 +179,18 @@ class memberService extends BaseService {
   };
 
   patchVerified = async (id) => {
-    const memberData = await this.db.member.findFirst({ where: { id }, select: { dataVerified: true } })
+    const memberData = await this.db.member.findFirst({ where: { id }, select: { dataVerified: true, name: true, User: { select: { email: true } } } })
     if (!memberData) throw new BadRequest("Akun member tidak ditemukan")
+
+    if (!memberData.dataVerified) {
+      this.mailHelper.sendEmail(
+        { USER_NAME: memberData.name },
+        memberData.User.email,
+        'LPK | Konfirmasi Verifikasi Akun',
+        './src/email/views/verified.html',
+        ['public/private/logo_lpk.png']
+      );
+    }
 
     return await this.db.member.update({
       where: { id }, data: {
@@ -270,13 +289,13 @@ class memberService extends BaseService {
       });
 
       if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan");
+      await prisma.memberCourse.upsert({ where: { uid: `${memberId}|${trainingId}` }, create: { memberId, trainingId, uid: `${memberId}|${trainingId}` }, update: { memberId, trainingId, uid: `${memberId}|${trainingId}` } })
 
-      const schedules = await prisma.trainingSchedule.findMany({
-        where: { trainingId: trainingId },
-        select: { id: true },
-      });
-
-      if (trainingData.type !== "P") {
+      if (trainingData.type == "P") {
+        const schedules = await prisma.trainingSchedule.findMany({
+          where: { trainingId },
+          select: { id: true },
+        });
         for (const schedule of schedules) {
           await prisma.trainingEnrollment.create({
             data: {
@@ -306,7 +325,7 @@ class memberService extends BaseService {
   extendDataPembayaran = async (payload) => {
     payload['memberId'] = payload['memberId'] ? payload['memberId'] : payload['user'].member.id
     const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda" })
-    const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate,merchantTradeNo, ...rest } = createdPayment
+    const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, merchantTradeNo, ...rest } = createdPayment
     return { merchantTradeNo, paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }
   }
 }

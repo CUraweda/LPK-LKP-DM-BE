@@ -66,6 +66,11 @@ class memberattendanceController extends BaseController {
     return this.created(res, data, "memberattendance berhasil dibuat");
   });
 
+  patchApprove = this.wrapper(async (req, res) => {
+    const data = await this.#service.patchApprove(+req.params.id);
+    return this.created(res, data, "memberattendance berhasil dibuat");
+  });
+
   attend = this.wrapper(async (req, res) => {
     if (!req.file) return this.BadRequest(res, "Mohon sertakan gambar presensi")
     req.body['attendanceImage'] = req.file.path

@@ -36,6 +36,8 @@ class dashboardService extends BaseService {
 			payload['uid'] = `${payload.sectionID}_${sectionNumber + 1}`;
 			payload['isTitle'] = true;
 		}
+
+		console.log(payload)
 		const data = await this.db.dashboard.create({ data: payload });
 		return data;
 	};
