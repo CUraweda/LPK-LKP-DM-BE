@@ -31,6 +31,8 @@ import curiculumStructureDetailRouter from './core/curiculumstructuredetail/curi
 import curiculumDetail from './core/curiculumdetail/curiculumdetail.router.js'
 import whatsappRouter from './core/whatsapp/whatsapp.router.js';
 import membercourseRouter from './core/membercourse/membercourse.router.js';
+import copetencyUnitRouter from './core/competencyunit/competencyunit.router.js'
+import learningMaterial from './core/learningmaterialdetail/learningmaterialdetail.router.js'
 
 const router = express.Router();
 
@@ -84,8 +86,16 @@ export const routeLists = [
         route: curiculumRouter
     },
     {
+        path: '/ref/competency-unit',
+        route: copetencyUnitRouter
+    },
+    {
         path: '/ref/curiculum-detail',
         route: curiculumDetail
+    },
+    {
+        path: '/ref/learning-material',
+        route: learningMaterial
     },
     {
         path: '/ref/training',

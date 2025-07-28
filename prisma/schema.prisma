@@ -190,6 +190,7 @@ model Transaction {
 model CuriculumStructure {
   id          Int    @id @default(autoincrement())
   name        String
+  type        String
   timePerHour Int
 
   CuriculumStructureDetail CuriculumStructureDetail[]
@@ -202,8 +203,8 @@ model CuriculumStructure {
 model CuriculumStructureDetail {
   id                 Int                @id @default(autoincrement())
   structureId        Int
-  type               String
-  code               String
+  type               String?
+  code               String?
   competencyUnit     String             @db.Text
   hours              Int
   curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id], onDelete: Cascade)
@@ -218,22 +219,55 @@ model Curiculum {
   curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id], onDelete: Cascade)
 
   curiculumDetail CuriculumDetail[]
+  unitCompetency UnitCompetency[]
 
   @@map("curiculum")
+}
+
+model UnitCompetency {
+  id            Int               @id @default(autoincrement())
+  curiculumId   Int
+  code          String
+  name          String
+  
+  curiculum     Curiculum         @relation(fields: [curiculumId], references: [id], onDelete: Cascade)
+  details       CuriculumDetail[] @relation("UnitToDetail")
+
+  @@map("unit_competency")
 }
 
 model CuriculumDetail {
   id                Int    @id @default(autoincrement())
   curiculumId       Int
-  type              String
-  code              String
-  competency        String @db.Text
-  elementCompetency String @db.Text
-  indikator         String @db.Text
+  unitCompetencyId  Int?
+  type              String?
+  code              String?
+  competency        String? @db.Text
+  elementCompetency String  @db.Text
+  indikator         String?  @db.Text
 
-  curiculum Curiculum @relation(fields: [curiculumId], references: [id], onDelete: Cascade)
+  unitCompetency    UnitCompetency? @relation("UnitToDetail", fields: [unitCompetencyId], references: [id], onDelete: SetNull)
+  learningMaterials LearningMaterialDetail[]
+  Curiculum Curiculum[]
 
   @@map("curiculum_detail")
+}
+
+model LearningMaterialDetail {
+  id                 Int    @id @default(autoincrement())
+  curiculumDetailId  Int
+  code               String
+  name               String
+  weight             Float
+  duration           Int
+  methods            String
+  indicator          String
+  moduleCode         String
+  moduleName         String
+
+  curiculumDetail    CuriculumDetail @relation(fields: [curiculumDetailId], references: [id], onDelete: Cascade)
+
+  @@map("learning_material_detail")
 }
 
 model Training {

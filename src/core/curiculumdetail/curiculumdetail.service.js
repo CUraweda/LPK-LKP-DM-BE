@@ -8,18 +8,29 @@ class curiculumDetailService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.curiculumDetail.findMany({ ...q });
+    const data = await this.db.curiculumDetail.findMany({
+      ...q,
+      include: {
+        learningMaterials: true,
+      },
+    });
 
     if (query.paginate) {
       const countData = await this.db.curiculumDetail.count({ where: q.where });
       return this.paginate(data, countData, q);
     }
+
     return data;
   };
 
   findById = async (id) => {
-    const convertId = Number(id)
-    const data = await this.db.curiculumDetail.findUnique({ where: { id: convertId } });
+    const convertId = Number(id);
+    const data = await this.db.curiculumDetail.findUnique({
+      where: { id: convertId },
+      include: {
+        learningMaterials: true,
+      },
+    });
     return data;
   };
 
