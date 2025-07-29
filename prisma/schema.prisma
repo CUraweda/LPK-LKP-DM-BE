@@ -11,6 +11,8 @@ generator client {
 enum RoleCode {
   ADMIN
   SISWA
+  INSTRUKTUR
+  PENGURUS
   ANY
 }
 
@@ -42,6 +44,11 @@ enum AttendanceType {
   I //Izin
   S //Sakit
   A //Alpha
+}
+
+enum AttendanceSchedule {
+  IN
+  OUT
 }
 
 enum CourseStatus {
@@ -121,11 +128,12 @@ model User {
   forgetExpiry DateTime?
   isSuspended  Boolean   @default(false)
 
-  employee  Employee?
-  member    Member?    @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  role      Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  ChatRecap ChatRecap?
-  Chat      Chat[]
+  employee    Employee?
+  member      Member?      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  role        Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  ChatRecap   ChatRecap?
+  Chat        Chat[]
+  Facilitator Facilitator?
 
   @@map("user")
 }
@@ -467,7 +475,7 @@ model MemberLoan {
   paidAt        DateTime?
   transactionId Int?
 
-  member      Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  member      Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
   transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 }
 
@@ -596,7 +604,7 @@ model MemberIdentity {
   district         String
   village          String
   postalCode       Int
-  ktpFile String?
+  ktpFile          String?
   detailedAddress  String
   // phoneNumber      String   @unique
   isParentGuardian Boolean  @default(false)
@@ -631,4 +639,28 @@ model WhatsappService {
   isActive Boolean
 
   @@map("whatsapp_service")
+}
+
+model Facilitator {
+  id          Int    @id @default(autoincrement())
+  name        String
+  position    String
+  phoneNumber String
+  userId      Int    @unique
+
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  FacilitatorAttendance FacilitatorAttendance[]
+}
+
+model FacilitatorAttendance {
+  id              Int                @id @default(autoincrement())
+  facilitatorId   Int
+  UID             String             @unique //<FacilitatorId><DDMMYYYY><typeSchedule>
+  attendanceImage String?
+  location        String?
+  type            AttendanceType
+  typeSchedule    AttendanceSchedule
+  createdAt       DateTime           @default(now())
+
+  facilitator Facilitator @relation(fields: [facilitatorId], references: [id], onDelete: Cascade)
 }

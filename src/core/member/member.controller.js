@@ -93,7 +93,6 @@ class memberController extends BaseController {
     }
     if(req.files['profileImage']) req.body['profilePict'] = req.files['profilePict'][0].path
     if(req.files['ktpFile']) req.body['ktpFile'] = req.files['ktpFile'][0].path
-    console.log(req.body)
     await this.#service.extendDataSiswa(req.body);
     return this.created(res, { memberId: req.body['memberId'] },"Data Siswa berhasil ditambahkan");
   });
