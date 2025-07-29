@@ -33,6 +33,7 @@ import whatsappRouter from './core/whatsapp/whatsapp.router.js';
 import membercourseRouter from './core/membercourse/membercourse.router.js';
 import copetencyUnitRouter from './core/competencyunit/competencyunit.router.js'
 import learningMaterial from './core/learningmaterialdetail/learningmaterialdetail.router.js'
+import memberloanRouter from './core/memberloan/memberloan.router.js';
 
 const router = express.Router();
 
@@ -132,6 +133,10 @@ export const routeLists = [
     {
         path: '/member',
         route: memberRouter
+    },
+    {
+        path: '/member-loan',
+        route: memberloanRouter
     },
     {
         path: '/membercourse',

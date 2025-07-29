@@ -30,7 +30,7 @@ app.use(
 const port = process.env.PORT || 8000;
 
 const Server = http.createServer(app);
-const io     = new IOServer(Server, { cors: { origin: '*' } });
+const io = new IOServer(Server, { cors: { origin: '*' } });
 
 // Make io accessible in routes
 app.set('io', io);
@@ -88,7 +88,7 @@ app.use("/file/load/", async (req, res, next) => {
     const ext = path.extname(relPath).toLowerCase();
 
     if (!allowedMime.includes(ext)) throw new BadRequest("Tipe file tidak bisa diambil");
-    
+
     const baseDir = path.resolve('uploads');
     const fullPath = path.join(baseDir, relPath.replace(/^\/?uploads\/?/, ''));
 
@@ -101,35 +101,33 @@ app.use("/file/load/", async (req, res, next) => {
   }
 });
 
-app.use('/api/v1', router);
-app.get('/api/download', auth(["ADMIN", "USER"]), (req, res) => {
-  const filePath = req.query.path;
-  if (!filePath) {
-    return res.status(httpStatus.BAD_REQUEST).send({
-      status: false,
-      code: httpStatus.BAD_REQUEST,
-      message: "File path not provided.",
-    });
-  }
+app.use('/file/download/', auth(["ADMIN", "SISWA"]), async (req, res, next) => {
+  try {
+    const relPath = decodeURIComponent(req.path);
+    const ext = path.extname(relPath).toLowerCase();
 
-  if (fs.existsSync(filePath)) {
-    const filename = path.basename(filePath);
+    if (!allowedMime.includes(ext)) throw new BadRequest("Tipe file tidak bisa diambil");
+
+    const baseDir = path.resolve('uploads');
+    const fullPath = path.join(baseDir, relPath.replace(/^\/?uploads\/?/, ''));
+    if (!fullPath.startsWith(baseDir)) throw new BadRequest("Denied")
+    if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) throw new NotFound("File tidak ditemukan")
+
+    const filename = path.basename(fullPath);
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="${filename}"`
     );
 
-    const fileStream = fs.createReadStream(filePath);
+    const fileStream = fs.createReadStream(fullPath);
     fileStream.pipe(res);
-  } else {
-    res.status(httpStatus.NOT_FOUND).send({
-      status: false,
-      code: httpStatus.NOT_FOUND,
-      message: "File not found.",
-    });
+  } catch (err) {
+    next(err)
   }
 });
+
+app.use('/api/v1', router);
 
 app.route('/').get((req, res) => {
   return res.json({

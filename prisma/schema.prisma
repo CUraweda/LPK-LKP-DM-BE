@@ -115,7 +115,7 @@ model User {
   id           Int       @id @default(autoincrement())
   email        String    @unique
   password     String
-  memberId     Int      @unique
+  memberId     Int       @unique
   roleId       Int
   forgetToken  String?   @db.Text
   forgetExpiry DateTime?
@@ -183,6 +183,7 @@ model Transaction {
 
   memberTransactions MemberTransaction[]
   member             Member              @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  MemberLoan         MemberLoan[]
 
   @@map("transaction")
 }
@@ -219,53 +220,53 @@ model Curiculum {
   curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id], onDelete: Cascade)
 
   curiculumDetail CuriculumDetail[]
-  unitCompetency UnitCompetency[]
+  unitCompetency  UnitCompetency[]
 
   @@map("curiculum")
 }
 
 model UnitCompetency {
-  id            Int               @id @default(autoincrement())
-  curiculumId   Int
-  code          String
-  name          String
-  
-  curiculum     Curiculum         @relation(fields: [curiculumId], references: [id], onDelete: Cascade)
-  details       CuriculumDetail[] @relation("UnitToDetail")
+  id          Int    @id @default(autoincrement())
+  curiculumId Int
+  code        String
+  name        String
+
+  curiculum Curiculum         @relation(fields: [curiculumId], references: [id], onDelete: Cascade)
+  details   CuriculumDetail[] @relation("UnitToDetail")
 
   @@map("unit_competency")
 }
 
 model CuriculumDetail {
-  id                Int    @id @default(autoincrement())
+  id                Int     @id @default(autoincrement())
   curiculumId       Int
   unitCompetencyId  Int?
   type              String?
   code              String?
   competency        String? @db.Text
   elementCompetency String  @db.Text
-  indikator         String?  @db.Text
+  indikator         String? @db.Text
 
-  unitCompetency    UnitCompetency? @relation("UnitToDetail", fields: [unitCompetencyId], references: [id], onDelete: SetNull)
+  unitCompetency    UnitCompetency?          @relation("UnitToDetail", fields: [unitCompetencyId], references: [id], onDelete: SetNull)
   learningMaterials LearningMaterialDetail[]
-  Curiculum Curiculum[]
+  Curiculum         Curiculum[]
 
   @@map("curiculum_detail")
 }
 
 model LearningMaterialDetail {
-  id                 Int    @id @default(autoincrement())
-  curiculumDetailId  Int
-  code               String
-  name               String
-  weight             Float
-  duration           Int
-  methods            String
-  indicator          String
-  moduleCode         String
-  moduleName         String
+  id                Int    @id @default(autoincrement())
+  curiculumDetailId Int
+  code              String
+  name              String
+  weight            Float
+  duration          Int
+  methods           String
+  indicator         String
+  moduleCode        String
+  moduleName        String
 
-  curiculumDetail    CuriculumDetail @relation(fields: [curiculumDetailId], references: [id], onDelete: Cascade)
+  curiculumDetail CuriculumDetail @relation(fields: [curiculumDetailId], references: [id], onDelete: Cascade)
 
   @@map("learning_material_detail")
 }
@@ -451,8 +452,23 @@ model Member {
   courses             MemberCourse[]       @relation(name: "MemberToCourses")
   User                User?
   MemberCertificate   MemberCertificate[]
+  MemberLoan          MemberLoan[]
 
   @@map("member")
+}
+
+model MemberLoan {
+  id            Int       @id @default(autoincrement())
+  memberId      Int
+  loanUID       String //MemberIdDDMMYY1
+  context       String
+  total         Float
+  isPaid        Boolean   @default(false)
+  paidAt        DateTime?
+  transactionId Int?
+
+  member      Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 }
 
 model MemberTransaction {
@@ -547,7 +563,7 @@ model MemberAttendance {
   attendanceImage String?
   location        String?
   description     String?
-  isApproved Boolean @default(false)
+  isApproved      Boolean        @default(false)
   type            AttendanceType
 
   member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
@@ -556,7 +572,7 @@ model MemberAttendance {
 }
 
 model MemberCourse {
-  id         Int    @id @default(autoincrement())
+  id         Int     @id @default(autoincrement())
   uid        String? @unique
   memberId   Int
   trainingId Int
@@ -580,6 +596,7 @@ model MemberIdentity {
   district         String
   village          String
   postalCode       Int
+  ktpFile String?
   detailedAddress  String
   // phoneNumber      String   @unique
   isParentGuardian Boolean  @default(false)
