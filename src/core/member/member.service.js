@@ -302,6 +302,9 @@ class memberService extends BaseService {
       });
 
       if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan");
+      if (trainingData.type == "R") { if (!persetujuanPembayaran || !persetujuanOrangtuaWali) throw new BadRequest("Pelatihan memerlukan persetujuan Pembayaran dan Orang Tua Wali")
+      } else if (!persetujuanOrangtuaWali) throw new BadRequest("Pelatihan memerlukan persetujuan Pembayaran dan Orang Tua Wali")
+
       await prisma.memberCourse.upsert({
         where: { uid: `${memberId}|${trainingId}` },
         create: {
