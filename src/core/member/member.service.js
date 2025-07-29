@@ -293,7 +293,7 @@ class memberService extends BaseService {
   }
 
   extendDataTraining = async (payload) => {
-    const { memberId, trainingId } = payload;
+    const { memberId, trainingId, persetujuanOrangtuaWali, persetujuanPembayaran } = payload;
 
     return await this.db.$transaction(async (prisma) => {
       const trainingData = await prisma.training.update({
@@ -302,7 +302,14 @@ class memberService extends BaseService {
       });
 
       if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan");
-      await prisma.memberCourse.upsert({ where: { uid: `${memberId}|${trainingId}` }, create: { memberId, trainingId, uid: `${memberId}|${trainingId}` }, update: { memberId, trainingId, uid: `${memberId}|${trainingId}` } })
+      await prisma.memberCourse.upsert({
+        where: { uid: `${memberId}|${trainingId}` },
+        create: {
+          memberId, trainingId, uid: `${memberId}|${trainingId}`, persetujuanOrangtuaWali, persetujuanPembayaran
+        }, update: {
+          memberId, trainingId, uid: `${memberId}|${trainingId}`, persetujuanOrangtuaWali, persetujuanPembayaran
+        }
+      })
 
       if (trainingData.type == "P") {
         const schedules = await prisma.trainingSchedule.findMany({

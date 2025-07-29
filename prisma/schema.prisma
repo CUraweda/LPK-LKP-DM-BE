@@ -583,6 +583,8 @@ model MemberCourse {
   id         Int     @id @default(autoincrement())
   uid        String? @unique
   memberId   Int
+  persetujuanPembayaran Boolean?
+  persetujuanOrangtuaWali Boolean?
   trainingId Int
 
   training Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
