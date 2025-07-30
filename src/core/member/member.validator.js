@@ -3,7 +3,6 @@ import Joi from "joi";
 export const memberValidator = {
   create: Joi.object({
     name: Joi.string(),
-    
     dataVerified: Joi.boolean()
   }),
   patchVerified: Joi.object({

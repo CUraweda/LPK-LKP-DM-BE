@@ -10,12 +10,13 @@ class memberloanService extends BaseService {
   }
   formatUID = (memberId, index) => {
     const [year, month, day] = new Date().toISOString().split("T")[0].split("-")
-    return `${memberId}${day}${month}${year}${index}`
+    const [hour, minute] = new Date().toISOString().split("T")[1].split(":")
+    return `${memberId}${day}${month}${year}$${hour}${minute}${index}`
   }
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.memberLoan.findMany({ ...q });
+    const data = await this.db.memberLoan.findMany({ ...q, include: { member: { select: { name: true } }, transaction: { select: { status: true, paymentDate: true, isPaid: true, paymentTotal: true, paymentMethod: true } } } });
 
     if (query.paginate) {
       const countData = await this.db.memberLoan.count({ where: q.where });
@@ -30,31 +31,43 @@ class memberloanService extends BaseService {
   };
 
   create = async (payload) => {
+    payload['loanUID'] = this.formatUID(payload['memberId'], 0) //0 = Pertama
     const data = await this.db.memberLoan.create({ data: payload });
     return data;
   };
 
   generateLoan = async (payload) => {
-    const { memberId, createTransaction } = payload
+    const { memberId, createTransaction, context, } = payload
     let data = payload.listOfTotal.map((total, index) => ({
-      ...payload,
+      memberId, context,
       total,
       loanUID: this.formatUID(memberId, index + 1)
     }));
-    const datas = await this.db.memberLoan.createMany({ data });
-    if (createTransaction) await this.generateTransaction(datas[0].id, { paymentMethod: payload['paymentMethod'] })
-    return datas
+    if (createTransaction) {
+      const first = await this.db.memberLoan.create({ data: data[0] })
+      await this.generateTransaction(first.id, { paymentMethod: payload['paymentMethod'], memberId, updateRegistPayment: true })
+      data.splice(1, 1)
+    }
+    await this.db.memberLoan.createMany({ data });
+    return
   };
 
-  generateTransaction = async (id, payload) => {
+  generateTransaction = async (id, payload = { paymentMethod: "", memberId: 0, updateRegistPayment: false }) => {
+    const { updateRegistPayment, ...other } = payload
     const data = await this.db.memberLoan.findFirst({ where: { id } })
     if (!data) throw new BadRequest("Cicilan tidak ditemukan")
-    payload['memberId'] = payload['memberId'] ? payload['memberId'] : payload['user'].member.id
-    const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: data.total, purpose: "Pendaftaran", status: "Tunda" })
+    const createdPayment = await this.paymentService.createPayment({
+      ...other,
+      ...(payload['updateRegistPayment'] && { registrasi: true }),
+      paymentTotal: data.total, purpose: "Pendaftaran", status: "Tunda"
+    })
     const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, merchantTradeNo, transactionId, ...rest } = createdPayment
-    await this.db.memberLoan.update({ where: { id }, data: { transactionId } })
+    await this.db.$transaction(async (prism) => {
+      const exist = await prism.memberLoan.count({ where: { transactionId: createdPayment['id'] } })
+      if(exist > 0) return
+      await this.db.memberLoan.update({ where: { id }, data: { transactionId: createdPayment['id'] } })
+    })
     return { merchantTradeNo, paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, transactionId }
-
   }
 
   update = async (id, payload) => {

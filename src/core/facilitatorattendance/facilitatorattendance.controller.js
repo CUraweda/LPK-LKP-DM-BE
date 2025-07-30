@@ -11,6 +11,7 @@ class facilitatorattendanceController extends BaseController {
   }
 
   findAll = this.wrapper(async (req, res) => {
+    if(!req.user?.role?.code) throw new BadRequest("Anda belum ")
     if (req.user.role.code == "INSTRUKTUR" || req.user.role.code == "PENGURUS") req.query['where'] = req.query['where'] ? req.query['where'] + `|facilitatorId:${req.user.Facilitator.id}` : `facilitatorId:${req.user.Facilitator.id}`
     const data = await this.#service.findAll(req.query);
     return this.ok(res, data, "Banyak facilitatorattendance berhasil didapatkan");

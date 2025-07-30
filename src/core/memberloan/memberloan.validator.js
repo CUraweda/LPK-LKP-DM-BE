@@ -5,16 +5,12 @@ export const memberloanValidator = {
     memberId: Joi.number().integer().required(),  
     context: Joi.string().required(),
     total: Joi.number(), 
-    isPaid: Joi.boolean().default(false), 
-    paidAt: Joi.date().optional(),
     transactionId: Joi.number().integer().optional()
   }),
   update: Joi.object({
     memberId: Joi.number().integer().optional(),  
     context: Joi.string().optional,
     total: Joi.number(), 
-    isPaid: Joi.boolean().default(false), 
-    paidAt: Joi.date().optional(),
     transactionId: Joi.number().integer().optional()
   }),
   generate : Joi.object({
@@ -24,6 +20,9 @@ export const memberloanValidator = {
     createTransaction: Joi.boolean().default(false),
     paymentMethod: Joi.string().optional()
   }),
+  createTransaction: Joi.object({
+    paymentMethod: Joi.string().required()
+  })
 };
 
 export default memberloanValidator;

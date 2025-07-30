@@ -17,7 +17,7 @@ class memberService extends BaseService {
   }
 
   findAll = async (query) => {
-    const { startDate, endDate, status, hideAdmin } = query;
+    const { startDate, endDate, status, hideAdmin, hideGraduate } = query;
     const q = this.transformBrowseQuery(query);
 
     if (status) {
@@ -42,6 +42,7 @@ class memberService extends BaseService {
       };
     }
     if (hideAdmin == "1") q.where['User'] = { role: { code: "SISWA" } }
+    if (hideGraduate == "1") q.where['isGraduate'] = false
 
     const data = await this.db.member.findMany({
       ...q,
@@ -179,7 +180,7 @@ class memberService extends BaseService {
   findDetail = async (id) => {
     const data = await this.db.member.findFirst({
       where: { id }, select: {
-        id: true, name: true, phoneNumber: true, profileImage: true, trainingId: true,
+        id: true, isGraduate: true, name: true, phoneNumber: true, profileImage: true, trainingId: true,
         identity: true, parents: true, User: true
       }
     })
@@ -216,6 +217,12 @@ class memberService extends BaseService {
   update = async (id, payload) => {
     const data = await this.db.member.update({ where: { id }, data: payload });
     return data;
+  };
+
+  finishTraining = async (id) => {
+    const exist = await this.db.member.findFirst({ where: { id } })
+    if (!exist) throw new BadRequest("Data member tidak ditemukan")
+    return await this.db.member.update({ where: { id }, data: { trainingId: null, courseCategoryId: null, courseLevel: 0, isGraduate: true, registrationPaymentId: null } })
   };
 
   delete = async (id) => {
@@ -302,7 +309,8 @@ class memberService extends BaseService {
       });
 
       if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan");
-      if (trainingData.type == "R") { if (!persetujuanPembayaran || !persetujuanOrangtuaWali) throw new BadRequest("Pelatihan memerlukan persetujuan Pembayaran dan Orang Tua Wali")
+      if (trainingData.type == "R") {
+        if (!persetujuanPembayaran || !persetujuanOrangtuaWali) throw new BadRequest("Pelatihan memerlukan persetujuan Pembayaran dan Orang Tua Wali")
       } else if (!persetujuanOrangtuaWali) throw new BadRequest("Pelatihan memerlukan persetujuan Pembayaran dan Orang Tua Wali")
 
       await prisma.memberCourse.upsert({
@@ -339,6 +347,7 @@ class memberService extends BaseService {
             : {
               memberState: memberConstant.memberState.Approval
             }),
+          isGraduate: false
         },
       });
     });
@@ -347,7 +356,7 @@ class memberService extends BaseService {
 
   extendDataPembayaran = async (payload) => {
     payload['memberId'] = payload['memberId'] ? payload['memberId'] : payload['user'].member.id
-    const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda" })
+    const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda", registrasi: true })
     const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, merchantTradeNo, ...rest } = createdPayment
     return { merchantTradeNo, paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }
   }

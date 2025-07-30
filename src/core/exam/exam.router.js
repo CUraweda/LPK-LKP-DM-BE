@@ -22,15 +22,29 @@ r.post(
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
-  
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
+);
+
+// r.post(
+//   "/generate",
+//   auth(['ADMIN']),
+//   validatorMiddleware({ body: validator.generate }),
+//   controller.generate
+// )
+
+// r.post(
+//   "/update-question/:id",
+//   auth(['ADMIN']),
+//   validatorMiddleware({ body: validator.generate }),
+//   controller.updateQuestion
+// )
+
+r.put(
+  "/update/:id",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const examRouter = r;

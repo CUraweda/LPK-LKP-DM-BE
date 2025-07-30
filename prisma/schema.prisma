@@ -191,7 +191,7 @@ model Transaction {
 
   memberTransactions MemberTransaction[]
   member             Member              @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  MemberLoan         MemberLoan[]
+  memberLoan         MemberLoan?
 
   @@map("transaction")
 }
@@ -471,9 +471,7 @@ model MemberLoan {
   loanUID       String //MemberIdDDMMYY1
   context       String
   total         Float
-  isPaid        Boolean   @default(false)
-  paidAt        DateTime?
-  transactionId Int?
+  transactionId Int? @unique
 
   member      Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
   transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: Cascade)

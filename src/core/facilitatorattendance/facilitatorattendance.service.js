@@ -15,7 +15,7 @@ class facilitatorattendanceService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.facilitatorAttendance.findMany({ ...q });
+    const data = await this.db.facilitatorAttendance.findMany({ ...q, include: { facilitator: true } });
 
     if (query.paginate) {
       const countData = await this.db.facilitatorAttendance.count({ where: q.where });
