@@ -262,12 +262,10 @@ class paymentService extends BaseService {
         await this.chatService.sendAdmin(messagePayload);
 
         const memberTrx = await this.db.memberTransaction.findFirst({ where: { transactionId: data.id } });
-        if (!memberTrx) throw new Error("MemberTransaction not found!")
 
         let member, mtransaction;
         if (updateData.memberData) member = await this.db.member.update({ where: { id: data.memberId }, data: updateData.memberData, });
         if (memberTrx) mtransaction = await this.db.memberTransaction.update({ where: { id: memberTrx.id }, data: updateData.memberTransaction, });
-        console.log(mtransaction)
         const updatedData = await this.db.transaction.update({ where: { id: data.id }, data: updateData.Transaction, });
         if (!updatedData) throw new BadRequest('Error occured while updating');
 
@@ -278,7 +276,7 @@ class paymentService extends BaseService {
     };
 
     createPayment = async (payload) => {
-        try {
+    try {
             const { memberId, user, ...rest } = payload;
             rest['transactionId'] = this.generateTID(payload);
             const memberData = await this.db.member.findFirst({ where: { id: memberId }, select: { registrationPaymentId: true, name: true, User: { select: { email: true } }  } })

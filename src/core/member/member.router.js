@@ -5,6 +5,7 @@ import memberValidator from "./member.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
 import uploader from "../../middlewares/multer.middleware.js";
+import { uploadMany } from "../../middlewares/upload.middleware.js";
 
 const r = Router(),
   validator = memberValidator,
@@ -51,19 +52,19 @@ r.get(
   controller.showDetail
 )
 
-r.get("/show-one/:id", 
+r.get("/show-one/:id",
   auth(["ADMIN"]),
   controller.findById);
 
-r.get("/show-me", 
+r.get("/show-me",
   auth(["ADMIN", "SISWA"]),
   controller.findMe);
 
-r.get("/show-state", 
+r.get("/show-state",
   auth(["ADMIN", "SISWA"]),
   controller.findState);
 
-r.get("/show-pembayaran-registration", 
+r.get("/show-pembayaran-registration",
   auth(['SISWA']),
   controller.validateRegistrationPayment);
 
@@ -82,7 +83,16 @@ r.patch(
 r.put(
   "/update-me",
   auth(['SISWA']),
-  uploader("/member", "image", "PP").single("profilePict"),
+  uploadMany('./uploads', '/member', [
+    {
+      name: 'ktpFile',
+      mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+    },
+    {
+      name: 'profilePict',
+      mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+    }
+  ]),
   validatorMiddleware({ body: validator.updateMe }),
   controller.extendDataSiswa
 );
@@ -99,7 +109,16 @@ r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 r.post(
   "/extend-user-data-siswa/:id?",
   auth(['SISWA', 'ADMIN']),
-  uploader("/member", "image", "PP").single("profilePict"),
+  uploadMany('./uploads', '/member', [
+    {
+      name: 'ktpFile',
+      mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+    },
+    {
+      name: 'profilePict',
+      mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+    }
+  ]),
   validatorMiddleware({ body: validator.extend_data_siswa }),
   controller.extendDataSiswa
 )

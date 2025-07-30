@@ -1,6 +1,6 @@
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
-import { Forbidden, NotFound } from "../../exceptions/catch.execption.js";
+import { BadRequest, Forbidden, NotFound } from "../../exceptions/catch.execption.js";
 import { hash } from "../../helpers/bcrypt.helper.js";
 
 class userService extends BaseService {
@@ -12,7 +12,7 @@ class userService extends BaseService {
     const q = this.transformBrowseQuery(query);
     if (query.only_admin == '1') q.where['role'] = { code: "ADMIN" }
     if (query.member_name) q.where['member'] = { name: { contains: query.member_name } }
-    const data = await this.db.user.findMany({ ...q, include: { member: { select: { name: true, phoneNumber: true, profileImage: true } }} });
+    const data = await this.db.user.findMany({ ...q, include: {Facilitator: true ,member: { select: { name: true, phoneNumber: true, profileImage: true } }} });
 
     if (query.paginate) {
       const countData = await this.db.user.count({ where: q.where });
@@ -41,8 +41,9 @@ class userService extends BaseService {
   };
 
   create = async (payload) => {
-    const data = await this.db.user.create({ data: payload });
-    return data;
+    const emailExist = await this.db.user.findFirst({ where: { email: payload.email } })
+    if(emailExist) throw new BadRequest("Email telah diigunakan")
+    return await this.db.user.create({ data: payload });
   };
 
   createAdmin = async (payload) => {

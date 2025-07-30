@@ -1,5 +1,5 @@
 import BaseController from "../../base/controller.base.js";
-import { NotFound } from "../../exceptions/catch.execption.js";
+import { BadRequest, NotFound } from "../../exceptions/catch.execption.js";
 import memberService from "./member.service.js";
 
 class memberController extends BaseController {
@@ -87,10 +87,12 @@ class memberController extends BaseController {
 
   extendDataSiswa = this.wrapper(async (req, res) => {
     req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
-    if (!req.file && !(req.body['fromUpdateMe'] || req.params.id)) {
-      this.BadRequest(res, "Foto siswa harus disertakan");
+    if (!(req.body['fromUpdateMe'] || req.params.id)) {
+      if(!req.files['profilePict']) throw new BadRequest("Foto siswa harus disertakan");
+      if(!req.files['ktpFile']) throw new BadRequest("Foto ktp harus disertakan");
     }
-    if (req.file) req.body["profileImage"] = req.file.path
+    if(req.files['profileImage']) req.body['profilePict'] = req.files['profilePict'][0].path
+    if(req.files['ktpFile']) req.body['ktpFile'] = req.files['ktpFile'][0].path
     await this.#service.extendDataSiswa(req.body);
     return this.created(res, { memberId: req.body['memberId'] },"Data Siswa berhasil ditambahkan");
   });
