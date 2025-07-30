@@ -104,6 +104,12 @@ r.put(
   controller.update
 );
 
+r.patch(
+  "/finish-training/:id",
+  auth(['ADMIN']),
+  controller.finishTraining
+)
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 r.post(

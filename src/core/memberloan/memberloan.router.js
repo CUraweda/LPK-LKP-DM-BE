@@ -11,7 +11,7 @@ const r = Router(),
 
 r.get(
   "/show-all",
-  auth(['ADMIN', 'SISWA']),
+  auth(),
   validatorMiddleware({ query: baseValidator.browseQuery }),
   controller.findAll
 );
@@ -30,6 +30,13 @@ r.post(
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.generate }),
   controller.generateLoan
+);
+
+r.post(
+  "/create-transaction/:id",
+  auth(),
+  validatorMiddleware({ body: validator.createTransaction }),
+  controller.createTransaction
 );
 
 r.put(

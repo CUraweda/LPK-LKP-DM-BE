@@ -1,5 +1,5 @@
 import BaseController from "../../base/controller.base.js";
-import { NotFound } from "../../exceptions/catch.execption.js";
+import { BadRequest, NotFound } from "../../exceptions/catch.execption.js";
 import memberloanService from "./memberloan.service.js";
 
 class memberloanController extends BaseController {
@@ -19,12 +19,17 @@ class memberloanController extends BaseController {
   findById = this.wrapper(async (req, res) => {
     const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("memberloan tidak ditemukan");
-
     return this.ok(res, data, "memberloan berhasil didapatkan");
   });
 
   create = this.wrapper(async (req, res) => {
     const data = await this.#service.create(req.body);
+    return this.created(res, data, "memberloan berhasil dibuat");
+  });
+  
+  createTransaction = this.wrapper(async (req, res) => {
+    if(!req.user?.memberId) throw new BadRequest("Anda belum masuk kedalam member")
+    const data = await this.#service.generateTransaction(+req.params.id, { paymentMethod: req.body['paymentMethod'], memberId: req.user.memberId });
     return this.created(res, data, "memberloan berhasil dibuat");
   });
 

@@ -6,6 +6,15 @@ const questionSchema = Joi.object({
   answer: Joi.string().min(1).required()
 });
 
+const newQuestionSchema = Joi.object({
+  question: Joi.string().min(5).required(),
+  list: Joi.string().custom((value, helpers) => {
+    const parts = value.split('|');
+    if (parts.length !== 2) return helpers.message('List pertanyaan harus lebih dari 1');
+    return value;
+  }).optional()
+});
+
 export const examValidator = {
   create: Joi.object({
     date: Joi.date().optional(),
@@ -24,6 +33,17 @@ export const examValidator = {
     totalQuestions: Joi.number().integer().min(1),
     totalHours: Joi.number().integer().min(1),
     questions: Joi.array().items(questionSchema)
+  }),
+
+  generate: Joi.object({
+    trainingId: Joi.number().integer(),
+    title: Joi.string().min(3),
+    description: Joi.string().allow(''),
+    questions: Joi.array().items(newQuestionSchema)
+  }),
+
+  updateQuestion: Joi.object({
+    questions: Joi.array().items(newQuestionSchema)
   })
 };
 

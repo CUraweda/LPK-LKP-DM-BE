@@ -85,6 +85,11 @@ class memberController extends BaseController {
     return this.created(res, data, "member berhasil dibuat");
   });
 
+  finishTraining = this.wrapper(async (req, res) => {
+    const data = await this.#service.finishTraining(+req.params.id);
+    return this.created(res, data, "member berhasil dibuat");
+  });
+
   extendDataSiswa = this.wrapper(async (req, res) => {
     req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     if (!(req.body['fromUpdateMe'] || req.params.id)) {

@@ -36,6 +36,7 @@ class paymentController extends BaseController {
 
     createPayment = this.wrapper(async (req, res) => {
         req.body['user'] = req.user
+        if(!req.body['memberId']) req.body['memberId'] = req.user.memberId
         const data = await this.#service.createPayment(req.body);
         return this.created(res, data, 'Pembayaran berhasil dibuat');
     });

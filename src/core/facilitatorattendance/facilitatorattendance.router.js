@@ -12,11 +12,14 @@ const r = Router(),
 
 r.get(
   "/show-all",
+  auth(['ADMIN', "INSTRUKTUR", "PENGURUS"]),
   validatorMiddleware({ query: baseValidator.browseQuery }),
   controller.findAll
 );
 
-r.get("/show-one/:id", controller.findById);
+r.get("/show-one/:id",
+  auth(['ADMIN', "INSTRUKTUR", "PENGURUS"]),
+  controller.findById);
 
 r.post(
   "/create",
