@@ -3,6 +3,7 @@ import { userRole } from "./auth.seeder.js";
 import { seedDashboard } from "./dashboard.seeder.js";
 import { seedPage } from "./page.seed.js";
 import { seedRole } from "./role.seeder.js";
+import { seedTerm } from "./term.seeder.js";
 import { seedWhatsapp } from "./whatsapp.seeder.js";
 async function main() {
     await seedRole();
@@ -10,6 +11,7 @@ async function main() {
     await seedDashboard()
     await seedPage()
     await seedWhatsapp()
+    await seedTerm()
 }
 
 main()

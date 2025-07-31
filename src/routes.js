@@ -36,6 +36,7 @@ import learningMaterial from './core/learningmaterialdetail/learningmaterialdeta
 import memberloanRouter from './core/memberloan/memberloan.router.js';
 import facilitatorRouter from './core/facilitator/facilitator.router.js';
 import facilitatorattendanceRouter from './core/facilitatorattendance/facilitatorattendance.router.js';
+import termreferenceRouter from './core/termreference/termreference.router.js';
 
 const router = express.Router();
 
@@ -111,6 +112,10 @@ export const routeLists = [
     {
         path: '/ref/page',
         route: pageRouter
+    },
+    {
+        path: '/ref/term-reference',
+        route: termreferenceRouter
     },
     {
         path: '/training/schedule',
