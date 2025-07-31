@@ -3,10 +3,13 @@ import BaseService from "../../base/service.base.js";
 import memberConstant from "../../config/member.js";
 import prism from "../../config/prisma.db.js";
 import prisma from '../../config/prisma.db.js';
+import XLSX from "xlsx"
 import { BadRequest } from "../../exceptions/catch.execption.js";
 import paymentService from "../payment/payment.service.js";
 import AuthenticationService from "../authentication/authentication.service.js";
 import EmailHelper from "../../helpers/email.helper.js";
+import path from "path";
+import { hash } from "../../helpers/bcrypt.helper.js";
 
 class memberService extends BaseService {
   constructor() {
@@ -359,6 +362,54 @@ class memberService extends BaseService {
     const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda", registrasi: true })
     const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, merchantTradeNo, ...rest } = createdPayment
     return { merchantTradeNo, paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }
+  }
+
+  importAlumni = async (payload) => {
+    const baseDir = path.resolve('uploads');
+    const filePath = path.join(baseDir, payload['file'].replace(/^\/?uploads\/?/, ''));
+    const workbook = XLSX.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    const customHeaders = [
+      'email', 'name', 'nationalId', 'studentNumber', 'gender',
+      'placeOfBirth', 'dateOfBirth', 'religion', 'phoneNumber',
+      'socialHelp', 'province', 'city',
+      'district', 'village', 'postalCode', 'detailedAddress', 'password'
+    ];
+
+    rows[0] = customHeaders;
+    const hashPassword = await hash(payload['defaultPassword'])
+    for (let i = 1; i < rows.length; i++) rows[i].push(hashPassword)
+
+    const newSheet = XLSX.utils.aoa_to_sheet(rows);
+    const datas = XLSX.utils.sheet_to_json(newSheet);
+
+    let failedData = []
+    const siswaRole = await this.db.role.findFirst({ where: { code: "SISWA" } })
+    for (const data of datas) {
+      const { email, password, name, phoneNumber, ...rest } = data
+      await this.db.$transaction(async (prisma) => {
+        const exist = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email }, { member: { name } }, { member: { phoneNumber } }
+            ]
+          }
+        })
+        if (exist) {
+          failedData.push(data)
+        } else {
+          const memberData = await prisma.member.create({ data: { name, phoneNumber, isGraduate: true } })
+          await prisma.user.create({ data: { email, password, roleId: siswaRole.id, memberId: memberData.id } })
+          rest['memberId'] = memberData.id
+          rest['dateOfBirth'] = new Date(rest['dateOfBirth'])
+          await prisma.memberIdentity.upsert({ where: { memberId: memberData.id }, create: rest, update: rest })
+        }
+      })
+    }
+    return { failedData }
   }
 }
 

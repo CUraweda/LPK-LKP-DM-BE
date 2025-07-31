@@ -161,5 +161,19 @@ r.post(
   controller.extendDataPembayaran
 )
 
+r.post(
+  "/import-alumni",
+  auth(['ADMIN']),
+  uploadMany('./uploads', '/member', [
+    {
+      name: 'file',
+      mimeTypes: ['application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+    },
+   
+  ]),
+  validatorMiddleware({ body: validator.import_data }),
+  controller.importAlumni
+)
+
 const memberRouter = r;
 export default memberRouter;
