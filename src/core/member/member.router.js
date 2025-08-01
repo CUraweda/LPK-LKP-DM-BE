@@ -87,10 +87,12 @@ r.put(
     {
       name: 'ktpFile',
       mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+      limitSize: 10 * 1024 * 1024
     },
     {
       name: 'profilePict',
       mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+      limitSize: 10 * 1024 * 1024
     }
   ]),
   validatorMiddleware({ body: validator.updateMe }),
@@ -119,10 +121,12 @@ r.post(
     {
       name: 'ktpFile',
       mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+      limitSize: 10 * 1024 * 1024
     },
     {
       name: 'profilePict',
       mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+      limitSize: 10 * 1024 * 1024
     }
   ]),
   validatorMiddleware({ body: validator.extend_data_siswa }),
