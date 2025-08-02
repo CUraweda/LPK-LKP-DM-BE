@@ -93,13 +93,13 @@ class memberController extends BaseController {
   extendDataSiswa = this.wrapper(async (req, res) => {
     req.body['memberId'] = (req.user.role.code == "ADMIN") ? +req.params.id : req.user.member.id
     if (!(req.body['fromUpdateMe'] || req.params.id)) {
-      if(!req.files['profilePict']) throw new BadRequest("Foto siswa harus disertakan");
-      if(!req.files['ktpFile']) throw new BadRequest("Foto ktp harus disertakan");
+      if (!req.files['profilePict']) throw new BadRequest("Foto siswa harus disertakan");
+      if (!req.files['ktpFile']) throw new BadRequest("Foto ktp harus disertakan");
     }
-    if(req.files['profileImage']) req.body['profilePict'] = req.files['profilePict'][0].path
-    if(req.files['ktpFile']) req.body['ktpFile'] = req.files['ktpFile'][0].path
+    if (req.files['profileImage']) req.body['profilePict'] = req.files['profilePict'][0].path
+    if (req.files['ktpFile']) req.body['ktpFile'] = req.files['ktpFile'][0].path
     await this.#service.extendDataSiswa(req.body);
-    return this.created(res, { memberId: req.body['memberId'] },"Data Siswa berhasil ditambahkan");
+    return this.created(res, { memberId: req.body['memberId'] }, "Data Siswa berhasil ditambahkan");
   });
 
   extendDataIbu = this.wrapper(async (req, res) => {
@@ -130,13 +130,20 @@ class memberController extends BaseController {
 
   extendDataPembayaran = this.wrapper(async (req, res) => {
     req.body['user'] = req.user
-    if(req.params.id) req.body['memberId'] = +req.params.id
+    if (req.params.id) req.body['memberId'] = +req.params.id
     const data = await this.#service.extendDataPembayaran(req.body);
     return this.created(res, data, "Data Pembayaran berhasil ditambahkan");
   });
 
   patchVerified = this.wrapper(async (req, res) => {
     const data = await this.#service.patchVerified(+req.params.id);
+    return this.ok(res, data, "perubahan berhasil diterapkan");
+  });
+
+  importAlumni = this.wrapper(async (req, res) => {
+    if (!req.files['file']) throw new BadRequest("Sertakan excel untuk data alumni ")
+    req.body['file'] = req.files['file'][0].path
+    const data = await this.#service.importAlumni(req.body);
     return this.ok(res, data, "perubahan berhasil diterapkan");
   });
 

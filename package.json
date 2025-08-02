@@ -52,7 +52,8 @@
     "sharp": "^0.32.6",
     "socket.io": "^4.8.1",
     "ssl-root-cas": "^1.3.1",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@kalissaac/prisma-typegen": "^0.0.7",

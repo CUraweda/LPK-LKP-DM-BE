@@ -90,6 +90,9 @@ export const memberValidator = {
   }),
   extend_data_pembayaran: Joi.object({
     paymentMethod: Joi.string()
+  }),
+  import_data: Joi.object({
+    defaultPassword: Joi.string().required(),
   })
 };
 
