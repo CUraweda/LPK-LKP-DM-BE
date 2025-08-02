@@ -104,6 +104,7 @@ app.use("/file/load/", async (req, res, next) => {
 app.use('/file/download/', auth(["ADMIN", "SISWA"]), async (req, res, next) => {
   try {
     const relPath = decodeURIComponent(req.path);
+    console.log(relPath)
     const ext = path.extname(relPath).toLowerCase();
 
     if (!allowedMime.includes(ext)) throw new BadRequest("Tipe file tidak bisa diambil");
