@@ -1,3 +1,5 @@
+import path from "path";
+import fs from "fs"
 import BaseController from "../../base/controller.base.js";
 import { BadRequest, NotFound } from "../../exceptions/catch.execption.js";
 import memberService from "./member.service.js";
@@ -88,6 +90,30 @@ class memberController extends BaseController {
   finishTraining = this.wrapper(async (req, res) => {
     const data = await this.#service.finishTraining(+req.params.id);
     return this.created(res, data, "member berhasil dibuat");
+  });
+
+  downloadTemplate = this.wrapper(async (req, res) => {
+    // try {
+      const relPath = "/public/file/Template Import Alumni.xlsx"
+      const ext = path.extname(relPath).toLowerCase();
+
+      const baseDir = path.resolve('public');
+      const fullPath = path.join(baseDir, relPath.replace(/^\/?public\/?/, ''));
+      if (!fullPath.startsWith(baseDir)) throw new BadRequest("Denied")
+      if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) throw new NotFound("File tidak ditemukan")
+
+      const filename = path.basename(fullPath);
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
+
+      const fileStream = fs.createReadStream(fullPath);
+      fileStream.pipe(res);
+    // } catch (err) {
+    //   throw new BadRequest("Template tidak dapat didownload")
+    // }
   });
 
   extendDataSiswa = this.wrapper(async (req, res) => {

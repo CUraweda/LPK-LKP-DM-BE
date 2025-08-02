@@ -68,6 +68,10 @@ r.get("/show-pembayaran-registration",
   auth(['SISWA']),
   controller.validateRegistrationPayment);
 
+r.get("/download-template",
+  controller.downloadTemplate);
+
+
 r.post(
   "/create",
   auth(['ADMIN']),
@@ -171,9 +175,9 @@ r.post(
   uploadMany('./uploads', '/member', [
     {
       name: 'file',
-      mimeTypes: ['application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+      mimeTypes: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
     },
-   
+
   ]),
   validatorMiddleware({ body: validator.import_data }),
   controller.importAlumni

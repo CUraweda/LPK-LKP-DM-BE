@@ -379,6 +379,7 @@ model Exam {
   totalQuestions Int
   totalHours     Int
   questions      Json
+  answers        Json?
   date           DateTime?
 
   training    Training     @relation(fields: [trainingId], references: [id], onDelete: Cascade)
@@ -471,12 +472,12 @@ model Member {
 }
 
 model MemberLoan {
-  id            Int       @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   memberId      Int
   loanUID       String //MemberIdDDMMYY1
   context       String
   total         Float
-  transactionId Int? @unique
+  transactionId Int?   @unique
 
   member      Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
   transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: Cascade)
@@ -583,12 +584,12 @@ model MemberAttendance {
 }
 
 model MemberCourse {
-  id         Int     @id @default(autoincrement())
-  uid        String? @unique
-  memberId   Int
-  persetujuanPembayaran Boolean?
+  id                      Int      @id @default(autoincrement())
+  uid                     String?  @unique
+  memberId                Int
+  persetujuanPembayaran   Boolean?
   persetujuanOrangtuaWali Boolean?
-  trainingId Int
+  trainingId              Int
 
   training Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
   member   Member   @relation(name: "MemberToCourses", fields: [memberId], references: [id], onDelete: Cascade)
@@ -671,8 +672,8 @@ model FacilitatorAttendance {
 }
 
 model TermReference {
-  id Int @id @default(autoincrement())
-  title String
-  type allowedTerm
-  content String @db.Text
+  id      Int         @id @default(autoincrement())
+  title   String
+  type    allowedTerm
+  content String      @db.Text
 }
