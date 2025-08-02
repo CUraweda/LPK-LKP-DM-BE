@@ -100,6 +100,11 @@ enum avaliablePage {
   LOGIN
 }
 
+enum allowedTerm {
+  PERSETUJUAN_ORANGTUA
+  PERSETUJUAN_PEMBAYARAN
+}
+
 enum dashboardSection {
   HERO_BANNER
   TENTANG_KAMI
@@ -663,4 +668,11 @@ model FacilitatorAttendance {
   createdAt       DateTime           @default(now())
 
   facilitator Facilitator @relation(fields: [facilitatorId], references: [id], onDelete: Cascade)
+}
+
+model TermReference {
+  id Int @id @default(autoincrement())
+  title String
+  type allowedTerm
+  content String @db.Text
 }

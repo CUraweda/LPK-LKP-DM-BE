@@ -15,7 +15,9 @@ const userConstant = {
 };
 const roleConstant = {
   STUDENT_CODE: "STU001DNT",
-  ADMIN_CODE: "ADM230E91IN"
+  ADMIN_CODE: "ADM230E91IN",
+  INSTRUKTUR_CODE: "INST2123TR",
+  PENGURUS_CODE: "PNG23073RS"
 }
 const monthName = {
   "01": "Januari",
