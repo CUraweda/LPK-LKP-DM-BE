@@ -39,13 +39,13 @@ r.post(
       name: 'coverImage',
       mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
       maxCount: 1,
-      limitSize: 4 * 1024 * 1024
+      limitSize: 10 * 1024 * 1024
     },
     {
       name: 'filePdf',
       mimeTypes: ['application/pdf'],
       maxCount: 1,
-      limitSize: 20 * 1024 * 1024
+      limitSize: 10 * 1024 * 1024
     }
   ]),
   validatorMiddleware({ body: validator.createUpdate }),
@@ -60,7 +60,7 @@ r.put(
       name: 'coverImage',
       mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
       maxCount: 1,
-      limitSize: 4 * 1024 * 1024
+      limitSize: 10 * 1024 * 1024
     },
     {
       name: 'filePdf',
