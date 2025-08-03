@@ -61,17 +61,17 @@ class examService extends BaseService {
     const data = await this.db.exam.findUnique({
       where: {
         id: convertId,
-        select: {
-          ...((!revealAnswers || revealAnswers == "0") && selectExamSiswa),
-          memberTests: query.memberId
-            ? {
-              where: {
-                memberId: Number(query.memberId),
-              },
-            }
-            : true,
+      },
+      select: {
+      ...selectExamSiswa,
+      ...((revealAnswers && revealAnswers == "1") && { answers: true }),
+      memberTests: query.memberId
+      ? {
+        where: {
+            memberId: Number(query.memberId),
+          },
         }
-
+        : true,
       }
     });
     return data;
