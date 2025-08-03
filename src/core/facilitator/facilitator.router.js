@@ -15,10 +15,17 @@ r.get(
   controller.findAll
 );
 
+r.get(
+  "/show-me",
+  auth(["INSTRUKTUR", "PENGURUS"]),
+  controller.findMe
+);
+
 r.get("/show-one/:id", controller.findById);
 
 r.post(
   "/create",
+  auth(["ADMIN"]),
   validatorMiddleware({ body: validator.create }),
   controller.create
 );
@@ -32,7 +39,7 @@ r.post(
 
 r.put(
   "/update/:id",
-  auth(['ADMIN']),
+  auth(["ADMIN", "INSTRUKTUR", "PENGURUS"]),
   validatorMiddleware({ body: validator.update }),
   controller.update
 );

@@ -1,5 +1,5 @@
 import BaseController from "../../base/controller.base.js";
-import { NotFound } from "../../exceptions/catch.execption.js";
+import { BadRequest, NotFound } from "../../exceptions/catch.execption.js";
 import facilitatorService from "./facilitator.service.js";
 
 class facilitatorController extends BaseController {
@@ -15,8 +15,14 @@ class facilitatorController extends BaseController {
     return this.ok(res, data, "Banyak facilitator berhasil didapatkan");
   });
 
+  findMe = this.wrapper(async (req, res) => {
+    if(!req.user?.Facilitator?.id) throw new BadRequest("Anda tidak menggunakan akun instruktur/pengurus")
+    const data = await this.#service.findById(req.user.Facilitator.id);
+    return this.ok(res, data, "Banyak facilitator berhasil didapatkan");
+  });
+
   findById = this.wrapper(async (req, res) => {
-    const data = await this.#service.findById(req.params.id);
+    const data = await this.#service.findById(+req.params.id);
     if (!data) throw new NotFound("facilitator tidak ditemukan");
 
     return this.ok(res, data, "facilitator berhasil didapatkan");
@@ -33,12 +39,12 @@ class facilitatorController extends BaseController {
   });
 
   update = this.wrapper(async (req, res) => {
-    const data = await this.#service.update(req.params.id, req.body);
+    const data = await this.#service.update(+req.params.id, req.body);
     return this.ok(res, data, "facilitator berhasil diperbarui");
   });
 
   delete = this.wrapper(async (req, res) => {
-    const data = await this.#service.delete(req.params.id);
+    const data = await this.#service.delete(+req.params.id);
     return this.noContent(res, "facilitator berhasil dihapus");
   });
 }
