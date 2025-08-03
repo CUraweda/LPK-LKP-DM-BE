@@ -55,7 +55,7 @@ class examService extends BaseService {
   };
 
 
-  findById = async (id) => {
+  findById = async (id, query) => {
     const { revealAnswers } = query
     const convertId = Number(id);
     const data = await this.db.exam.findUnique({
