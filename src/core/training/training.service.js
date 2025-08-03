@@ -47,6 +47,7 @@ class trainingService extends BaseService {
     const {
       title,
       description,
+      terms,
       trainingImage,
       type,
       level,
@@ -72,6 +73,7 @@ class trainingService extends BaseService {
       data: {
         title,
         description,
+        terms,
         trainingImage,
         type,
         level,
@@ -122,6 +124,7 @@ class trainingService extends BaseService {
       data: {
         title: payload.title,
         description: payload.description,
+        terms: payload.terms,
         trainingImage: payload.trainingImage,
         type: payload.type,
         level: payload.level,

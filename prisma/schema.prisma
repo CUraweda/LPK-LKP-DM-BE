@@ -285,18 +285,18 @@ model LearningMaterialDetail {
 }
 
 model Training {
-  id            Int          @id @default(autoincrement())
-  title         String
-  description   String
-  trainingImage String
-  type          TrainingType
-
+  id                  Int          @id @default(autoincrement())
+  title               String
+  description         String
+  trainingImage       String
+  type                TrainingType
+  terms               String?       @db.Text
   totalParticipants   Int
   totalCourses        Int
   totalHours          Int
   targetTrainingHours Int?
   level               Int?
-  isActive            Boolean @default(false)
+  isActive            Boolean      @default(false)
 
   materials         Material[]
   memberCourses     MemberCourse[]
