@@ -11,7 +11,7 @@ class facilitatorService extends BaseService {
 
   findAll = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const data = await this.db.facilitator.findMany({ ...q });
+    const data = await this.db.facilitator.findMany({ ...q, include: { user: true }});
 
     if (query.paginate) {
       const countData = await this.db.facilitator.count({ where: q.where });
@@ -21,7 +21,7 @@ class facilitatorService extends BaseService {
   };
 
   findById = async (id) => {
-    const data = await this.db.facilitator.findUnique({ where: { id } });
+    const data = await this.db.facilitator.findUnique({ where: { id }, include: { user: true } });
     return data;
   };
 
