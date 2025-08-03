@@ -18,7 +18,7 @@ class examService extends BaseService {
   findAll = async (query) => {
     const { revealAnswers } = query
     const q = this.transformBrowseQuery(query);
-
+    
     const where = {
       ...q.where,
       ...(query.memberId && {
@@ -29,7 +29,7 @@ class examService extends BaseService {
         },
       }),
     };
-
+    
     const data = await this.db.exam.findMany({
       ...q,
       where,
@@ -37,8 +37,8 @@ class examService extends BaseService {
         ...selectExamSiswa,
         ...((revealAnswers && revealAnswers == "1") && { answers: true }),
         memberTests: query.memberId
-          ? {
-            where: {
+        ? {
+          where: {
               memberId: Number(query.memberId),
             },
           }
@@ -56,6 +56,7 @@ class examService extends BaseService {
 
 
   findById = async (id) => {
+    const { revealAnswers } = query
     const convertId = Number(id);
     const data = await this.db.exam.findUnique({
       where: {

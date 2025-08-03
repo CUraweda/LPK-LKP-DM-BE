@@ -16,6 +16,7 @@ r.get(
 );
 
 r.get("/show-one/:id",
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.findById
 );
 
