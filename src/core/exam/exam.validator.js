@@ -23,16 +23,18 @@ export const examValidator = {
     description: Joi.string().allow('').required(),
     totalQuestions: Joi.number().integer().min(1).required(),
     totalHours: Joi.number().integer().min(1).required(),
-    questions: Joi.array().items(questionSchema).min(1).required()
+    questions: Joi.object().required(),
+    answers: Joi.object().required()
   }),
-
+  
   update: Joi.object({
     trainingId: Joi.number().integer(),
     title: Joi.string().min(3),
     description: Joi.string().allow(''),
     totalQuestions: Joi.number().integer().min(1),
     totalHours: Joi.number().integer().min(1),
-    questions: Joi.array().items(questionSchema)
+    questions: Joi.object(),
+    answers: Joi.object()
   }),
 
   generate: Joi.object({
