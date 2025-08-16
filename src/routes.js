@@ -31,6 +31,12 @@ import curiculumStructureDetailRouter from './core/curiculumstructuredetail/curi
 import curiculumDetail from './core/curiculumdetail/curiculumdetail.router.js'
 import whatsappRouter from './core/whatsapp/whatsapp.router.js';
 import membercourseRouter from './core/membercourse/membercourse.router.js';
+import copetencyUnitRouter from './core/competencyunit/competencyunit.router.js'
+import learningMaterial from './core/learningmaterialdetail/learningmaterialdetail.router.js'
+import memberloanRouter from './core/memberloan/memberloan.router.js';
+import facilitatorRouter from './core/facilitator/facilitator.router.js';
+import facilitatorattendanceRouter from './core/facilitatorattendance/facilitatorattendance.router.js';
+import termreferenceRouter from './core/termreference/termreference.router.js';
 
 const router = express.Router();
 
@@ -84,8 +90,16 @@ export const routeLists = [
         route: curiculumRouter
     },
     {
+        path: '/ref/competency-unit',
+        route: copetencyUnitRouter
+    },
+    {
         path: '/ref/curiculum-detail',
         route: curiculumDetail
+    },
+    {
+        path: '/ref/learning-material',
+        route: learningMaterial
     },
     {
         path: '/ref/training',
@@ -98,6 +112,10 @@ export const routeLists = [
     {
         path: '/ref/page',
         route: pageRouter
+    },
+    {
+        path: '/ref/term-reference',
+        route: termreferenceRouter
     },
     {
         path: '/training/schedule',
@@ -122,6 +140,10 @@ export const routeLists = [
     {
         path: '/member',
         route: memberRouter
+    },
+    {
+        path: '/member-loan',
+        route: memberloanRouter
     },
     {
         path: '/membercourse',
@@ -158,6 +180,14 @@ export const routeLists = [
     {
         path: '/memberwork',
         route: memberworkRouter
+    },
+    {
+        path: '/facilitator',
+        route: facilitatorRouter
+    },
+    {
+        path: '/facilitator-attendance',
+        route: facilitatorattendanceRouter
     },
     {
         path: '/whatsapp',

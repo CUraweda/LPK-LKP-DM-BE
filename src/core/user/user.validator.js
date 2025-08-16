@@ -16,6 +16,13 @@ export const userValidator = {
       }),
   }),
 
+  create: Joi.object({
+    email: Joi.string(),
+    password: Joi.string(),
+    memberId: Joi.number().integer(),
+    roleId: Joi.number().integer(),
+  }),
+
   update: Joi.object({
     email: Joi.string(),
     password: Joi.string(),

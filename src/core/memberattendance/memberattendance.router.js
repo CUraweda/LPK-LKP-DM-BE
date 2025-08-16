@@ -20,51 +20,51 @@ r.get("/show-one/:id", controller.findById);
 
 r.get(
   "/show-my-recap",
-  auth(['SISWA', 'ADMIN']),
+  auth(['SISWA', 'ADMIN', "INSTRUKTUR", "PENGURUS"]),
   controller.myRecap
 );
 
 r.get(
   "/show-me",
-  auth(['SISWA', 'ADMIN']),
+  auth(['SISWA', 'ADMIN', "INSTRUKTUR", "PENGURUS"]),
   controller.findMe
 );
 
 r.get(
   "/show-chart",
-  auth(['SISWA', 'ADMIN']),
+  auth(['SISWA', 'ADMIN', "INSTRUKTUR", "PENGURUS"]),
   controller.showChart
 );
 
 r.get(
   "/count-all",
-  auth(['ADMIN']),
+  auth(['ADMIN', "INSTRUKTUR", "PENGURUS"]),
   controller.countAll
 )
 
 r.get(
   "/chart-admin",
-  auth(['ADMIN']),
+  auth(['ADMIN', "INSTRUKTUR", "PENGURUS"]),
   controller.chart
 )
 
 r.patch(
   "/approve/:id",
-  auth(['ADMIN']),
+  auth(['ADMIN', "INSTRUKTUR", "PENGURUS"]),
   controller.patchApprove
 );
 
 r.post(
   "/attend",
-  auth(['SISWA', 'ADMIN']),
-  uploader("/member/attendance", "image", "ATTENDANCE" ).single("image"),
+  auth(['SISWA', 'ADMIN', "INSTRUKTUR", "PENGURUS"]),
+  uploader("/member/attendance", "image", "ATTENDANCE").single("image"),
   validatorMiddleware({ body: validator.attend }),
   controller.attend
 );
 
 r.post(
   "/range-data",
-  auth(['ADMIN']),
+  auth(['ADMIN', "INSTRUKTUR", "PENGURUS"]),
   validatorMiddleware({ body: validator.rangeData }),
   controller.findRange
 );
@@ -72,20 +72,22 @@ r.post(
 
 r.post(
   "/create",
-  auth(['ADMIN']),
-  uploader("/member/attendance", "image", "ATTENDANCE" ).single("image"),
+  auth(['ADMIN', "INSTRUKTUR", "PENGURUS"]),
+  uploader("/member/attendance", "image", "ATTENDANCE").single("image"),
   validatorMiddleware({ body: validator.create }),
   controller.create
 );
 
 r.put(
   "/update/:id",
-  auth(['ADMIN']),
+  auth(['ADMIN', "INSTRUKTUR", "PENGURUS"]),
   validatorMiddleware({ body: validator.update }),
   controller.update
 );
 
-r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
+r.delete("/delete/:id",
+  auth(['ADMIN', "INSTRUKTUR", "PENGURUS"]),
+  controller.delete);
 
 const memberattendanceRouter = r;
 export default memberattendanceRouter;

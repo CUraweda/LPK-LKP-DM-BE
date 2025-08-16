@@ -3,10 +3,13 @@ import BaseService from "../../base/service.base.js";
 import memberConstant from "../../config/member.js";
 import prism from "../../config/prisma.db.js";
 import prisma from '../../config/prisma.db.js';
+import XLSX from "xlsx"
 import { BadRequest } from "../../exceptions/catch.execption.js";
 import paymentService from "../payment/payment.service.js";
 import AuthenticationService from "../authentication/authentication.service.js";
 import EmailHelper from "../../helpers/email.helper.js";
+import path from "path";
+import { hash } from "../../helpers/bcrypt.helper.js";
 
 class memberService extends BaseService {
   constructor() {
@@ -17,7 +20,7 @@ class memberService extends BaseService {
   }
 
   findAll = async (query) => {
-    const { startDate, endDate, status, hideAdmin } = query;
+    const { startDate, endDate, status, hideAdmin, hideGraduate } = query;
     const q = this.transformBrowseQuery(query);
 
     if (status) {
@@ -42,6 +45,7 @@ class memberService extends BaseService {
       };
     }
     if (hideAdmin == "1") q.where['User'] = { role: { code: "SISWA" } }
+    if (hideGraduate == "1") q.where['isGraduate'] = false
 
     const data = await this.db.member.findMany({
       ...q,
@@ -63,20 +67,33 @@ class memberService extends BaseService {
 
   count = async (query) => {
     const q = this.transformBrowseQuery(query);
-    const { date } = query
+    const { startDate, endDate, status, hideAdmin } = query;
     delete q.skip; delete q.take;
-
-    if (date) {
-      let start_date = new Date(date)
-      let end_date = new Date(date)
-      start_date.setHours(0, 0, 0, 0);
-      end_date.setHours(23, 59, 59, 999);
-
-      q.where.createdAt = { gte: start_date, lte: end_date }
+    if (status) {
+      switch (status) {
+        case "Sedang Pelatihan":
+          q.where.dataVerified = true
+          q.where.isGraduate = false
+          break;
+        case "Selesai Pelatihan":
+          q.where.isGraduate = true
+          break;
+        case "Belum Pelatihan":
+          q.where.dataVerified = false
+        default:
+          break;
+      }
     }
+    if (startDate && endDate) {
+      q.where.createdAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
+      };
+    }
+    if (hideAdmin == "1") q.where['User'] = { role: { code: "SISWA" } }
 
     const data = await this.db.member.count({
-      ...q,
+      ...q
     });
 
     return data;
@@ -166,8 +183,8 @@ class memberService extends BaseService {
   findDetail = async (id) => {
     const data = await this.db.member.findFirst({
       where: { id }, select: {
-        id: true, name: true, phoneNumber: true, profileImage: true, trainingId: true,
-        identity: true, parents: true
+        id: true, isGraduate: true, name: true, phoneNumber: true, profileImage: true, trainingId: true,
+        identity: true, parents: true, User: true
       }
     })
     return data
@@ -203,6 +220,12 @@ class memberService extends BaseService {
   update = async (id, payload) => {
     const data = await this.db.member.update({ where: { id }, data: payload });
     return data;
+  };
+
+  finishTraining = async (id) => {
+    const exist = await this.db.member.findFirst({ where: { id } })
+    if (!exist) throw new BadRequest("Data member tidak ditemukan")
+    return await this.db.member.update({ where: { id }, data: { trainingId: null, courseCategoryId: null, courseLevel: 0, isGraduate: true, registrationPaymentId: null } })
   };
 
   delete = async (id) => {
@@ -280,7 +303,7 @@ class memberService extends BaseService {
   }
 
   extendDataTraining = async (payload) => {
-    const { memberId, trainingId } = payload;
+    const { memberId, trainingId, persetujuanOrangtuaWali, persetujuanPembayaran } = payload;
 
     return await this.db.$transaction(async (prisma) => {
       const trainingData = await prisma.training.update({
@@ -289,7 +312,18 @@ class memberService extends BaseService {
       });
 
       if (!trainingData) throw new BadRequest("Data Pelatihan tidak ditemukan");
-      await prisma.memberCourse.upsert({ where: { uid: `${memberId}|${trainingId}` }, create: { memberId, trainingId, uid: `${memberId}|${trainingId}` }, update: { memberId, trainingId, uid: `${memberId}|${trainingId}` } })
+      if (trainingData.type == "R") {
+        if (!persetujuanPembayaran || !persetujuanOrangtuaWali) throw new BadRequest("Pelatihan memerlukan persetujuan Pembayaran dan Orang Tua Wali")
+      } else if (!persetujuanOrangtuaWali) throw new BadRequest("Pelatihan memerlukan persetujuan Pembayaran dan Orang Tua Wali")
+
+      await prisma.memberCourse.upsert({
+        where: { uid: `${memberId}|${trainingId}` },
+        create: {
+          memberId, trainingId, uid: `${memberId}|${trainingId}`, persetujuanOrangtuaWali, persetujuanPembayaran
+        }, update: {
+          memberId, trainingId, uid: `${memberId}|${trainingId}`, persetujuanOrangtuaWali, persetujuanPembayaran
+        }
+      })
 
       if (trainingData.type == "P") {
         const schedules = await prisma.trainingSchedule.findMany({
@@ -316,6 +350,7 @@ class memberService extends BaseService {
             : {
               memberState: memberConstant.memberState.Approval
             }),
+          isGraduate: false
         },
       });
     });
@@ -324,9 +359,57 @@ class memberService extends BaseService {
 
   extendDataPembayaran = async (payload) => {
     payload['memberId'] = payload['memberId'] ? payload['memberId'] : payload['user'].member.id
-    const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda" })
+    const createdPayment = await this.paymentService.createPayment({ ...payload, paymentTotal: 2000000, purpose: "Pendaftaran", status: "Tunda", registrasi: true })
     const { paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate, merchantTradeNo, ...rest } = createdPayment
     return { merchantTradeNo, paymentMethod, paymentTotal, qrisLink, virtualAccountNo, expiredDate }
+  }
+
+  importAlumni = async (payload) => {
+    const baseDir = path.resolve('uploads');
+    const filePath = path.join(baseDir, payload['file'].replace(/^\/?uploads\/?/, ''));
+    const workbook = XLSX.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    const customHeaders = [
+      'email', 'name', 'nationalId', 'studentNumber', 'gender',
+      'placeOfBirth', 'dateOfBirth', 'religion', 'phoneNumber',
+      'socialHelp', 'province', 'city',
+      'district', 'village', 'postalCode', 'detailedAddress', 'password'
+    ];
+
+    rows[0] = customHeaders;
+    const hashPassword = await hash(payload['defaultPassword'])
+    for (let i = 1; i < rows.length; i++) rows[i].push(hashPassword)
+
+    const newSheet = XLSX.utils.aoa_to_sheet(rows);
+    const datas = XLSX.utils.sheet_to_json(newSheet);
+
+    let failedData = []
+    const siswaRole = await this.db.role.findFirst({ where: { code: "SISWA" } })
+    for (const data of datas) {
+      const { email, password, name, phoneNumber, ...rest } = data
+      await this.db.$transaction(async (prisma) => {
+        const exist = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email }, { member: { name } }, { member: { phoneNumber } }
+            ]
+          }
+        })
+        if (exist) {
+          failedData.push(data)
+        } else {
+          const memberData = await prisma.member.create({ data: { name, phoneNumber, isGraduate: true } })
+          await prisma.user.create({ data: { email, password, roleId: siswaRole.id, memberId: memberData.id } })
+          rest['memberId'] = memberData.id
+          rest['dateOfBirth'] = new Date(rest['dateOfBirth'])
+          await prisma.memberIdentity.upsert({ where: { memberId: memberData.id }, create: rest, update: rest })
+        }
+      })
+    }
+    return { failedData }
   }
 }
 

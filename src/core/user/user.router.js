@@ -33,7 +33,6 @@ r.post(
   "/create",
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
-
   controller.create
 );
 r.post(

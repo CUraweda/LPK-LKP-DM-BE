@@ -1,6 +1,7 @@
 import multer from 'multer';
 import fs from 'fs';
 import { BadRequest, catchResponse } from '../exceptions/catch.execption.js';
+import Setting from '../config/multer.js';
 
 /**
  * @param {'./uploads' | './public'} basePath
@@ -54,8 +55,8 @@ const uploadMany =
         const files = req.files?.[field.name];
         if (files) {
           for (const file of files) {
-            // default 2mb
-            if (file.size > (field.limitSize ?? 2000000))
+
+            if (file.size > (field.limitSize ?? Setting.defaultLimitSize))
               return next(
                 new BadRequest(`Ukuran ${field.name} melebihi batas.`)
               );

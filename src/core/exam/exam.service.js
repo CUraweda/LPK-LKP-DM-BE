@@ -1,14 +1,24 @@
 import BaseService from "../../base/service.base.js";
 import prisma from '../../config/prisma.db.js';
 
+const allFields = ['id', 'trainingId', 'title', 'description', 'totalQuestions', 'totalHours', 'questions', 'date'];
+const excludedFields = ['answers'];
+
+const selectExamSiswa = Object.fromEntries(
+  allFields
+    .filter((field) => !excludedFields.includes(field))
+    .map((field) => [field, true])
+);
+
 class examService extends BaseService {
   constructor() {
     super(prisma);
   }
 
   findAll = async (query) => {
+    const { revealAnswers } = query
     const q = this.transformBrowseQuery(query);
-
+    
     const where = {
       ...q.where,
       ...(query.memberId && {
@@ -19,19 +29,21 @@ class examService extends BaseService {
         },
       }),
     };
-
+    
     const data = await this.db.exam.findMany({
       ...q,
       where,
-      include: {
+      select: {
+        ...selectExamSiswa,
+        ...((revealAnswers && revealAnswers == "1") && { answers: true }),
         memberTests: query.memberId
-          ? {
-              where: {
-                memberId: Number(query.memberId),
-              },
-            }
+        ? {
+          where: {
+              memberId: Number(query.memberId),
+            },
+          }
           : true,
-      },
+      }
     });
 
     if (query.paginate) {
@@ -43,9 +55,25 @@ class examService extends BaseService {
   };
 
 
-  findById = async (id) => {
+  findById = async (id, query) => {
+    const { revealAnswers } = query
     const convertId = Number(id);
-    const data = await this.db.exam.findUnique({ where: { id: convertId } });
+    const data = await this.db.exam.findUnique({
+      where: {
+        id: convertId,
+      },
+      select: {
+      ...selectExamSiswa,
+      ...((revealAnswers && revealAnswers == "1") && { answers: true }),
+      memberTests: query.memberId
+      ? {
+        where: {
+            memberId: Number(query.memberId),
+          },
+        }
+        : true,
+      }
+    });
     return data;
   };
 

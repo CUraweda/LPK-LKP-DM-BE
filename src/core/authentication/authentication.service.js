@@ -24,91 +24,92 @@ class AuthenticationService extends BaseService {
 		this.mailHelper = new EmailHelper();
 	}
 
-  login = async (payload) => {
-    const user = await this.db.user.findUnique({
-      where: {
-        email: payload.email,
-        isSuspended: false
-      },
-      include: {
-        role: {
-          select: { code: true }
-        },
-        member: {
-          select: {
-            id: true,
-            name: true,
-			isGraduate: true,
-            profileImage: true,
-            dataVerified: true,
-            memberState: true,
-            training: true
-          }
-        }
-      }
-    });
+	login = async (payload) => {
+		const user = await this.db.user.findUnique({
+			where: {
+				email: payload.email,
+				isSuspended: false
+			},
+			include: {
+				role: {
+					select: { code: true }
+				},
+				Facilitator: true,
+				member: {
+					select: {
+						id: true,
+						name: true,
+						isGraduate: true,
+						profileImage: true,
+						dataVerified: true,
+						memberState: true,
+						training: true
+					}
+				}
+			}
+		});
 
-    if (!user) throw new NotFound('Akun tidak ditemukan');
+		if (!user) throw new NotFound('Akun tidak ditemukan');
 
-    const pwValid = await compare(payload.password, user.password);
-    if (!pwValid) throw new BadRequest('Password tidak cocok');
+		const pwValid = await compare(payload.password, user.password);
+		if (!pwValid) throw new BadRequest('Password tidak cocok');
 
-    const access_token = await generateAccessToken(user);
-    const refresh_token = await generateRefreshToken(user);
+		const access_token = await generateAccessToken(user);
+		const refresh_token = await generateRefreshToken(user);
 
-    const isAllowedAccess = user.role.code === "ADMIN" || (user.member && user.member.dataVerified);
+		const isAllowedAccess = user.role.code === "ADMIN" || (user.member && user.member.dataVerified);
 
-    return {
-      user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry']),
-      access: isAllowedAccess,
-      token: { access_token, refresh_token }
-    };
-  };
-  
-  refreshToken = async (refresh) => {
-    const payload = jwt.decode(refresh);
+		return {
+			user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry']),
+			access: isAllowedAccess,
+			token: { access_token, refresh_token }
+		};
+	};
 
-  const user = await this.db.user.findUnique({
-      where: {
-        email: payload.email,
-        isSuspended: false
-      },
-      include: {
-        role: {
-          select: { code: true }
-        },
-        member: {
-          select: {
-            id: true,
-            name: true,
-			isGraduate: true,
-            profileImage: true,
-            dataVerified: true,
-            memberState: true,
-            training: true
-          }
-        }
-      }
-    });
-    if (!user) throw new NotFound('Akun tidak ditemukan');
+	refreshToken = async (refresh) => {
+		const payload = jwt.decode(refresh);
 
-    const access_token = await generateAccessToken(user);
-    const refresh_token = await generateRefreshToken(user)
-    const isAllowedAccess = user.role.code === "ADMIN" || (user.member && user.member.dataVerified);
-  
-    return {
-      user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry']),
-      access: isAllowedAccess,
-      token: { access_token, refresh_token }
-    };
-  };
-  
-  findUserById = async (id) => {
-    const data = await this.db.user.findUnique({
-      where: { id }
-    });
-    return this.exclude(data, ['password']);
-  };
+		const user = await this.db.user.findUnique({
+			where: {
+				email: payload.email,
+				isSuspended: false
+			},
+			include: {
+				role: {
+					select: { code: true }
+				},
+				member: {
+					select: {
+						id: true,
+						name: true,
+						isGraduate: true,
+						profileImage: true,
+						dataVerified: true,
+						memberState: true,
+						training: true
+					}
+				}
+			}
+		});
+		if (!user) throw new NotFound('Akun tidak ditemukan');
+
+		const access_token = await generateAccessToken(user);
+		const refresh_token = await generateRefreshToken(user)
+		const isAllowedAccess = user.role.code === "ADMIN" || (user.member && user.member.dataVerified);
+
+		return {
+			user: this.exclude(user, ['password', 'forgetToken', 'forgetExpiry']),
+			access: isAllowedAccess,
+			token: { access_token, refresh_token }
+		};
+	};
+
+	findUserById = async (id) => {
+		const data = await this.db.user.findUnique({
+			where: { id }
+		});
+		return this.exclude(data, ['password']);
+	};
 
 	findUserById = async (id) => {
 		const data = await this.db.user.findUnique({
@@ -118,13 +119,14 @@ class AuthenticationService extends BaseService {
 	};
 
 	register = async (payload) => {
-		const { email, password } = payload;
+		const { email, password, roleId } = payload;
 
 		return this.db.$transaction(async (prisma) => {
 			const findRole = await prisma.role.findFirst({
-				where: { identifier: roleConstant.STUDENT_CODE },
+				...(roleId ? { where: { id: roleId } } : { where: { identifier: roleConstant.STUDENT_CODE } })
 			});
 			if (!findRole) throw new NotFound('Tidak ada role siswa');
+
 			const existing = await prisma.user.findUnique({ where: { email } });
 			if (existing)
 				throw new Forbidden('Akun dengan email telah digunakan');

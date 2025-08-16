@@ -11,6 +11,8 @@ generator client {
 enum RoleCode {
   ADMIN
   SISWA
+  INSTRUKTUR
+  PENGURUS
   ANY
 }
 
@@ -42,6 +44,11 @@ enum AttendanceType {
   I //Izin
   S //Sakit
   A //Alpha
+}
+
+enum AttendanceSchedule {
+  IN
+  OUT
 }
 
 enum CourseStatus {
@@ -93,6 +100,11 @@ enum avaliablePage {
   LOGIN
 }
 
+enum allowedTerm {
+  PERSETUJUAN_ORANGTUA
+  PERSETUJUAN_PEMBAYARAN
+}
+
 enum dashboardSection {
   HERO_BANNER
   TENTANG_KAMI
@@ -115,17 +127,18 @@ model User {
   id           Int       @id @default(autoincrement())
   email        String    @unique
   password     String
-  memberId     Int      @unique
+  memberId     Int       @unique
   roleId       Int
   forgetToken  String?   @db.Text
   forgetExpiry DateTime?
   isSuspended  Boolean   @default(false)
 
-  employee  Employee?
-  member    Member?    @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  role      Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  ChatRecap ChatRecap?
-  Chat      Chat[]
+  employee    Employee?
+  member      Member?      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  role        Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  ChatRecap   ChatRecap?
+  Chat        Chat[]
+  Facilitator Facilitator?
 
   @@map("user")
 }
@@ -183,6 +196,7 @@ model Transaction {
 
   memberTransactions MemberTransaction[]
   member             Member              @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberLoan         MemberLoan?
 
   @@map("transaction")
 }
@@ -190,6 +204,7 @@ model Transaction {
 model CuriculumStructure {
   id          Int    @id @default(autoincrement())
   name        String
+  type        String
   timePerHour Int
 
   CuriculumStructureDetail CuriculumStructureDetail[]
@@ -202,8 +217,8 @@ model CuriculumStructure {
 model CuriculumStructureDetail {
   id                 Int                @id @default(autoincrement())
   structureId        Int
-  type               String
-  code               String
+  type               String?
+  code               String?
   competencyUnit     String             @db.Text
   hours              Int
   curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id], onDelete: Cascade)
@@ -218,37 +233,70 @@ model Curiculum {
   curiculumStructure CuriculumStructure @relation(fields: [structureId], references: [id], onDelete: Cascade)
 
   curiculumDetail CuriculumDetail[]
+  unitCompetency  UnitCompetency[]
 
   @@map("curiculum")
 }
 
-model CuriculumDetail {
-  id                Int    @id @default(autoincrement())
-  curiculumId       Int
-  type              String
-  code              String
-  competency        String @db.Text
-  elementCompetency String @db.Text
-  indikator         String @db.Text
+model UnitCompetency {
+  id          Int    @id @default(autoincrement())
+  curiculumId Int
+  code        String
+  name        String
 
-  curiculum Curiculum @relation(fields: [curiculumId], references: [id], onDelete: Cascade)
+  curiculum Curiculum         @relation(fields: [curiculumId], references: [id], onDelete: Cascade)
+  details   CuriculumDetail[] @relation("UnitToDetail")
+
+  @@map("unit_competency")
+}
+
+model CuriculumDetail {
+  id                Int     @id @default(autoincrement())
+  curiculumId       Int
+  unitCompetencyId  Int?
+  type              String?
+  code              String?
+  competency        String? @db.Text
+  elementCompetency String  @db.Text
+  indikator         String? @db.Text
+
+  unitCompetency    UnitCompetency?          @relation("UnitToDetail", fields: [unitCompetencyId], references: [id], onDelete: SetNull)
+  learningMaterials LearningMaterialDetail[]
+  Curiculum         Curiculum[]
 
   @@map("curiculum_detail")
 }
 
-model Training {
-  id            Int          @id @default(autoincrement())
-  title         String
-  description   String
-  trainingImage String
-  type          TrainingType
+model LearningMaterialDetail {
+  id                Int    @id @default(autoincrement())
+  curiculumDetailId Int
+  code              String
+  name              String
+  weight            Float
+  duration          Int
+  methods           String
+  indicator         String
+  moduleCode        String
+  moduleName        String
 
+  curiculumDetail CuriculumDetail @relation(fields: [curiculumDetailId], references: [id], onDelete: Cascade)
+
+  @@map("learning_material_detail")
+}
+
+model Training {
+  id                  Int          @id @default(autoincrement())
+  title               String
+  description         String
+  trainingImage       String
+  type                TrainingType
+  terms               String?       @db.Text
   totalParticipants   Int
   totalCourses        Int
   totalHours          Int
   targetTrainingHours Int?
   level               Int?
-  isActive            Boolean @default(false)
+  isActive            Boolean      @default(false)
 
   materials         Material[]
   memberCourses     MemberCourse[]
@@ -331,6 +379,7 @@ model Exam {
   totalQuestions Int
   totalHours     Int
   questions      Json
+  answers        Json?
   date           DateTime?
 
   training    Training     @relation(fields: [trainingId], references: [id], onDelete: Cascade)
@@ -417,8 +466,21 @@ model Member {
   courses             MemberCourse[]       @relation(name: "MemberToCourses")
   User                User?
   MemberCertificate   MemberCertificate[]
+  MemberLoan          MemberLoan[]
 
   @@map("member")
+}
+
+model MemberLoan {
+  id            Int    @id @default(autoincrement())
+  memberId      Int
+  loanUID       String //MemberIdDDMMYY1
+  context       String
+  total         Float
+  transactionId Int?   @unique
+
+  member      Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 }
 
 model MemberTransaction {
@@ -513,7 +575,7 @@ model MemberAttendance {
   attendanceImage String?
   location        String?
   description     String?
-  isApproved Boolean @default(false)
+  isApproved      Boolean        @default(false)
   type            AttendanceType
 
   member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
@@ -522,10 +584,12 @@ model MemberAttendance {
 }
 
 model MemberCourse {
-  id         Int    @id @default(autoincrement())
-  uid        String? @unique
-  memberId   Int
-  trainingId Int
+  id                      Int      @id @default(autoincrement())
+  uid                     String?  @unique
+  memberId                Int
+  persetujuanPembayaran   Boolean?
+  persetujuanOrangtuaWali Boolean?
+  trainingId              Int
 
   training Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
   member   Member   @relation(name: "MemberToCourses", fields: [memberId], references: [id], onDelete: Cascade)
@@ -546,6 +610,7 @@ model MemberIdentity {
   district         String
   village          String
   postalCode       Int
+  ktpFile          String?
   detailedAddress  String
   // phoneNumber      String   @unique
   isParentGuardian Boolean  @default(false)
@@ -580,4 +645,35 @@ model WhatsappService {
   isActive Boolean
 
   @@map("whatsapp_service")
+}
+
+model Facilitator {
+  id          Int    @id @default(autoincrement())
+  name        String
+  position    String
+  phoneNumber String
+  userId      Int    @unique
+
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  FacilitatorAttendance FacilitatorAttendance[]
+}
+
+model FacilitatorAttendance {
+  id              Int                @id @default(autoincrement())
+  facilitatorId   Int
+  UID             String             @unique //<FacilitatorId><DDMMYYYY><typeSchedule>
+  attendanceImage String?
+  location        String?
+  type            AttendanceType
+  typeSchedule    AttendanceSchedule
+  createdAt       DateTime           @default(now())
+
+  facilitator Facilitator @relation(fields: [facilitatorId], references: [id], onDelete: Cascade)
+}
+
+model TermReference {
+  id      Int         @id @default(autoincrement())
+  title   String
+  type    allowedTerm
+  content String      @db.Text
 }

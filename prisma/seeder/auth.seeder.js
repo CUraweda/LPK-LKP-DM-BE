@@ -23,4 +23,26 @@ export async function userRole() {
             }
         })
     }
+
+    const instrukturExist = await prism.user.findUnique({ where: { email: "dummysiswa@gmail.com" } })
+    if (!instrukturExist) {
+        await prism.user.create({
+            data: {
+                email: "dummyinstruktur@gmail.com",
+                password: await hash("dummypass"),
+                roleId: 3
+            }
+        })
+    }
+    
+    const pengurusExist = await prism.user.findUnique({ where: { email: "dummysiswa@gmail.com" } })
+    if (!pengurusExist) {
+        await prism.user.create({
+            data: {
+                email: "dummypengurus@gmail.com",
+                password: await hash("dummypass"),
+                roleId: 4
+            }
+        })
+    }
 }

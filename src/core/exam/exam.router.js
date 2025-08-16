@@ -11,26 +11,43 @@ const r = Router(),
 
 r.get(
   "/show-all",
-  validatorMiddleware({ query: baseValidator.browseQuery }),
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
   controller.findAll
 );
 
-r.get("/show-one/:id", controller.findById);
+r.get("/show-one/:id",
+  validatorMiddleware({ query: baseValidator.browseQuery, option: { stripUnknown: false } }),
+  controller.findById
+);
 
 r.post(
   "/create",
   auth(['ADMIN']),
   validatorMiddleware({ body: validator.create }),
   controller.create
-  );
-  
-  r.put(
-    "/update/:id",
-    auth(['ADMIN']),
-    validatorMiddleware({ body: validator.update }),
-    controller.update
-    );
-    
+);
+
+// r.post(
+//   "/generate",
+//   auth(['ADMIN']),
+//   validatorMiddleware({ body: validator.generate }),
+//   controller.generate
+// )
+
+// r.post(
+//   "/update-question/:id",
+//   auth(['ADMIN']),
+//   validatorMiddleware({ body: validator.generate }),
+//   controller.updateQuestion
+// )
+
+r.put(
+  "/update/:id",
+  auth(['ADMIN']),
+  validatorMiddleware({ body: validator.update }),
+  controller.update
+);
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 const examRouter = r;

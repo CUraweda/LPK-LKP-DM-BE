@@ -262,12 +262,10 @@ class paymentService extends BaseService {
         await this.chatService.sendAdmin(messagePayload);
 
         const memberTrx = await this.db.memberTransaction.findFirst({ where: { transactionId: data.id } });
-        if (!memberTrx) throw new Error("MemberTransaction not found!")
 
         let member, mtransaction;
         if (updateData.memberData) member = await this.db.member.update({ where: { id: data.memberId }, data: updateData.memberData, });
         if (memberTrx) mtransaction = await this.db.memberTransaction.update({ where: { id: memberTrx.id }, data: updateData.memberTransaction, });
-        console.log(mtransaction)
         const updatedData = await this.db.transaction.update({ where: { id: data.id }, data: updateData.Transaction, });
         if (!updatedData) throw new BadRequest('Error occured while updating');
 
@@ -278,27 +276,32 @@ class paymentService extends BaseService {
     };
 
     createPayment = async (payload) => {
-        try {
-            const { memberId, user, ...rest } = payload;
+    try {
+            const { memberId, user, registrasi, ...rest } = payload;
             rest['transactionId'] = this.generateTID(payload);
             const memberData = await this.db.member.findFirst({ where: { id: memberId }, select: { registrationPaymentId: true, name: true, User: { select: { email: true } }  } })
             let transactionTable
-            if (!memberData.registrationPaymentId) {
-                transactionTable = await this.db.transaction.create({ data: { ...rest, memberId: memberId } });
-                await this.db.memberTransaction.create({
-                    data: {
-                        memberId: memberId,
-                        paymentTotal: payload.paymentTotal,
-                        transactionId: transactionTable.id,
-                        paymentDate: new Date(),
-                        trainingId: payload.user.member.trainingId
-                    }
-                });
-                await this.db.member.update({ where: { id: memberId }, data: { registrationPaymentId: transactionTable.id } })
-            } else transactionTable = await this.db.transaction.findFirst({ where: { id: memberData.registrationPaymentId } })
+            if(registrasi){
+                if (!memberData.registrationPaymentId) {
+                    transactionTable = await this.db.transaction.create({ data: { ...rest, memberId: memberId } });
+                    const memberTrx = await this.db.memberTransaction.create({
+                        data: {
+                            memberId: memberId,
+                            paymentTotal: payload.paymentTotal,
+                            transactionId: transactionTable.id,
+                            paymentDate: new Date(),
+                            trainingId: memberData.trainingId
+                        }
+                    });
+                    await this.db.member.update({ where: { id: memberId }, data: { registrationPaymentId: memberTrx.id } })
+                } else {
+                    const memberTrx = await this.db.memberTransaction.findFirst({ where: { id: memberData.registrationPaymentId } })
+                    transactionTable = await this.db.transaction.findFirst({ where: { id: memberTrx.transactionId } })
+                }
+            }else transactionTable = await this.db.transaction.create({ data: { ...rest, memberId: memberId } });
             
-            payload['username'] = memberData.name || ""
-            payload['email'] = memberData.User.email || ""
+            payload['username'] = memberData?.name || "Member"
+            payload['email'] = memberData?.User?.email || ""
             const paymentData = await this.paymentHelper.create({ ...payload, transaction: transactionTable });
             return await this.db.transaction.update({
                 where: { id: transactionTable.id },

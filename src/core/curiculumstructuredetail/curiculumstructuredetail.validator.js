@@ -3,8 +3,8 @@ import Joi from "joi";
 export const curiculumStructureDetailValidator = {
   create: Joi.object({
     structureId: Joi.number().required(),
-    type: Joi.string().required(),
-    code: Joi.string().required(),
+    type: Joi.string().optional(),
+    code: Joi.string().optional(),
     competencyUnit: Joi.string().required(),
     hours: Joi.number().required(),
   }),

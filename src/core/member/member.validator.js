@@ -3,7 +3,6 @@ import Joi from "joi";
 export const memberValidator = {
   create: Joi.object({
     name: Joi.string(),
-    
     dataVerified: Joi.boolean()
   }),
   patchVerified: Joi.object({
@@ -85,12 +84,15 @@ export const memberValidator = {
     phoneNumber: Joi.string().optional().allow("")
   }),
   extend_data_kursus: Joi.object({
-    trainingId: Joi.number().integer()
-    // courseCategoryId: Joi.number().integer(),
-    // courseLevel: Joi.number().integer()
+    trainingId: Joi.number().integer(),
+    persetujuanPembayaran: Joi.boolean().default(false),
+    persetujuanOrangtuaWali: Joi.boolean().default(false)
   }),
   extend_data_pembayaran: Joi.object({
     paymentMethod: Joi.string()
+  }),
+  import_data: Joi.object({
+    defaultPassword: Joi.string().required(),
   })
 };
 

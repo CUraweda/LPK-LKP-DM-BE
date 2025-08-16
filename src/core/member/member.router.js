@@ -5,6 +5,7 @@ import memberValidator from "./member.validator.js";
 import { baseValidator } from "../../base/validator.base.js";
 import auth from "../../middlewares/auth.middleware.js";
 import uploader from "../../middlewares/multer.middleware.js";
+import { uploadMany } from "../../middlewares/upload.middleware.js";
 
 const r = Router(),
   validator = memberValidator,
@@ -51,21 +52,25 @@ r.get(
   controller.showDetail
 )
 
-r.get("/show-one/:id", 
+r.get("/show-one/:id",
   auth(["ADMIN"]),
   controller.findById);
 
-r.get("/show-me", 
+r.get("/show-me",
   auth(["ADMIN", "SISWA"]),
   controller.findMe);
 
-r.get("/show-state", 
+r.get("/show-state",
   auth(["ADMIN", "SISWA"]),
   controller.findState);
 
-r.get("/show-pembayaran-registration", 
+r.get("/show-pembayaran-registration",
   auth(['SISWA']),
   controller.validateRegistrationPayment);
+
+r.get("/download-template",
+  controller.downloadTemplate);
+
 
 r.post(
   "/create",
@@ -82,7 +87,18 @@ r.patch(
 r.put(
   "/update-me",
   auth(['SISWA']),
-  uploader("/member", "image", "PP").single("profilePict"),
+  uploadMany('./uploads', '/member', [
+    {
+      name: 'ktpFile',
+      mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+      limitSize: 10 * 1024 * 1024
+    },
+    {
+      name: 'profilePict',
+      mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+      limitSize: 10 * 1024 * 1024
+    }
+  ]),
   validatorMiddleware({ body: validator.updateMe }),
   controller.extendDataSiswa
 );
@@ -94,12 +110,29 @@ r.put(
   controller.update
 );
 
+r.patch(
+  "/finish-training/:id",
+  auth(['ADMIN']),
+  controller.finishTraining
+)
+
 r.delete("/delete/:id", auth(['ADMIN']), controller.delete);
 
 r.post(
   "/extend-user-data-siswa/:id?",
   auth(['SISWA', 'ADMIN']),
-  uploader("/member", "image", "PP").single("profilePict"),
+  uploadMany('./uploads', '/member', [
+    {
+      name: 'ktpFile',
+      mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+      limitSize: 10 * 1024 * 1024
+    },
+    {
+      name: 'profilePict',
+      mimeTypes: ['image/jpeg', 'image/jpg', 'image/png'],
+      limitSize: 10 * 1024 * 1024
+    }
+  ]),
   validatorMiddleware({ body: validator.extend_data_siswa }),
   controller.extendDataSiswa
 )
@@ -134,6 +167,20 @@ r.post(
   auth(['SISWA', 'ADMIN']),
   validatorMiddleware({ body: validator.extend_data_pembayaran }),
   controller.extendDataPembayaran
+)
+
+r.post(
+  "/import-alumni",
+  auth(['ADMIN']),
+  uploadMany('./uploads', '/member', [
+    {
+      name: 'file',
+      mimeTypes: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+    },
+
+  ]),
+  validatorMiddleware({ body: validator.import_data }),
+  controller.importAlumni
 )
 
 const memberRouter = r;

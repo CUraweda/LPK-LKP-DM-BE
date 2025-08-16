@@ -5,6 +5,7 @@ export const trainingValidator = {
     title: Joi.string().required(),
     structureId: Joi.number().required(),
     description: Joi.string().required(),
+    terms: Joi.string().optional(),
     targetTrainingHours: Joi.number().optional(),
     type: Joi.string().valid('R', 'P').required(),
     level: Joi.number().integer().required(),
@@ -13,6 +14,7 @@ export const trainingValidator = {
   update: Joi.object({
     title: Joi.string().optional(),
     description: Joi.string().optional(),
+    terms: Joi.string().optional(),
     type: Joi.string().valid('R', 'P').optional(),
     level: Joi.number().integer().optional(),
     isActive: Joi.boolean().optional(),
